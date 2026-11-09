@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model OrgUnit {
+  id        String    @id @default(uuid()) @db.Uuid
+  code      String    @unique
+  name      String
+  parentId  String?   @map("parent_id") @db.Uuid
+  parent    OrgUnit?  @relation("org_unit_tree", fields: [parentId], references: [id])
+  children  OrgUnit[] @relation("org_unit_tree")
+  users     User[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("org_units")
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  employeeCode String     @unique @map("employee_code")
+  fullName     String     @map("full_name")
+  passwordHash String     @map("password_hash")
+  isActive     Boolean    @default(true) @map("is_active")
+  orgUnitId    String?    @map("org_unit_id") @db.Uuid
+  orgUnit      OrgUnit?   @relation(fields: [orgUnitId], references: [id])
+  roles        UserRole[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Role {
+  id          String       @id @default(uuid()) @db.Uuid
+  code        String       @unique
+  name        String
+  permissions Permission[] @relation("role_permissions")
+  users       UserRole[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model Permission {
+  id    String @id @default(uuid()) @db.Uuid
+  code  String @unique
+  name  String
+  roles Role[] @relation("role_permissions")
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@dms/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- next dev",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@dms/config": "workspace:*",
+    "@dms/contracts": "workspace:*",
+    "@dms/db": "workspace:*",
+    "@dms/ui": "workspace:*",
+    "@prisma/client": "~6.19.3",
+    "argon2": "^0.45.2",
+    "next": "~15.5.29",
+    "next-auth": "5.0.0-beta.32",
+    "react": "~19.1.10",
+    "react-dom": "~19.1.10",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/react": "~19.1.0",
+    "@types/react-dom": "~19.1.0",
+    "dotenv-cli": "^11.1.0",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@dms/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "postinstall": "prisma generate",
+    "migrate": "dotenv -e ../../.env -- prisma migrate dev",
+    "deploy:migrations": "dotenv -e ../../.env -- prisma migrate deploy",
+    "seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "~6.19.3"
+  },
+  "devDependencies": {
+    "@dms/config": "workspace:*",
+    "@types/node": "^24",
+    "argon2": "^0.45.2",
+    "dotenv-cli": "^11.1.0",
+    "prisma": "~6.19.3",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}

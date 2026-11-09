@@ -1,0 +1,16 @@
+{
+  "name": "@dms/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": "./eslint.base.mjs",
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./footer": "./src/footer.ts"
+  },
+  "dependencies": {
+    "typescript-eslint": "^8.72.1"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}

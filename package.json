@@ -1,0 +1,29 @@
+{
+  "name": "dms-vinaseed",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "docker compose up -d && turbo run dev",
+    "build": "turbo run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check:glyphs": "node scripts/check-glyphs.mjs",
+    "check": "pnpm format:check && pnpm check:glyphs && pnpm lint && pnpm typecheck && pnpm test",
+    "db:migrate": "pnpm --filter @dms/db migrate",
+    "db:deploy": "pnpm --filter @dms/db deploy:migrations",
+    "db:seed": "pnpm --filter @dms/db seed"
+  },
+  "devDependencies": {
+    "@dms/config": "workspace:*",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.11.10"
+  }
+}
