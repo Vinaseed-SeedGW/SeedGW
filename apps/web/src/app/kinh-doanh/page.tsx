@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
-import { departmentLanding } from '@dms/contracts/departments';
-import { requireUser } from '@/server/auth/current-user';
-import { getRoleCodes } from '@/server/auth/roles';
+import { departmentLanding } from '@dms/contracts/access';
+import { requireDepartmentAccess } from '@/server/auth/can';
 
 export default async function KinhDoanhPage() {
-  const user = await requireUser();
-  redirect(departmentLanding('kinh-doanh', await getRoleCodes(user.id)));
+  const user = await requireDepartmentAccess('kinh-doanh');
+  redirect(departmentLanding('kinh-doanh', user.roleCodes, user.permissions));
 }

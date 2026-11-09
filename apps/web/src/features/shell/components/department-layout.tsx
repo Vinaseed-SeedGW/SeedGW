@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { canAccessDepartment, canAccessPath } from '@dms/contracts/access';
 import { DEPARTMENTS, type DepartmentSlug } from '@dms/contracts/departments';
 import { AppFooter } from '@dms/ui/app-footer';
 import { AppShell } from '@dms/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
 import { DEPARTMENT_NAV } from '@/features/shell/navigation';
-import { requireUser } from '@/server/auth/current-user';
+import { requireDepartmentAccess } from '@/server/auth/can';
 
 type DepartmentLayoutProps = {
   slug: DepartmentSlug;
@@ -16,13 +17,23 @@ type DepartmentLayoutProps = {
 const SWITCHER_LINK_CLASS = 'hover:bg-brand-soft block rounded-sm px-2.5 py-1.5 whitespace-nowrap';
 
 export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps) {
-  const user = await requireUser();
+  const user = await requireDepartmentAccess(slug);
   const current = DEPARTMENTS.find((department) => department.slug === slug);
+  const groups = DEPARTMENT_NAV[slug]
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => canAccessPath(user.permissions, item.href)),
+    }))
+    .filter((group) => group.items.length > 0);
+  const otherDepartments = DEPARTMENTS.filter(
+    (department) =>
+      department.slug !== slug && canAccessDepartment(user.permissions, department.slug),
+  );
 
   return (
     <AppShell.Root>
       <AppShell.Sidebar homeHref="/hub">
-        {DEPARTMENT_NAV[slug].map((group, index) => (
+        {groups.map((group, index) => (
           <AppShell.NavGroup key={group.label ?? index} label={group.label}>
             {group.items.map((item) => (
               <AppShell.NavItem key={item.href} href={item.href} label={item.label}>
@@ -41,7 +52,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
             <Link href="/hub" className={SWITCHER_LINK_CLASS}>
               Về Hub
             </Link>
-            {DEPARTMENTS.filter((department) => department.slug !== slug).map((department) => (
+            {otherDepartments.map((department) => (
               <Link
                 key={department.slug}
                 href={`/${department.slug}`}

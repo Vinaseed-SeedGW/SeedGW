@@ -16,7 +16,6 @@ export const hubNotification = z.object({
 
 export const hubSummary = z.object({
   departments: z.array(hubDepartment),
-  canViewExecutive: z.boolean(),
   notifications: z.array(hubNotification),
 });
 export type HubSummary = z.infer<typeof hubSummary>;

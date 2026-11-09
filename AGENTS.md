@@ -112,6 +112,7 @@ Mẫu đầy đủ ở `docs/MAU_CODE.md`.
 ## 8. Bảo mật
 
 - Mỗi query, Server Action và Route Handler kiểm đăng nhập và quyền ở đầu hàm, áp phạm vi dữ liệu `own`, `orgUnit`, `orgUnitTree`, `all` ngay trong truy vấn.
+- Trang mới: thêm quy tắc vào `ROUTE_RULES` trong `@dms/contracts/access`, trang gọi `requirePermission` ở đầu. Server Action gọi `assertCan`. Query nghiệp vụ dùng `getScopedDb()`, model mới có dữ liệu theo người hoặc đơn vị phải khai báo trong `SCOPED_MODELS`.
 - Validate mọi đầu vào bằng Zod ở máy chủ, kể cả dữ liệu từ form đã validate ở client.
 - Ghi `AuditLog` cho mọi thao tác tạo, sửa, xoá, duyệt.
 - Không commit `.env`, khoá API, mật khẩu, token. Biến mới phải thêm vào `.env.example` với giá trị giả.

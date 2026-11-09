@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
-import { departmentLanding } from '@dms/contracts/departments';
-import { requireUser } from '@/server/auth/current-user';
-import { getRoleCodes } from '@/server/auth/roles';
+import { departmentLanding } from '@dms/contracts/access';
+import { requireDepartmentAccess } from '@/server/auth/can';
 
 export default async function CskhPage() {
-  const user = await requireUser();
-  redirect(departmentLanding('cskh', await getRoleCodes(user.id)));
+  const user = await requireDepartmentAccess('cskh');
+  redirect(departmentLanding('cskh', user.roleCodes, user.permissions));
 }

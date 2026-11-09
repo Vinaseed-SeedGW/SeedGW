@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
-import { departmentLanding } from '@dms/contracts/departments';
-import { requireUser } from '@/server/auth/current-user';
-import { getRoleCodes } from '@/server/auth/roles';
+import { departmentLanding } from '@dms/contracts/access';
+import { requireDepartmentAccess } from '@/server/auth/can';
 
 export default async function QuanTriPage() {
-  const user = await requireUser();
-  redirect(departmentLanding('quan-tri', await getRoleCodes(user.id)));
+  const user = await requireDepartmentAccess('quan-tri');
+  redirect(departmentLanding('quan-tri', user.roleCodes, user.permissions));
 }

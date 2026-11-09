@@ -35,7 +35,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Menu trái theo IA §1: nhóm là nhãn cố định, tối đa 2 cấp; bấm ô bộ phận tới trang đích theo vai trò (IA §2).
   - **Xong khi**: Hub đẹp ở 1440px, 1024px, 768px, 375px; logo đúng bản, kích thước và vùng an toàn theo `BRAND.md` §1, sidebar thu gọn chỉ còn biểu tượng; toàn bộ chữ tải đúng 4 kiểu UTM Neo Sans Intel, không có font thay thế; sidebar thu gọn được và nhớ trạng thái (localStorage có version).
 
-- [ ] **F3. Phân quyền RBAC + phạm vi dữ liệu, Hub chỉ hiện bộ phận được phép**: _Dùng lại: F1, F2. New: `can()` helper, `<Can>` component. Cỡ L._
+- [x] **F3. Phân quyền RBAC + phạm vi dữ liệu, Hub chỉ hiện bộ phận được phép**: _Dùng lại: F1, F2. New: `can()` helper, `<Can>` component. Cỡ L._
   - Quyền dạng `module.resource.action` (vd `sales.order.approve`, `cs.ticket.assign`, `admin.user.manage`); vai trò gán nhiều quyền; user nhiều vai trò.
   - Phạm vi dữ liệu (data scope): `own` / `orgUnit` / `orgUnitTree` / `all` — gắn vào vai trò, áp ở tầng query (Prisma extension) chứ không chỉ ở UI.
   - `getCurrentUser()` bọc `React.cache()` để mỗi request chỉ tra quyền 1 lần.

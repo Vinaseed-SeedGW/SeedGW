@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./org-units": "./src/org-units.ts",
+    "./scoped-client": "./src/scoped-client.ts"
   },
   "scripts": {
     "generate": "prisma generate",
@@ -14,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dms/contracts": "workspace:*",
     "@prisma/client": "~6.19.3"
   },
   "devDependencies": {

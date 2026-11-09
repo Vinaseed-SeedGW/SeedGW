@@ -1,12 +1,6 @@
 import { hash } from 'argon2';
 import { PrismaClient } from '@prisma/client';
-
-const SEED_ROLES = [
-  { code: 'admin', name: 'Quản trị hệ thống' },
-  { code: 'sales', name: 'Kinh doanh' },
-  { code: 'customer-care', name: 'Chăm sóc khách hàng' },
-  { code: 'operations', name: 'Quản trị' },
-];
+import { PERMISSIONS, ROLE_PRESETS } from '@dms/contracts/access';
 
 const SEED_USERS = [
   { employeeCode: 'ADMIN', fullName: 'Quản trị viên', roleCode: 'admin' },
@@ -33,8 +27,30 @@ async function main() {
       create: { code: 'VINASEED', name: 'Vinaseed' },
     });
 
-    for (const role of SEED_ROLES) {
-      await db.role.upsert({ where: { code: role.code }, update: {}, create: role });
+    for (const permission of PERMISSIONS) {
+      await db.permission.upsert({
+        where: { code: permission.code },
+        update: { name: permission.name },
+        create: permission,
+      });
+    }
+
+    for (const preset of ROLE_PRESETS) {
+      const permissions = preset.permissions.map((code) => ({ code }));
+      await db.role.upsert({
+        where: { code: preset.code },
+        update: {
+          name: preset.name,
+          dataScope: preset.dataScope,
+          permissions: { set: permissions },
+        },
+        create: {
+          code: preset.code,
+          name: preset.name,
+          dataScope: preset.dataScope,
+          permissions: { connect: permissions },
+        },
+      });
     }
 
     for (const { roleCode, ...user } of SEED_USERS) {
@@ -51,7 +67,9 @@ async function main() {
       });
     }
 
-    console.log(`Da nap ${SEED_USERS.length} tai khoan mau.`);
+    console.log(
+      `Da nap ${PERMISSIONS.length} quyen, ${ROLE_PRESETS.length} vai tro, ${SEED_USERS.length} tai khoan mau.`,
+    );
   } finally {
     await db.$disconnect();
   }

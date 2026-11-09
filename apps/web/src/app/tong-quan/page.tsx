@@ -1,17 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { AppFooter } from '@dms/ui/app-footer';
 import { Logo } from '@dms/ui/logo';
 import { LogoutButton } from '@/features/auth/components/logout-button';
-import { requireUser } from '@/server/auth/current-user';
-import { canViewExecutive, getRoleCodes } from '@/server/auth/roles';
+import { requirePermission } from '@/server/auth/can';
 
 export const metadata: Metadata = { title: 'Tổng quan điều hành' };
 
 export default async function ExecutivePage() {
-  const user = await requireUser();
-  if (!canViewExecutive(await getRoleCodes(user.id))) redirect('/hub');
+  await requirePermission('executive.overview.read');
 
   return (
     <div className="flex min-h-dvh flex-col">

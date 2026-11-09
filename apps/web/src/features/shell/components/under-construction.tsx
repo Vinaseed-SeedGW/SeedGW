@@ -1,15 +1,18 @@
 import { notFound } from 'next/navigation';
 import type { DepartmentSlug } from '@dms/contracts/departments';
 import { findNavItem } from '@/features/shell/navigation';
+import { requirePathAccess } from '@/server/auth/can';
 
 type UnderConstructionProps = {
   slug: DepartmentSlug;
   segments: string[];
 };
 
-export function UnderConstruction({ slug, segments }: UnderConstructionProps) {
-  const item = findNavItem(slug, `/${slug}/${segments.join('/')}`);
+export async function UnderConstruction({ slug, segments }: UnderConstructionProps) {
+  const pathname = `/${slug}/${segments.join('/')}`;
+  const item = findNavItem(slug, pathname);
   if (!item) notFound();
+  await requirePathAccess(pathname);
 
   return (
     <>

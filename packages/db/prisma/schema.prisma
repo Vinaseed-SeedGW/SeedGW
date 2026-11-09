@@ -7,6 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DataScope {
+  OWN
+  ORG_UNIT
+  ORG_UNIT_TREE
+  ALL
+
+  @@map("data_scope")
+}
+
 model OrgUnit {
   id        String    @id @default(uuid()) @db.Uuid
   code      String    @unique
@@ -40,6 +49,7 @@ model Role {
   id          String       @id @default(uuid()) @db.Uuid
   code        String       @unique
   name        String
+  dataScope   DataScope    @default(OWN) @map("data_scope")
   permissions Permission[] @relation("role_permissions")
   users       UserRole[]
   createdAt   DateTime     @default(now()) @map("created_at")

@@ -2,6 +2,7 @@ import { Briefcase, Headset, Settings, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { DepartmentSlug } from '@dms/contracts/departments';
+import { Can } from '@/features/auth/components/can';
 import { HubLayout } from '@/features/shell/components/hub-layout';
 import { requireUser } from '@/server/auth/current-user';
 import { getHubSummary } from '@/server/queries/hub';
@@ -43,11 +44,17 @@ export default async function HubPage() {
         })}
       </div>
 
-      {summary.canViewExecutive ? (
+      {summary.departments.length === 0 ? (
+        <p className="mt-5 text-text-muted">
+          Tài khoản của bạn chưa được cấp quyền vào bộ phận nào. Vui lòng liên hệ quản trị hệ thống.
+        </p>
+      ) : null}
+
+      <Can permission="executive.overview.read">
         <Link href="/tong-quan" className="mt-5 inline-block font-bold text-brand">
           Xem Tổng quan điều hành
         </Link>
-      ) : null}
+      </Can>
 
       <section className="mt-6 rounded-md border border-border bg-surface p-5">
         <h2 className="text-lg font-bold">Thông báo gần đây</h2>
