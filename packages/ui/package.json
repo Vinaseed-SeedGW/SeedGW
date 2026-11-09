@@ -8,9 +8,13 @@
     "./cn": "./src/cn.ts",
     "./data-table": "./src/data-table.tsx",
     "./data-table-skeleton": "./src/data-table-skeleton.tsx",
+    "./form": "./src/form.tsx",
+    "./form-page": "./src/form-page.tsx",
+    "./form-sheet": "./src/form-sheet.tsx",
     "./logo": "./src/logo.tsx",
     "./sidebar-storage": "./src/sidebar-storage.ts",
-    "./styles/*": "./src/styles/*"
+    "./styles/*": "./src/styles/*",
+    "./toast": "./src/toast.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -18,7 +22,8 @@
   "dependencies": {
     "@dms/config": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
-    "lucide-react": "^1.70.0"
+    "lucide-react": "^1.70.0",
+    "react-hook-form": "^7.91.0"
   },
   "peerDependencies": {
     "next": "^15",

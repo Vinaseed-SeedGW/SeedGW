@@ -210,7 +210,8 @@ import { createOrderInput } from '@dms/contracts/orders';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
-import { writeAudit } from '@/server/services/audit';
+import { auditChanges } from '@dms/contracts/audit';
+import { getClientIp, writeAudit } from '@/server/services/audit';
 import { createOrder } from '@/server/services/orders';
 
 export async function createOrderAction(raw: unknown): Promise<ActionResult<{ code: string }>> {
@@ -223,7 +224,18 @@ export async function createOrderAction(raw: unknown): Promise<ActionResult<{ co
 
     // Canh bao ton kho, cong no duoc tra ve nhung khong chan tao don.
     const { order, warnings } = await createOrder(user, parsed.data);
-    after(() => writeAudit(user, 'sales.order.create', order.id));
+    const ip = await getClientIp();
+    after(() =>
+      writeAudit({
+        actorId: user.id,
+        action: 'order.create',
+        entityType: 'Order',
+        entityId: order.id,
+        entityLabel: order.code,
+        changes: auditChanges({}, { status: order.status }),
+        ip,
+      }),
+    );
 
     return { ok: true, data: { code: order.code }, warnings };
   } catch (error) {

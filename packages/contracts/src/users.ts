@@ -55,6 +55,19 @@ export const usersUrlParams = z
     pageSize: USERS_PAGE_SIZE,
   }));
 
+export const updateUserInput = z.object({
+  id: z.uuid(),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, 'Họ tên cần ít nhất 2 ký tự')
+    .max(100, 'Họ tên tối đa 100 ký tự'),
+  isActive: z.boolean(),
+});
+export type UpdateUserInput = z.infer<typeof updateUserInput>;
+
+export type UserEditValues = UpdateUserInput & { employeeCode: string };
+
 export const exportUsersInput = z.object({
   filter: listUsersInput.pick({ q: true, status: true, sort: true }),
   ids: z.array(z.uuid()).max(MAX_EXPORT_ROWS),

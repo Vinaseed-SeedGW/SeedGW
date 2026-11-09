@@ -50,7 +50,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Xuất Excel (exceljs chạy ở máy chủ, không nằm trong bundle trình duyệt) theo bộ lọc hiện tại và phạm vi dữ liệu.
   - **Xong khi**: danh sách 10.000 user giả lập trả trang < 1s; URL `?q=…&trang=3` mở lại đúng trạng thái.
 
-- [ ] **F5. Form pattern + Audit log + Thông báo toast**: chuẩn hoá form tạo/sửa dùng chung cho mọi danh mục. _New. Phụ thuộc: F3. Cỡ M._
+- [x] **F5. Form pattern + Audit log + Thông báo toast**: chuẩn hoá form tạo/sửa dùng chung cho mọi danh mục. _New. Phụ thuộc: F3. Cỡ M._
   - `FormSheet` (drawer bên phải) + `FormPage` (trang riêng) — hai variant tường minh thay vì `isDrawer`.
   - React Hook Form + Zod schema lấy từ `packages/contracts` (dùng chung với API và mobile).
   - `AuditLog` ghi trong `after()` sau mỗi Server Action: ai, lúc nào, thực thể, trước/sau (JSON diff), IP.

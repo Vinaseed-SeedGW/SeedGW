@@ -3,9 +3,11 @@ import { Suspense } from 'react';
 import { usersUrlParams, type ListUsersInput } from '@dms/contracts/users';
 import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
 import { Can } from '@/features/auth/components/can';
+import { ManagedUsersTable } from '@/features/users/components/managed-users-table';
 import { UsersExportButton } from '@/features/users/components/users-export-button';
 import { UsersTable } from '@/features/users/components/users-table';
-import { requirePermission } from '@/server/auth/can';
+import { can, requirePermission } from '@/server/auth/can';
+import { requireUser } from '@/server/auth/current-user';
 import { listUsers } from '@/server/queries/users';
 
 export const metadata: Metadata = { title: 'Tài khoản' };
@@ -30,13 +32,16 @@ export default async function AccountsPage({ searchParams }: PageProps) {
 }
 
 async function AccountsResults({ input }: { input: ListUsersInput }) {
-  const data = await listUsers(input);
+  const [user, data] = await Promise.all([requireUser(), listUsers(input)]);
+  const exportButton = (
+    <Can permission="admin.user.export">
+      <UsersExportButton filter={{ q: input.q, status: input.status, sort: input.sort }} />
+    </Can>
+  );
 
-  return (
-    <UsersTable data={data}>
-      <Can permission="admin.user.export">
-        <UsersExportButton filter={{ q: input.q, status: input.status, sort: input.sort }} />
-      </Can>
-    </UsersTable>
+  return can(user, 'admin.user.manage') ? (
+    <ManagedUsersTable data={data}>{exportButton}</ManagedUsersTable>
+  ) : (
+    <UsersTable data={data}>{exportButton}</UsersTable>
   );
 }

@@ -41,11 +41,30 @@ model User {
   orgUnitId    String?    @map("org_unit_id") @db.Uuid
   orgUnit      OrgUnit?   @relation(fields: [orgUnitId], references: [id])
   roles        UserRole[]
+  auditLogs    AuditLog[]
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "users_search_text_trgm_idx")
   @@map("users")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorId     String?  @map("actor_id") @db.Uuid
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  entityLabel String   @map("entity_label")
+  changes     Json
+  ip          String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@map("audit_logs")
 }
 
 model Role {

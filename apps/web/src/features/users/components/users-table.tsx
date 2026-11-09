@@ -23,13 +23,15 @@ const STATUS_OPTIONS = (Object.keys(STATUS_LABEL) as UserStatus[]).map((value) =
 
 const SECONDARY_COLUMN = 'max-md:hidden';
 
-const COLUMNS: ColumnDef<UserSummary>[] = [
-  selectionColumn<UserSummary>(),
-  {
-    accessorKey: 'employeeCode',
-    header: 'Mã nhân viên',
-    meta: { label: 'Mã nhân viên', sortKey: 'employeeCode' },
-  },
+export const SELECT_COLUMN = selectionColumn<UserSummary>();
+
+export const CODE_COLUMN: ColumnDef<UserSummary> = {
+  accessorKey: 'employeeCode',
+  header: 'Mã nhân viên',
+  meta: { label: 'Mã nhân viên', sortKey: 'employeeCode' },
+};
+
+export const DETAIL_COLUMNS: ColumnDef<UserSummary>[] = [
   {
     accessorKey: 'fullName',
     header: 'Họ tên',
@@ -69,19 +71,22 @@ const COLUMNS: ColumnDef<UserSummary>[] = [
   },
 ];
 
+const READ_ONLY_COLUMNS: ColumnDef<UserSummary>[] = [SELECT_COLUMN, CODE_COLUMN, ...DETAIL_COLUMNS];
+
 function getUserId(user: UserSummary) {
   return user.id;
 }
 
-type UsersTableProps = {
+type UsersTableViewProps = {
+  columns: ColumnDef<UserSummary>[];
   data: ListUsersResult;
   children: ReactNode;
 };
 
-export function UsersTable({ data, children }: UsersTableProps) {
+export function UsersTableView({ columns, data, children }: UsersTableViewProps) {
   return (
     <DataTable.Root
-      columns={COLUMNS}
+      columns={columns}
       data={data.items}
       getRowId={getUserId}
       total={data.total}
@@ -105,5 +110,18 @@ export function UsersTable({ data, children }: UsersTableProps) {
       <DataTable.Body emptyMessage="Không có tài khoản nào phù hợp." />
       <DataTable.Pagination itemLabel="tài khoản" />
     </DataTable.Root>
+  );
+}
+
+type UsersTableProps = {
+  data: ListUsersResult;
+  children: ReactNode;
+};
+
+export function UsersTable({ data, children }: UsersTableProps) {
+  return (
+    <UsersTableView columns={READ_ONLY_COLUMNS} data={data}>
+      {children}
+    </UsersTableView>
   );
 }

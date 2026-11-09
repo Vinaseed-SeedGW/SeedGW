@@ -1,7 +1,13 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
 import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
-import type { ListUsersInput, ListUsersResult, UserSummary } from '@dms/contracts/users';
+import type {
+  ListUsersInput,
+  ListUsersResult,
+  UserEditValues,
+  UserSummary,
+} from '@dms/contracts/users';
+import { z } from 'zod';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';
@@ -42,6 +48,18 @@ export function userOrderBy(sort: ListUsersInput['sort']): Prisma.UserOrderByWit
   const direction = sort.startsWith('-') ? 'desc' : 'asc';
   const field = sort.replace('-', '') as 'employeeCode' | 'fullName' | 'createdAt';
   return [{ [field]: direction }, { id: 'asc' }];
+}
+
+export async function getUserForEdit(id: string): Promise<UserEditValues | null> {
+  if (!z.uuid().safeParse(id).success) return null;
+
+  const [user, scoped] = await Promise.all([requireUser(), getScopedDb()]);
+  assertCan(user, 'admin.user.manage');
+
+  return scoped.user.findUnique({
+    where: { id },
+    select: { id: true, employeeCode: true, fullName: true, isActive: true },
+  });
 }
 
 export async function listUsers(input: ListUsersInput): Promise<ListUsersResult> {
