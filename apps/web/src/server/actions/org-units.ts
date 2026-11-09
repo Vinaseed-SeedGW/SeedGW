@@ -34,7 +34,7 @@ async function recordChange(user: CurrentUser, action: AuditAction, outcome: Org
   const ip = await getClientIp();
   after(() =>
     writeAudit({
-      actorId: user.id,
+      actor: user,
       action,
       entityType: 'OrgUnit',
       entityId: outcome.id,

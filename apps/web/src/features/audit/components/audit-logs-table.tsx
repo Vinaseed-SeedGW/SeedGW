@@ -16,7 +16,16 @@ const COLUMNS: ColumnDef<AuditLogSummary>[] = [
   {
     accessorKey: 'actorName',
     header: 'Người thực hiện',
-    cell: ({ row }) => row.original.actorName ?? '(đã xoá)',
+    cell: ({ row }) => (
+      <>
+        {row.original.actorName ?? '(đã xoá)'}
+        {row.original.impersonatorName ? (
+          <span className="block text-sm text-text-muted">
+            Do {row.original.impersonatorName} đăng nhập thay
+          </span>
+        ) : null}
+      </>
+    ),
     meta: { label: 'Người thực hiện' },
   },
   { accessorKey: 'actionLabel', header: 'Thao tác', meta: { label: 'Thao tác' } },

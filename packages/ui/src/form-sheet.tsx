@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
+import { useModalDialog } from './use-modal-dialog';
 
 function closeParentDialog(event: MouseEvent<HTMLElement>) {
   event.currentTarget.closest('dialog')?.close();
@@ -15,11 +16,11 @@ type RootProps = {
 
 // Dung dialog cua trinh duyet de co san khoa focus, phim Escape va nen mo.
 function Root({ title, onClose, children }: RootProps) {
+  const { attachDialog } = useModalDialog();
+
   return (
     <dialog
-      ref={(element) => {
-        if (element && !element.open) element.showModal();
-      }}
+      ref={attachDialog}
       aria-label={title}
       onClose={onClose}
       onClick={(event) => {

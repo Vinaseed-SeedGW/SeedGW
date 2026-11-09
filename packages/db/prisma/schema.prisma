@@ -32,37 +32,98 @@ model OrgUnit {
   @@map("org_units")
 }
 
+enum MobileDeviceStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+
+  @@map("mobile_device_status")
+}
+
 model User {
-  id           String     @id @default(uuid()) @db.Uuid
-  employeeCode String     @unique @map("employee_code")
-  fullName     String     @map("full_name")
-  passwordHash String     @map("password_hash")
-  isActive     Boolean    @default(true) @map("is_active")
+  id                     String                 @id @default(uuid()) @db.Uuid
+  employeeCode           String                 @unique @map("employee_code")
+  fullName               String                 @map("full_name")
+  passwordHash           String                 @map("password_hash")
+  isActive               Boolean                @default(true) @map("is_active")
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
-  searchText   String?    @default(dbgenerated()) @map("search_text")
-  orgUnitId    String?    @map("org_unit_id") @db.Uuid
-  orgUnit      OrgUnit?   @relation("org_unit_members", fields: [orgUnitId], references: [id])
-  managedUnits OrgUnit[]  @relation("org_unit_manager")
-  roles        UserRole[]
-  auditLogs    AuditLog[]
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  searchText             String?                @default(dbgenerated()) @map("search_text")
+  phone                  String?
+  email                  String?
+  jobTitle               String?                @map("job_title")
+  hiredAt                DateTime?              @map("hired_at") @db.Date
+  orgUnitId              String?                @map("org_unit_id") @db.Uuid
+  orgUnit                OrgUnit?               @relation("org_unit_members", fields: [orgUnitId], references: [id])
+  managerId              String?                @map("manager_id") @db.Uuid
+  manager                User?                  @relation("user_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports          User[]                 @relation("user_manager")
+  mustChangePassword     Boolean                @default(false) @map("must_change_password")
+  failedLoginCount       Int                    @default(0) @map("failed_login_count")
+  failedLoginStartedAt   DateTime?              @map("failed_login_started_at")
+  loginLockedUntil       DateTime?              @map("login_locked_until")
+  // Tang len de thu hoi moi phien da cap, ke ca phien tren dien thoai.
+  sessionVersion         Int                    @default(0) @map("session_version")
+  managedUnits           OrgUnit[]              @relation("org_unit_manager")
+  roles                  UserRole[]
+  auditLogs              AuditLog[]             @relation("audit_actor")
+  impersonatedAuditLogs  AuditLog[]             @relation("audit_impersonator")
+  mobileDevices          MobileDevice[]
+  impersonationsStarted  ImpersonationSession[] @relation("impersonation_actor")
+  impersonationsReceived ImpersonationSession[] @relation("impersonation_target")
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
 
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "users_search_text_trgm_idx")
+  @@index([managerId])
   @@map("users")
 }
 
+model MobileDevice {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @map("user_id") @db.Uuid
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceKey  String             @map("device_key")
+  name       String
+  platform   String
+  status     MobileDeviceStatus @default(PENDING)
+  approvedAt DateTime?          @map("approved_at")
+  revokedAt  DateTime?          @map("revoked_at")
+  lastSeenAt DateTime?          @map("last_seen_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+
+  @@unique([userId, deviceKey])
+  @@index([userId, status])
+  @@map("mobile_devices")
+}
+
+model ImpersonationSession {
+  id        String    @id @default(uuid()) @db.Uuid
+  actorId   String    @map("actor_id") @db.Uuid
+  actor     User      @relation("impersonation_actor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetId  String    @map("target_id") @db.Uuid
+  target    User      @relation("impersonation_target", fields: [targetId], references: [id], onDelete: Cascade)
+  expiresAt DateTime  @map("expires_at")
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([actorId, endedAt])
+  @@map("impersonation_sessions")
+}
+
 model AuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  actorId     String?  @map("actor_id") @db.Uuid
-  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  action      String
-  entityType  String   @map("entity_type")
-  entityId    String   @map("entity_id")
-  entityLabel String   @map("entity_label")
-  changes     Json
-  ip          String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id             String   @id @default(uuid()) @db.Uuid
+  actorId        String?  @map("actor_id") @db.Uuid
+  actor          User?    @relation("audit_actor", fields: [actorId], references: [id], onDelete: SetNull)
+  impersonatorId String?  @map("impersonator_id") @db.Uuid
+  impersonator   User?    @relation("audit_impersonator", fields: [impersonatorId], references: [id], onDelete: SetNull)
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id")
+  entityLabel    String   @map("entity_label")
+  changes        Json
+  ip             String?
+  createdAt      DateTime @default(now()) @map("created_at")
 
   @@index([createdAt(sort: Desc)])
   @@index([entityType, entityId])

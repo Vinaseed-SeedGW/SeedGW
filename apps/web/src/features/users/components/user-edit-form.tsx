@@ -1,46 +1,48 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { updateUserInput, type UpdateUserInput, type UserEditValues } from '@dms/contracts/users';
+import {
+  updateUserInput,
+  type UpdateUserInput,
+  type UserDetail,
+  type UserFormOptions,
+} from '@dms/contracts/users';
 import { Form } from '@dms/ui/form';
+import { UserProfileFields } from '@/features/users/components/user-profile-fields';
 import { updateUserAction } from '@/server/actions/users';
 
 type UserEditFormProps = {
-  user: UserEditValues;
-  onSaved?: () => void;
-  children?: ReactNode;
+  user: UserDetail;
+  options: UserFormOptions;
 };
 
-export function UserEditForm({ user, onSaved, children }: UserEditFormProps) {
+export function UserEditForm({ user, options }: UserEditFormProps) {
   const form = useForm<UpdateUserInput>({
     resolver: zodResolver(updateUserInput),
-    defaultValues: { id: user.id, fullName: user.fullName, isActive: user.isActive },
+    defaultValues: {
+      id: user.id,
+      fullName: user.fullName,
+      phone: user.phone,
+      email: user.email,
+      jobTitle: user.jobTitle,
+      hiredAt: user.hiredAt,
+      orgUnitId: user.orgUnitId ?? '',
+      managerId: user.managerId,
+      roleIds: user.roleIds,
+    },
   });
 
   return (
-    <Form.Root
-      form={form}
-      action={updateUserAction}
-      successMessage="Đã lưu tài khoản"
-      onSuccess={onSaved}
-    >
-      <p className="mb-3.5 text-sm text-text-muted">
-        Mã nhân viên: <b className="text-text">{user.employeeCode}</b>
-      </p>
-      <Form.Field name="fullName" label="Họ tên">
-        <Form.Input autoComplete="off" />
-      </Form.Field>
-      <Form.CheckboxField
-        name="isActive"
-        label="Đang hoạt động"
-        hint="Bỏ chọn để khoá tài khoản, người dùng sẽ bị đăng xuất ở lần mở trang tiếp theo."
-      />
+    <Form.Root form={form} action={updateUserAction} successMessage="Đã lưu tài khoản">
+      <UserProfileFields options={options} />
       <Form.Error />
       <Form.Actions>
         <Form.Submit>Lưu</Form.Submit>
-        {children}
+        <Link href="/quan-tri/tai-khoan" className="px-2 text-brand">
+          Về danh sách
+        </Link>
       </Form.Actions>
     </Form.Root>
   );

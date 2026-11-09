@@ -3,22 +3,12 @@
 import type { ReactNode } from 'react';
 import { formatDate } from '@dms/contracts/format';
 import type { ListUsersResult, UserStatus, UserSummary } from '@dms/contracts/users';
-import { cn } from '@dms/ui/cn';
 import { DataTable, selectionColumn, type ColumnDef } from '@dms/ui/data-table';
+import { USER_STATUS_LABEL, UserStatusBadge } from '@/features/users/components/user-status-badge';
 
-const STATUS_LABEL: Record<UserStatus, string> = {
-  ACTIVE: 'Hoạt động',
-  LOCKED: 'Đã khoá',
-};
-
-const STATUS_CLASS: Record<UserStatus, string> = {
-  ACTIVE: 'bg-brand-soft text-brand',
-  LOCKED: 'bg-danger-soft text-danger',
-};
-
-const STATUS_OPTIONS = (Object.keys(STATUS_LABEL) as UserStatus[]).map((value) => ({
+const STATUS_OPTIONS = (Object.keys(USER_STATUS_LABEL) as UserStatus[]).map((value) => ({
   value,
-  label: STATUS_LABEL[value],
+  label: USER_STATUS_LABEL[value],
 }));
 
 const SECONDARY_COLUMN = 'max-md:hidden';
@@ -43,6 +33,11 @@ export const DETAIL_COLUMNS: ColumnDef<UserSummary>[] = [
     meta: { label: 'Đơn vị', className: SECONDARY_COLUMN },
   },
   {
+    accessorKey: 'jobTitle',
+    header: 'Chức danh',
+    meta: { label: 'Chức danh', className: SECONDARY_COLUMN },
+  },
+  {
     id: 'roles',
     header: 'Vai trò',
     cell: ({ row }) => row.original.roleNames.join(', '),
@@ -52,16 +47,7 @@ export const DETAIL_COLUMNS: ColumnDef<UserSummary>[] = [
     accessorKey: 'status',
     header: 'Trạng thái',
     meta: { label: 'Trạng thái' },
-    cell: ({ row }) => (
-      <span
-        className={cn(
-          'rounded-full px-2 py-0.5 text-xs font-bold',
-          STATUS_CLASS[row.original.status],
-        )}
-      >
-        {STATUS_LABEL[row.original.status]}
-      </span>
-    ),
+    cell: ({ row }) => <UserStatusBadge status={row.original.status} />,
   },
   {
     accessorKey: 'createdAt',
@@ -80,10 +66,11 @@ function getUserId(user: UserSummary) {
 type UsersTableViewProps = {
   columns: ColumnDef<UserSummary>[];
   data: ListUsersResult;
+  bulkActions?: ReactNode;
   children: ReactNode;
 };
 
-export function UsersTableView({ columns, data, children }: UsersTableViewProps) {
+export function UsersTableView({ columns, data, bulkActions, children }: UsersTableViewProps) {
   return (
     <DataTable.Root
       columns={columns}
@@ -106,7 +93,7 @@ export function UsersTableView({ columns, data, children }: UsersTableViewProps)
         <DataTable.Columns />
         {children}
       </DataTable.Toolbar>
-      <DataTable.BulkActions />
+      <DataTable.BulkActions>{bulkActions}</DataTable.BulkActions>
       <DataTable.Body emptyMessage="Không có tài khoản nào phù hợp." />
       <DataTable.Pagination itemLabel="tài khoản" />
     </DataTable.Root>

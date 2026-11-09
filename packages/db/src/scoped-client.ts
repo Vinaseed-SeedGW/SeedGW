@@ -4,6 +4,7 @@ import { db } from './client';
 // Moi model co du lieu theo nguoi phu trach hoac don vi can khai bao o day.
 const SCOPED_MODELS: Record<string, ScopeFields> = {
   User: { ownerField: 'id', orgUnitField: 'orgUnitId' },
+  MobileDevice: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([

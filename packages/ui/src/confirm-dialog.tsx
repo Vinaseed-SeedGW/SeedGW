@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState, useTransition, type ReactNode } from 'react';
+import { useState, useTransition, type ReactNode } from 'react';
 import { cn } from './cn';
 import { useToast } from './toast';
+import { useModalDialog } from './use-modal-dialog';
 
 type ConfirmResult = { ok: true } | { ok: false; message: string };
 
@@ -30,7 +31,7 @@ export function ConfirmDialog({
   onClose,
   children,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const { dialogRef, attachDialog } = useModalDialog();
   const { actions: toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,10 +51,7 @@ export function ConfirmDialog({
 
   return (
     <dialog
-      ref={(element) => {
-        dialogRef.current = element;
-        if (element && !element.open) element.showModal();
-      }}
+      ref={attachDialog}
       aria-label={title}
       onClose={onClose}
       className="m-auto w-full max-w-md rounded-md bg-surface p-5 text-text backdrop:bg-(--overlay)"

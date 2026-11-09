@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTE_RULES, permissionForPath } from '@dms/contracts/access';
+import { ROUTE_RULES, isActionPath, permissionForPath } from '@dms/contracts/access';
 import { DEPARTMENT_NAV } from './navigation';
 
 const NAV_HREFS = Object.values(DEPARTMENT_NAV).flatMap((groups) =>
@@ -13,7 +13,7 @@ describe('menu va quy tac quyen', () => {
 
   it('moi trang trong bo phan deu co tren menu, tru trang tao moi', () => {
     const pages = ROUTE_RULES.filter(
-      (rule) => rule.department !== null && !rule.path.endsWith('/tao-moi'),
+      (rule) => rule.department !== null && !isActionPath(rule.path),
     ).map((rule) => rule.path);
     expect([...NAV_HREFS].sort()).toEqual([...pages].sort());
   });

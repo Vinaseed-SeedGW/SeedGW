@@ -5,6 +5,7 @@ declare module 'next-auth' {
   interface User {
     employeeCode: string;
     fullName: string;
+    sessionVersion: number;
   }
 
   interface Session {
@@ -12,6 +13,7 @@ declare module 'next-auth' {
       id: string;
       employeeCode: string;
       fullName: string;
+      sessionVersion: number;
     };
   }
 }
@@ -21,5 +23,6 @@ declare module 'next-auth/jwt' {
     userId: string;
     employeeCode: string;
     fullName: string;
+    sessionVersion: number;
   }
 }

@@ -9,6 +9,7 @@
     "./confirm-dialog": "./src/confirm-dialog.tsx",
     "./data-table": "./src/data-table.tsx",
     "./data-table-skeleton": "./src/data-table-skeleton.tsx",
+    "./download-file": "./src/download-file.ts",
     "./form": "./src/form.tsx",
     "./form-page": "./src/form-page.tsx",
     "./form-sheet": "./src/form-sheet.tsx",
@@ -16,7 +17,8 @@
     "./sidebar-storage": "./src/sidebar-storage.ts",
     "./styles/*": "./src/styles/*",
     "./toast": "./src/toast.tsx",
-    "./tree-view": "./src/tree-view.tsx"
+    "./tree-view": "./src/tree-view.tsx",
+    "./use-modal-dialog": "./src/use-modal-dialog.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

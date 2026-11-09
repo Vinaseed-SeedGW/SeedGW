@@ -6,6 +6,7 @@ import { AppFooter } from '@dms/ui/app-footer';
 import { AppShell } from '@dms/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
+import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
 import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 import { requireDepartmentAccess } from '@/server/auth/can';
 
@@ -44,6 +45,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
         ))}
       </AppShell.Sidebar>
       <AppShell.Main>
+        <ImpersonationBanner />
         <AppShell.Header>
           <AppShell.Breadcrumb>
             <DepartmentBreadcrumb

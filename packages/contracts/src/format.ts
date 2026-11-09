@@ -17,6 +17,25 @@ const vietnamDateTime = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Asia/Ho_Chi_Minh',
 });
 
+// Doi dd/mm/yyyy hoac yyyy-mm-dd sang yyyy-mm-dd, tra null neu ngay khong co that tren lich.
+export function parseDisplayDate(text: string): string | null {
+  const value = text.trim();
+  const vietnamese = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const parts = vietnamese
+    ? { day: vietnamese[1], month: vietnamese[2], year: vietnamese[3] }
+    : iso
+      ? { day: iso[3], month: iso[2], year: iso[1] }
+      : null;
+  if (!parts) return null;
+
+  const [year, month, day] = [Number(parts.year), Number(parts.month), Number(parts.day)];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const isReal =
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return isReal ? date.toISOString().slice(0, 10) : null;
+}
+
 export function formatDateTime(iso: string): string {
   return vietnamDateTime.format(new Date(iso)).replace(', ', ' ');
 }

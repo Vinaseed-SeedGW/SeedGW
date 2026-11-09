@@ -12,6 +12,7 @@ import {
 } from 'react';
 import {
   FormProvider,
+  useController,
   useFormContext,
   useFormState,
   type FieldPath,
@@ -241,6 +242,43 @@ function CheckboxField({ name, label, hint }: Omit<FieldProps, 'children'>) {
   );
 }
 
+type CheckboxGroupProps = Omit<FieldProps, 'children'> & {
+  options: ReadonlyArray<{ value: string; label: string }>;
+};
+
+function CheckboxGroup({ name, label, hint, options }: CheckboxGroupProps) {
+  const messageId = useId();
+  const { field, fieldState } = useController({ name });
+  const selected = field.value as string[];
+
+  function toggle(value: string) {
+    field.onChange(
+      selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value],
+    );
+  }
+
+  return (
+    <fieldset className="mt-3.5 first:mt-0" aria-describedby={messageId}>
+      <legend className="mb-1 text-sm font-bold">{label}</legend>
+      <div className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
+        {options.map((option) => (
+          <label key={option.value} className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              className="size-4 accent-brand"
+              checked={selected.includes(option.value)}
+              onChange={() => toggle(option.value)}
+              onBlur={field.onBlur}
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+      <FieldMessage id={messageId} error={fieldState.error?.message} hint={hint} />
+    </fieldset>
+  );
+}
+
 function FormError() {
   const { state } = useFormShell();
   return state.formError ? (
@@ -273,6 +311,7 @@ export const Form = {
   Input,
   Select,
   CheckboxField,
+  CheckboxGroup,
   Error: FormError,
   Actions,
   Submit,

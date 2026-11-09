@@ -29,6 +29,7 @@ export async function listAuditLogs(input: ListAuditLogsInput): Promise<ListAudi
         changes: true,
         ip: true,
         actor: { select: { fullName: true } },
+        impersonator: { select: { fullName: true } },
       },
     }),
     db.auditLog.count(),
@@ -39,6 +40,7 @@ export async function listAuditLogs(input: ListAuditLogsInput): Promise<ListAudi
       id: row.id,
       createdAt: row.createdAt.toISOString(),
       actorName: row.actor?.fullName ?? null,
+      impersonatorName: row.impersonator?.fullName ?? null,
       actionLabel: AUDIT_ACTION_LABEL[row.action as AuditAction] ?? row.action,
       entityLabel: row.entityLabel,
       changes: Object.entries(row.changes as AuditChanges).map(([field, change]) => ({

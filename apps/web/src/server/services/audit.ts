@@ -2,9 +2,11 @@ import 'server-only';
 import { headers } from 'next/headers';
 import type { AuditAction, AuditChanges } from '@dms/contracts/audit';
 import { db } from '@dms/db/client';
+import type { CurrentUser } from '@/server/auth/current-user';
 
 type AuditEntry = {
-  actorId: string;
+  // Bat buoc truyen ca nguoi dung de khong the quen ghi nguoi dang nhap thay.
+  actor: Pick<CurrentUser, 'id' | 'impersonator'>;
   action: AuditAction;
   entityType: string;
   entityId: string;
@@ -20,9 +22,21 @@ export async function getClientIp(): Promise<string | null> {
   return forwarded || requestHeaders.get('x-real-ip');
 }
 
+function toRow({ actor, ...entry }: AuditEntry) {
+  return { ...entry, actorId: actor.id, impersonatorId: actor.impersonator?.id ?? null };
+}
+
 export async function writeAudit(entry: AuditEntry): Promise<void> {
   try {
-    await db.auditLog.create({ data: entry });
+    await db.auditLog.create({ data: toRow(entry) });
+  } catch (error) {
+    console.error('Khong ghi duoc nhat ky thao tac', error);
+  }
+}
+
+export async function writeAuditMany(entries: readonly AuditEntry[]): Promise<void> {
+  try {
+    await db.auditLog.createMany({ data: entries.map(toRow) });
   } catch (error) {
     console.error('Khong ghi duoc nhat ky thao tac', error);
   }

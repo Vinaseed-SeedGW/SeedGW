@@ -31,6 +31,7 @@ export const PERMISSIONS = [
   { code: 'admin.user.read', name: 'Xem Tài khoản' },
   { code: 'admin.user.manage', name: 'Quản lý Tài khoản' },
   { code: 'admin.user.export', name: 'Xuất Excel Tài khoản' },
+  { code: 'admin.user.impersonate', name: 'Đăng nhập thay' },
   { code: 'admin.role.read', name: 'Xem Vai trò và quyền' },
   { code: 'admin.org-unit.read', name: 'Xem Cơ cấu tổ chức' },
   { code: 'admin.org-unit.manage', name: 'Quản lý Cơ cấu tổ chức' },
@@ -97,6 +98,16 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/cskh/dashboard', permission: 'cs.dashboard.read', department: 'cskh' },
 
   { path: '/quan-tri/tai-khoan', permission: 'admin.user.read', department: 'quan-tri' },
+  {
+    path: '/quan-tri/tai-khoan/tao-moi',
+    permission: 'admin.user.manage',
+    department: 'quan-tri',
+  },
+  {
+    path: '/quan-tri/tai-khoan/nhap-excel',
+    permission: 'admin.user.manage',
+    department: 'quan-tri',
+  },
   { path: '/quan-tri/vai-tro', permission: 'admin.role.read', department: 'quan-tri' },
   { path: '/quan-tri/co-cau-to-chuc', permission: 'admin.org-unit.read', department: 'quan-tri' },
   { path: '/quan-tri/san-pham', permission: 'admin.product.read', department: 'quan-tri' },
@@ -112,6 +123,11 @@ export const ROUTE_RULES: readonly RouteRule[] = [
 ];
 
 type PermissionSet = ReadonlySet<string>;
+
+// Trang thao tac khong nam tren menu va khong duoc chon lam trang dich.
+export function isActionPath(path: string): boolean {
+  return path.endsWith('/tao-moi') || path.endsWith('/nhap-excel');
+}
 
 // Quy tac dai nhat duoc uu tien de trang con co the can quyen rieng.
 export function permissionForPath(pathname: string): PermissionCode | null {
@@ -164,9 +180,7 @@ export function departmentLanding(
 
   const firstAllowed = ROUTE_RULES.find(
     (rule) =>
-      rule.department === slug &&
-      !rule.path.endsWith('/tao-moi') &&
-      permissions.has(rule.permission),
+      rule.department === slug && !isActionPath(rule.path) && permissions.has(rule.permission),
   );
   return firstAllowed?.path ?? FORBIDDEN_PATH;
 }
@@ -195,6 +209,13 @@ export type ScopeFields = {
   orgUnitField: string;
 };
 
+// Truong dang user.orgUnitId duoc doi thanh dieu kien long qua quan he.
+function fieldFilter(path: string, value: unknown): Record<string, unknown> {
+  return path
+    .split('.')
+    .reduceRight<unknown>((filter, key) => ({ [key]: filter }), value) as Record<string, unknown>;
+}
+
 export function scopeWhere(
   context: ScopeContext,
   { ownerField, orgUnitField }: ScopeFields,
@@ -206,10 +227,10 @@ export function scopeWhere(
     case 'ALL':
       return {};
     case 'ORG_UNIT':
-      return context.orgUnitId ? { [orgUnitField]: context.orgUnitId } : ownOnly;
+      return context.orgUnitId ? fieldFilter(orgUnitField, context.orgUnitId) : ownOnly;
     case 'ORG_UNIT_TREE':
       return context.orgUnitTreeIds.length > 0
-        ? { [orgUnitField]: { in: [...context.orgUnitTreeIds] } }
+        ? fieldFilter(orgUnitField, { in: [...context.orgUnitTreeIds] })
         : ownOnly;
     case 'OWN':
       return ownOnly;
@@ -239,7 +260,12 @@ function without(
 // Vai tro khoi tao theo DESIGN_BRIEF muc 2. Task A3 cho phep chinh tren giao dien.
 export const ROLE_PRESETS: readonly RolePreset[] = [
   { code: 'admin', name: 'Quản trị hệ thống', dataScope: 'ALL', permissions: ALL_CODES },
-  { code: 'operations', name: 'Quản trị', dataScope: 'ALL', permissions: codesInModule('admin') },
+  {
+    code: 'operations',
+    name: 'Quản trị',
+    dataScope: 'ALL',
+    permissions: without(codesInModule('admin'), ['admin.user.impersonate']),
+  },
   {
     code: 'sales',
     name: 'Nhân viên kinh doanh',

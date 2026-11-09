@@ -106,13 +106,14 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 - [x] **A1. Cơ cấu tổ chức (Công ty → Miền → Vùng → Khu vực)**: cây đơn vị kéo-thả, gán trưởng đơn vị. _Dùng lại: F4, F5. New: `TreeView` compound. Cỡ M._
   - **Xong khi**: tạo/sửa/di chuyển nút; không xoá được nút còn nhân viên; phạm vi dữ liệu `orgUnitTree` của F3 dùng cây này.
 
-- [ ] **A2. Quản lý tài khoản CBNV**: danh sách, tạo, sửa, khoá/mở khoá, đặt lại mật khẩu, gán đơn vị, chức danh, quản lý trực tiếp, vai trò. _Dùng lại: F4, F5, A1. Cỡ L._
+- [x] **A2. Quản lý tài khoản CBNV**: danh sách, tạo, sửa, khoá/mở khoá, đặt lại mật khẩu, gán đơn vị, chức danh, quản lý trực tiếp, vai trò. _Dùng lại: F4, F5, A1. Cỡ L._
   - Hồ sơ NV: mã NV, họ tên, SĐT, email, đơn vị, chức danh, ngày vào làm, thiết bị mobile đã đăng ký.
   - Bắt đổi mật khẩu lần đầu; chính sách mật khẩu; khoá sau 5 lần sai trong 15 phút.
   - Import Excel danh sách NV (mẫu tải về, báo lỗi từng dòng, xem trước trước khi ghi).
   - "Đăng nhập thay" (impersonate) cho admin để hỗ trợ — có ghi audit.
   - Thu hồi phiên & thiết bị mobile khi khoá tài khoản.
   - **Xong khi**: import 200 NV từ Excel; NV mới đăng nhập được cả web và (sau M1) mobile; khoá tài khoản → mobile bị đăng xuất ở lần gọi API tiếp theo.
+  - Phần mobile kiểm tra ở M1: API mobile phải đối chiếu `sessionVersion` và trạng thái `MobileDevice` mỗi lần gọi, đăng nhập dùng lại `checkCredentials`.
 
 - [ ] **A3. Vai trò & ma trận quyền (UI)**: màn hình bảng vai trò × quyền dạng checkbox nhóm theo bộ phận, chọn phạm vi dữ liệu. _Dùng lại: F3. Cỡ M._
   - Vai trò mặc định: NV kinh doanh, ASM, Sales Admin, NV CSKH, Trưởng nhóm CSKH, Quản trị, Lãnh đạo (chỉ xem).

@@ -1,10 +1,15 @@
 import 'server-only';
-import { verify } from 'argon2';
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { loginInput } from '@dms/contracts/auth';
-import { db } from '@dms/db/client';
+import { checkCredentials } from '@/server/services/credentials';
 import { authConfig } from './auth.config';
+
+export const LOGIN_LOCKED_CODE = 'login_locked';
+
+class LoginLockedError extends CredentialsSignin {
+  override code = LOGIN_LOCKED_CODE;
+}
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -15,15 +20,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const parsed = loginInput.safeParse(raw);
         if (!parsed.success) return null;
 
-        const user = await db.user.findUnique({
-          where: { employeeCode: parsed.data.employeeCode },
-        });
-        if (!user || !user.isActive) return null;
-
-        const isValid = await verify(user.passwordHash, parsed.data.password);
-        if (!isValid) return null;
-
-        return { id: user.id, employeeCode: user.employeeCode, fullName: user.fullName };
+        const result = await checkCredentials(parsed.data.employeeCode, parsed.data.password);
+        if (result.status === 'locked') throw new LoginLockedError();
+        return result.status === 'ok' ? result.user : null;
       },
     }),
   ],

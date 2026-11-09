@@ -19,11 +19,13 @@ export const authConfig = {
       }
       return isLoggedIn;
     },
+    // Chi lay du lieu luc dang nhap. Du lieu gui len qua trigger update do client kiem soat.
     jwt({ token, user }) {
       if (user?.id) {
         token.userId = user.id;
         token.employeeCode = user.employeeCode;
         token.fullName = user.fullName;
+        token.sessionVersion = user.sessionVersion;
       }
       return token;
     },
@@ -31,6 +33,7 @@ export const authConfig = {
       session.user.id = token.userId;
       session.user.employeeCode = token.employeeCode;
       session.user.fullName = token.fullName;
+      session.user.sessionVersion = token.sessionVersion;
       return session;
     },
   },

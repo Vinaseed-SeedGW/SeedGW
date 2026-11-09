@@ -23,6 +23,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cn } from './cn';
+import { downloadFile } from './download-file';
 import { useDismissable } from './use-dismissable';
 
 export type { ColumnDef };
@@ -38,8 +39,6 @@ declare module '@tanstack/react-table' {
 
 const SEARCH_DEBOUNCE_MS = 300;
 const NUMBER_FORMAT = new Intl.NumberFormat('vi-VN');
-const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
 const CONTROL_CLASS = 'h-9 rounded-md border border-input bg-surface px-2.5';
 const BUTTON_CLASS =
   'inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-brand bg-surface px-3 font-bold text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50';
@@ -70,7 +69,7 @@ type DataTableContextValue = {
 
 const DataTableContext = createContext<DataTableContextValue | null>(null);
 
-function useDataTable(): DataTableContextValue {
+export function useDataTable(): DataTableContextValue {
   const value = use(DataTableContext);
   if (!value) throw new Error('Component nay phai nam trong DataTable.Root.');
   return value;
@@ -266,16 +265,6 @@ function Columns() {
 
 type ExportResult =
   { ok: true; data: { fileName: string; base64: string } } | { ok: false; message: string };
-
-function downloadFile({ fileName, base64 }: { fileName: string; base64: string }) {
-  const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-  const url = URL.createObjectURL(new Blob([bytes], { type: XLSX_MIME }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 function Export({ action }: { action: (ids: string[]) => Promise<ExportResult> }) {
   const { state } = useDataTable();
