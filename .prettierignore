@@ -1,0 +1,11 @@
+.design/
+docs/
+pnpm-lock.yaml
+**/.next/
+**/dist/
+**/.turbo/
+**/.expo/
+**/node_modules/
+packages/db/prisma/migrations/
+*.svg
+*.md
