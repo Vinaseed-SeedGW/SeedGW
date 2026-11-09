@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 export const MAX_PAGE_SIZE = 100;
+export const MAX_EXPORT_ROWS = 20000;
+
+export type ExportedFile = { fileName: string; base64: string };
 
 export const errorCode = z.enum([
   'UNAUTHENTICATED',

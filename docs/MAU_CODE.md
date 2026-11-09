@@ -250,7 +250,8 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   return (
     <>
       <h1 className="text-brand text-2xl font-bold">Đơn hàng</h1>
-      <Suspense key={JSON.stringify(input)} fallback={<OrdersTableSkeleton />}>
+      {/* Khong dat key theo bo loc de thanh cong cu khong mat focus khi dang go tim kiem. */}
+      <Suspense fallback={<OrdersTableSkeleton />}>
         <OrdersResults input={input} />
       </Suspense>
     </>

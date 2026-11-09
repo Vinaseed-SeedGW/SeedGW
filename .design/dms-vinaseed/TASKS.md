@@ -43,12 +43,12 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Chặn truy cập trực tiếp theo **từng trang và từng thao tác**, không chỉ theo bộ phận → trang `/403` tiếng Việt. Cần vì đại lý và khách hàng có nhiều lối vào (IA §1).
   - **Xong khi**: user CSKH chỉ thấy 1 ô trên Hub; gõ thẳng `/quan-tri` bị 403; test tự động cho ma trận vai trò × route.
 
-- [ ] **F4. DataTable compound component — dùng thử trên danh sách tài khoản**: _Dùng lại: F2, F3. New. Cỡ L._
+- [x] **F4. DataTable compound component — dùng thử trên danh sách tài khoản**: _Dùng lại: F2, F3. New. Cỡ L._
   - `DataTable.Root / Toolbar / Search / Filters / Columns / Body / Pagination / BulkActions / Export`.
   - Phân trang, sắp xếp, lọc **phía server** qua `searchParams` (URL chia sẻ được), Server Component render trang đầu, ô tìm kiếm debounce + `useDeferredValue`.
   - Trạng thái: loading (skeleton qua Suspense), rỗng, lỗi, không có quyền.
-  - Xuất Excel (exceljs, `next/dynamic` để không nặng bundle) theo bộ lọc hiện tại.
-  - **Xong khi**: danh sách 10.000 user giả lập trả trang < 1s; URL `?q=…&page=3` mở lại đúng trạng thái.
+  - Xuất Excel (exceljs chạy ở máy chủ, không nằm trong bundle trình duyệt) theo bộ lọc hiện tại và phạm vi dữ liệu.
+  - **Xong khi**: danh sách 10.000 user giả lập trả trang < 1s; URL `?q=…&trang=3` mở lại đúng trạng thái.
 
 - [ ] **F5. Form pattern + Audit log + Thông báo toast**: chuẩn hoá form tạo/sửa dùng chung cho mọi danh mục. _New. Phụ thuộc: F3. Cỡ M._
   - `FormSheet` (drawer bên phải) + `FormPage` (trang riêng) — hai variant tường minh thay vì `isDrawer`.
