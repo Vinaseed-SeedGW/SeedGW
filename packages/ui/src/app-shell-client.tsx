@@ -6,14 +6,14 @@ import { usePathname } from 'next/navigation';
 import {
   createContext,
   use,
-  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { SIDEBAR_STORAGE_KEY } from './sidebar-storage';
+import { useDismissable } from './use-dismissable';
 
 type ShellContextValue = {
   state: { collapsed: boolean; drawerOpen: boolean };
@@ -29,13 +29,39 @@ function useShell(): ShellContextValue {
   return value;
 }
 
-export function ShellRoot({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+// Trang thai thu gon nam tren the html, do script dau trang dat truoc khi ve.
+const collapseListeners = new Set<() => void>();
 
-  useEffect(() => {
-    setCollapsed(document.documentElement.dataset.sidebar === 'collapsed');
-  }, []);
+function subscribeCollapsed(listener: () => void) {
+  collapseListeners.add(listener);
+  return () => {
+    collapseListeners.delete(listener);
+  };
+}
+
+function readCollapsed() {
+  return document.documentElement.dataset.sidebar === 'collapsed';
+}
+
+function readCollapsedOnServer() {
+  return false;
+}
+
+function toggleCollapsed() {
+  const next = !readCollapsed();
+  if (next) document.documentElement.dataset.sidebar = 'collapsed';
+  else delete document.documentElement.dataset.sidebar;
+  try {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? 'collapsed' : 'expanded');
+  } catch {
+    // Trinh duyet chan bo nho thi van thu gon duoc, chi khong nho lai.
+  }
+  collapseListeners.forEach((listener) => listener());
+}
+
+export function ShellRoot({ children }: { children: ReactNode }) {
+  const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, readCollapsedOnServer);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -46,29 +72,22 @@ export function ShellRoot({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', closeOnEscape);
   }, [drawerOpen]);
 
-  const toggleCollapsed = useCallback(() => {
-    const next = document.documentElement.dataset.sidebar !== 'collapsed';
-    if (next) document.documentElement.dataset.sidebar = 'collapsed';
-    else delete document.documentElement.dataset.sidebar;
-    setCollapsed(next);
-    try {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? 'collapsed' : 'expanded');
-    } catch {
-      // Trinh duyet chan bo nho thi van thu gon duoc, chi khong nho lai.
-    }
-  }, []);
+  const actions = useMemo<ShellContextValue['actions']>(
+    () => ({
+      toggleCollapsed,
+      openDrawer: () => setDrawerOpen(true),
+      closeDrawer: () => setDrawerOpen(false),
+    }),
+    [],
+  );
 
   const value = useMemo<ShellContextValue>(
     () => ({
       state: { collapsed, drawerOpen },
-      actions: {
-        toggleCollapsed,
-        openDrawer: () => setDrawerOpen(true),
-        closeDrawer: () => setDrawerOpen(false),
-      },
+      actions,
       meta: { storageKey: SIDEBAR_STORAGE_KEY },
     }),
-    [collapsed, drawerOpen, toggleCollapsed],
+    [collapsed, drawerOpen, actions],
   );
 
   return (
@@ -149,24 +168,7 @@ type ShellDeptSwitcherProps = {
 };
 
 export function ShellDeptSwitcher({ label, children }: ShellDeptSwitcherProps) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('pointerdown', closeOnOutsidePointer);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsidePointer);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [open]);
+  const { open, setOpen, containerRef } = useDismissable();
 
   return (
     <div ref={containerRef} className="relative flex-none">

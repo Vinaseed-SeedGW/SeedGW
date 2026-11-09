@@ -46,7 +46,12 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
       <AppShell.Main>
         <AppShell.Header>
           <AppShell.Breadcrumb>
-            <DepartmentBreadcrumb slug={slug} />
+            <DepartmentBreadcrumb
+              departmentName={current?.name ?? ''}
+              pages={groups.flatMap((group) =>
+                group.items.map(({ href, label }) => ({ href, label })),
+              )}
+            />
           </AppShell.Breadcrumb>
           <AppShell.DeptSwitcher label={current?.name ?? 'Bộ phận'}>
             <Link href="/hub" className={SWITCHER_LINK_CLASS}>

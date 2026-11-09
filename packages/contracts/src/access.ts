@@ -30,6 +30,7 @@ export const PERMISSIONS = [
 
   { code: 'admin.user.read', name: 'Xem Tài khoản' },
   { code: 'admin.user.manage', name: 'Quản lý Tài khoản' },
+  { code: 'admin.user.export', name: 'Xuất Excel Tài khoản' },
   { code: 'admin.role.read', name: 'Xem Vai trò và quyền' },
   { code: 'admin.org-unit.read', name: 'Xem Cơ cấu tổ chức' },
   { code: 'admin.product.read', name: 'Xem Sản phẩm' },
@@ -113,10 +114,12 @@ type PermissionSet = ReadonlySet<string>;
 
 // Quy tac dai nhat duoc uu tien de trang con co the can quyen rieng.
 export function permissionForPath(pathname: string): PermissionCode | null {
-  const matched = ROUTE_RULES.filter(
-    (rule) => pathname === rule.path || pathname.startsWith(`${rule.path}/`),
-  ).sort((a, b) => b.path.length - a.path.length);
-  return matched[0]?.permission ?? null;
+  let longest: RouteRule | null = null;
+  for (const rule of ROUTE_RULES) {
+    const matches = pathname === rule.path || pathname.startsWith(`${rule.path}/`);
+    if (matches && (!longest || rule.path.length > longest.path.length)) longest = rule;
+  }
+  return longest?.permission ?? null;
 }
 
 export function canAccessPath(permissions: PermissionSet, pathname: string): boolean {

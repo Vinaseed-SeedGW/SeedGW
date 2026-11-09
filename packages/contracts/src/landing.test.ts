@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LANDING_PATH, safeLandingPath } from './auth';
+import { DEFAULT_LANDING_PATH, safeLandingPath } from './landing';
 
 describe('safeLandingPath', () => {
   it('giu duong dan noi bo', () => {

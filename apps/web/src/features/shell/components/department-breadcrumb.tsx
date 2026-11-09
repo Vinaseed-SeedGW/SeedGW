@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { DEPARTMENTS, type DepartmentSlug } from '@dms/contracts/departments';
-import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 
-export function DepartmentBreadcrumb({ slug }: { slug: DepartmentSlug }) {
+type DepartmentBreadcrumbProps = {
+  departmentName: string;
+  pages: ReadonlyArray<{ href: string; label: string }>;
+};
+
+export function DepartmentBreadcrumb({ departmentName, pages }: DepartmentBreadcrumbProps) {
   const pathname = usePathname();
-  const department = DEPARTMENTS.find((item) => item.slug === slug);
-  const page = DEPARTMENT_NAV[slug]
-    .flatMap((group) => group.items)
-    .find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const page = pages.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
 
   return (
     <>
@@ -18,7 +18,7 @@ export function DepartmentBreadcrumb({ slug }: { slug: DepartmentSlug }) {
         Hub
       </Link>
       {' / '}
-      {department?.name}
+      {departmentName}
       {page ? ` / ${page.label}` : null}
     </>
   );

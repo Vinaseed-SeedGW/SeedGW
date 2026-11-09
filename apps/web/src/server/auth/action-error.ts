@@ -1,4 +1,5 @@
 import 'server-only';
+import { unstable_rethrow } from 'next/navigation';
 import type { ActionResult } from '@dms/contracts/common';
 import type { z } from 'zod';
 import { ForbiddenError } from './can';
@@ -17,14 +18,9 @@ export function validationError(error: z.ZodError): ActionResult<never> {
   };
 }
 
-function isNextControlFlow(error: unknown): boolean {
-  const digest = (error as { digest?: unknown } | null)?.digest;
-  return typeof digest === 'string' && digest.startsWith('NEXT_');
-}
-
 export function toActionError(error: unknown): ActionResult<never> {
   // Next.js dung loi noi bo de chuyen huong, phai nem lai de khong nuot mat.
-  if (isNextControlFlow(error)) throw error;
+  unstable_rethrow(error);
 
   if (error instanceof ForbiddenError) {
     return { ok: false, code: 'FORBIDDEN', message: 'Bạn không có quyền thực hiện thao tác này' };

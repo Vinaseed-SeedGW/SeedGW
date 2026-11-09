@@ -21,7 +21,7 @@ export function Logo({ variant, size }: LogoProps) {
       height={height}
       alt="Vinaseed - A member of the PAN Group"
       unoptimized
-      priority
+      loading="eager"
     />
   );
 }
@@ -39,7 +39,7 @@ export function LogoSymbol({ variant, width }: LogoSymbolProps) {
       height={width}
       alt="Vinaseed"
       unoptimized
-      priority
+      loading="eager"
     />
   );
 }

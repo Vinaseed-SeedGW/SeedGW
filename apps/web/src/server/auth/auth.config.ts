@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
-import { DEFAULT_LANDING_PATH } from '@dms/contracts/auth';
+import { DEFAULT_LANDING_PATH } from '@dms/contracts/landing';
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 12;
 

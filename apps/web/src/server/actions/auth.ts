@@ -2,8 +2,9 @@
 
 import { headers } from 'next/headers';
 import { AuthError } from 'next-auth';
-import { loginInput, safeLandingPath } from '@dms/contracts/auth';
+import { loginInput } from '@dms/contracts/auth';
 import type { ActionResult } from '@dms/contracts/common';
+import { safeLandingPath } from '@dms/contracts/landing';
 import { signIn, signOut } from '@/server/auth/auth';
 
 export async function loginAction(
