@@ -186,6 +186,37 @@ function Input({ className, ...props }: ComponentProps<'input'>) {
   );
 }
 
+type SelectProps = {
+  options: ReadonlyArray<{ value: string; label: string }>;
+  emptyLabel: string;
+};
+
+function Select({ options, emptyLabel }: SelectProps) {
+  const field = use(FieldContext);
+  if (!field) throw new Error('Form.Select phai nam trong Form.Field.');
+  const { register } = useFormContext();
+
+  return (
+    <select
+      {...register(field.name, { setValueAs: (value) => (value === '' ? null : value) })}
+      id={field.inputId}
+      aria-invalid={field.hasError}
+      aria-describedby={field.messageId}
+      className={cn(
+        'h-9.5 w-full rounded-md border bg-surface px-2',
+        field.hasError ? 'border-danger' : 'border-input',
+      )}
+    >
+      <option value="">{emptyLabel}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function CheckboxField({ name, label, hint }: Omit<FieldProps, 'children'>) {
   const inputId = useId();
   const messageId = useId();
@@ -240,6 +271,7 @@ export const Form = {
   Root,
   Field,
   Input,
+  Select,
   CheckboxField,
   Error: FormError,
   Actions,

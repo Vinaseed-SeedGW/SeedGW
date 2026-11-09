@@ -103,7 +103,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 > Làm trước Kinh doanh vì đơn hàng, check-in và CSKH đều tham chiếu danh mục này.
 
-- [ ] **A1. Cơ cấu tổ chức (Công ty → Miền → Vùng → Khu vực)**: cây đơn vị kéo-thả, gán trưởng đơn vị. _Dùng lại: F4, F5. New: `TreeView` compound. Cỡ M._
+- [x] **A1. Cơ cấu tổ chức (Công ty → Miền → Vùng → Khu vực)**: cây đơn vị kéo-thả, gán trưởng đơn vị. _Dùng lại: F4, F5. New: `TreeView` compound. Cỡ M._
   - **Xong khi**: tạo/sửa/di chuyển nút; không xoá được nút còn nhân viên; phạm vi dữ liệu `orgUnitTree` của F3 dùng cây này.
 
 - [ ] **A2. Quản lý tài khoản CBNV**: danh sách, tạo, sửa, khoá/mở khoá, đặt lại mật khẩu, gán đơn vị, chức danh, quản lý trực tiếp, vai trò. _Dùng lại: F4, F5, A1. Cỡ L._

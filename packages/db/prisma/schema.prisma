@@ -23,7 +23,9 @@ model OrgUnit {
   parentId  String?   @map("parent_id") @db.Uuid
   parent    OrgUnit?  @relation("org_unit_tree", fields: [parentId], references: [id])
   children  OrgUnit[] @relation("org_unit_tree")
-  users     User[]
+  managerId String?   @map("manager_id") @db.Uuid
+  manager   User?     @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  users     User[]    @relation("org_unit_members")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -39,7 +41,8 @@ model User {
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
   searchText   String?    @default(dbgenerated()) @map("search_text")
   orgUnitId    String?    @map("org_unit_id") @db.Uuid
-  orgUnit      OrgUnit?   @relation(fields: [orgUnitId], references: [id])
+  orgUnit      OrgUnit?   @relation("org_unit_members", fields: [orgUnitId], references: [id])
+  managedUnits OrgUnit[]  @relation("org_unit_manager")
   roles        UserRole[]
   auditLogs    AuditLog[]
   createdAt    DateTime   @default(now()) @map("created_at")

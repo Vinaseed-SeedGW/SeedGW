@@ -33,6 +33,7 @@ export const PERMISSIONS = [
   { code: 'admin.user.export', name: 'Xuất Excel Tài khoản' },
   { code: 'admin.role.read', name: 'Xem Vai trò và quyền' },
   { code: 'admin.org-unit.read', name: 'Xem Cơ cấu tổ chức' },
+  { code: 'admin.org-unit.manage', name: 'Quản lý Cơ cấu tổ chức' },
   { code: 'admin.product.read', name: 'Xem Sản phẩm' },
   { code: 'admin.warehouse.read', name: 'Xem Kho' },
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },

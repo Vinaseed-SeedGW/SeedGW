@@ -19,12 +19,20 @@ export function auditChanges(
 
 export const AUDIT_ACTION_LABEL = {
   'user.update': 'Sửa tài khoản',
+  'org-unit.create': 'Tạo đơn vị',
+  'org-unit.update': 'Sửa đơn vị',
+  'org-unit.move': 'Chuyển đơn vị',
+  'org-unit.delete': 'Xoá đơn vị',
 } as const;
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL;
 
 export const AUDIT_FIELD_LABEL: Record<string, string> = {
   fullName: 'Họ tên',
   isActive: 'Đang hoạt động',
+  code: 'Mã',
+  name: 'Tên',
+  parent: 'Đơn vị cha',
+  manager: 'Trưởng đơn vị',
 };
 
 export function formatAuditValue(value: unknown): string {
