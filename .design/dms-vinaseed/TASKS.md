@@ -24,7 +24,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Route groups: `app/(auth)/login`, `app/hub`, `app/kinh-doanh/layout.tsx`, `app/cskh/layout.tsx`, `app/quan-tri/layout.tsx`.
   - **Xong khi**: đăng nhập sai báo lỗi tiếng Việt; đúng thì vào Hub; F5 vẫn giữ phiên; đăng xuất về `/login`; `pnpm dev` một lệnh chạy được toàn bộ.
 
-- [ ] **F2. Nhận diện thương hiệu, design tokens + AppShell compound component (thiết lập hướng thẩm mỹ)**: Hub và 3 layout bộ phận dùng chung `<AppShell>`, tuân thủ `BRAND.md`. _New. Phụ thuộc: F1. Cỡ M._
+- [x] **F2. Nhận diện thương hiệu, design tokens + AppShell compound component (thiết lập hướng thẩm mỹ)**: Hub và 3 layout bộ phận dùng chung `<AppShell>`, tuân thủ `BRAND.md`. _New. Phụ thuộc: F1. Cỡ M._
   - Tokens CSS variables 3 lớp (primitive → semantic → component) đúng bảng ở `BRAND.md` §3: xanh `#005b36` và trắng là chủ đạo; thang spacing 4px, type ramp, radius, shadow. Tạm chưa làm giao diện tối và chưa có màu riêng từng bộ phận, nhưng component chỉ dùng token semantic để sau này thêm được.
   - `<AppFooter variant="full|compact">` ở cuối mọi trang web: bản quyền và liên hệ Phòng ĐMST&CĐS theo `BRAND.md` §5.
   - `packages/ui`: component `<Logo variant size>` với 4 cỡ S, M, L, XL, dùng SVG có câu "A MEMBER OF THE PAN GROUP" trong `.design/dms-vinaseed/brand/logo/`; 4 file font UTM Neo Sans Intel chuyển WOFF2, khai báo `@font-face` kèm chỉnh vị trí chữ, `font-synthesis: none`; ánh xạ `font-medium` thành 400, `font-semibold` thành 700.

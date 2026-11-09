@@ -6,7 +6,7 @@ export const DEPARTMENTS = [
   },
   {
     slug: 'cskh',
-    name: 'Chăm sóc khách hàng',
+    name: 'CSKH',
     description: 'Hộp thư Zalo, phiếu tiếp nhận',
   },
   {
@@ -17,3 +17,28 @@ export const DEPARTMENTS = [
 ] as const;
 
 export type DepartmentSlug = (typeof DEPARTMENTS)[number]['slug'];
+
+// Trang dich khi bam o bo phan, theo INFORMATION_ARCHITECTURE muc 2.
+const DEPARTMENT_LANDING: Record<
+  DepartmentSlug,
+  { fallback: string; byRole: Record<string, string> }
+> = {
+  'kinh-doanh': {
+    fallback: '/kinh-doanh/dashboard',
+    byRole: { asm: '/kinh-doanh/can-duyet', 'sales-admin': '/kinh-doanh/don-hang' },
+  },
+  cskh: {
+    fallback: '/cskh/hop-thu',
+    byRole: { 'customer-care-lead': '/cskh/phieu', executive: '/cskh/dashboard' },
+  },
+  'quan-tri': {
+    fallback: '/quan-tri/tai-khoan',
+    byRole: {},
+  },
+};
+
+export function departmentLanding(slug: DepartmentSlug, roleCodes: readonly string[]): string {
+  const { fallback, byRole } = DEPARTMENT_LANDING[slug];
+  const matchedRole = roleCodes.find((code) => code in byRole);
+  return matchedRole ? (byRole[matchedRole] ?? fallback) : fallback;
+}

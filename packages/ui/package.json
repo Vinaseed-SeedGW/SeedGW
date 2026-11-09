@@ -3,13 +3,28 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./*": "./src/*.ts"
+    "./app-footer": "./src/app-footer.tsx",
+    "./app-shell": "./src/app-shell.tsx",
+    "./cn": "./src/cn.ts",
+    "./logo": "./src/logo.tsx",
+    "./sidebar-storage": "./src/sidebar-storage.ts",
+    "./styles/*": "./src/styles/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
+  "dependencies": {
     "@dms/config": "workspace:*",
+    "lucide-react": "^1.70.0"
+  },
+  "peerDependencies": {
+    "next": "^15",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "next": "~15.5.29",
+    "react": "~19.1.10",
     "typescript": "~5.9.3"
   }
 }

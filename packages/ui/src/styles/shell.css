@@ -1,0 +1,163 @@
+/* Bo cuc AppShell. Trang thai thu gon doc tu html[data-sidebar] de khong bi nhay khi tai trang. */
+
+:root {
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --sidebar-drawer-width: 264px;
+  --sidebar-foreground-muted: var(--vs-green-20);
+  --sidebar-hover: var(--vs-green-90);
+  --sidebar-divider: var(--vs-green-90);
+  --overlay: rgb(0 0 0 / 0.4);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.app-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 18px 12px;
+  background: var(--brand);
+  color: var(--primary-foreground);
+}
+
+.app-sidebar-brand {
+  display: block;
+  flex: none;
+  margin: 2px 0 12px 8px;
+}
+
+.app-nav-group + .app-nav-group {
+  margin-top: 4px;
+}
+
+.app-nav-group-label {
+  padding: 8px 10px 2px;
+  color: var(--sidebar-foreground-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+}
+
+.app-nav-item svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.app-nav-item:hover {
+  background: var(--sidebar-hover);
+}
+
+.app-nav-item[aria-current='page'] {
+  background: var(--surface);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.app-collapse {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding: 6px 10px;
+  color: var(--sidebar-foreground-muted);
+  font-size: 13px;
+}
+
+.app-collapse svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.when-collapsed,
+.app-drawer-backdrop,
+.app-menu-button {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  html[data-sidebar='collapsed'] .app-shell {
+    grid-template-columns: var(--sidebar-width-collapsed) minmax(0, 1fr);
+  }
+
+  html[data-sidebar='collapsed'] .when-expanded {
+    display: none;
+  }
+
+  html[data-sidebar='collapsed'] .when-collapsed {
+    display: block;
+  }
+
+  html[data-sidebar='collapsed'] .app-sidebar-brand {
+    margin: 2px auto 20px;
+  }
+
+  html[data-sidebar='collapsed'] .app-nav-item,
+  html[data-sidebar='collapsed'] .app-collapse {
+    justify-content: center;
+    padding: 8px 0;
+  }
+
+  html[data-sidebar='collapsed'] .app-nav-group + .app-nav-group {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--sidebar-divider);
+  }
+}
+
+/* Duoi 1024 px menu trai thanh ngan keo, theo INFORMATION_ARCHITECTURE muc 2. */
+@media (max-width: 1023.98px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--sidebar-drawer-width);
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
+  }
+
+  .app-shell[data-drawer='open'] .app-sidebar {
+    visibility: visible;
+    transform: none;
+  }
+
+  .app-shell[data-drawer='open'] .app-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: block;
+    background: var(--overlay);
+  }
+
+  .app-menu-button {
+    display: inline-flex;
+  }
+
+  .app-collapse {
+    display: none;
+  }
+}

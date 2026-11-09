@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { DEPARTMENTS, type DepartmentSlug } from '@dms/contracts/departments';
+import { AppFooter } from '@dms/ui/app-footer';
+import { AppShell } from '@dms/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
+import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 import { requireUser } from '@/server/auth/current-user';
 
 type DepartmentLayoutProps = {
@@ -9,17 +13,50 @@ type DepartmentLayoutProps = {
   children: ReactNode;
 };
 
+const SWITCHER_LINK_CLASS = 'hover:bg-brand-soft block rounded-sm px-2.5 py-1.5 whitespace-nowrap';
+
 export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps) {
   const user = await requireUser();
-  const department = DEPARTMENTS.find((item) => item.slug === slug);
+  const current = DEPARTMENTS.find((department) => department.slug === slug);
 
   return (
-    <div style={{ padding: 16 }}>
-      <header>
-        <Link href="/hub">Hub</Link> / <b>{department?.name}</b> / {user.fullName}
-        <LogoutButton />
-      </header>
-      <main>{children}</main>
-    </div>
+    <AppShell.Root>
+      <AppShell.Sidebar homeHref="/hub">
+        {DEPARTMENT_NAV[slug].map((group, index) => (
+          <AppShell.NavGroup key={group.label ?? index} label={group.label}>
+            {group.items.map((item) => (
+              <AppShell.NavItem key={item.href} href={item.href} label={item.label}>
+                <item.icon aria-hidden />
+              </AppShell.NavItem>
+            ))}
+          </AppShell.NavGroup>
+        ))}
+      </AppShell.Sidebar>
+      <AppShell.Main>
+        <AppShell.Header>
+          <AppShell.Breadcrumb>
+            <DepartmentBreadcrumb slug={slug} />
+          </AppShell.Breadcrumb>
+          <AppShell.DeptSwitcher label={current?.name ?? 'Bộ phận'}>
+            <Link href="/hub" className={SWITCHER_LINK_CLASS}>
+              Về Hub
+            </Link>
+            {DEPARTMENTS.filter((department) => department.slug !== slug).map((department) => (
+              <Link
+                key={department.slug}
+                href={`/${department.slug}`}
+                className={SWITCHER_LINK_CLASS}
+              >
+                {department.name}
+              </Link>
+            ))}
+          </AppShell.DeptSwitcher>
+          <span className="hidden flex-none sm:inline">{user.fullName}</span>
+          <LogoutButton />
+        </AppShell.Header>
+        <AppShell.Content>{children}</AppShell.Content>
+        <AppFooter variant="compact" />
+      </AppShell.Main>
+    </AppShell.Root>
   );
 }

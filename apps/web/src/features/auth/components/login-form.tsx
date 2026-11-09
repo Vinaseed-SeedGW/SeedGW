@@ -3,13 +3,8 @@
 import { useActionState, useState } from 'react';
 import { loginAction } from '@/server/actions/auth';
 
-const FIELD_STYLE = {
-  display: 'block',
-  width: '100%',
-  height: 38,
-  marginTop: 4,
-  padding: '0 10px',
-};
+const LABEL_CLASS = 'mb-1 block text-sm font-bold';
+const INPUT_CLASS = 'border-input h-9.5 w-full rounded-md border bg-surface px-2.5';
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [result, submit, pending] = useActionState(loginAction, null);
@@ -19,29 +14,43 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   return (
     <form action={submit}>
       {callbackUrl ? <input type="hidden" name="callbackUrl" value={callbackUrl} /> : null}
-      <p>
-        <label htmlFor="employeeCode">Mã nhân viên</label>
+      <div className="mt-3.5">
+        <label htmlFor="employeeCode" className={LABEL_CLASS}>
+          Mã nhân viên
+        </label>
         <input
           id="employeeCode"
           name="employeeCode"
           autoComplete="username"
+          placeholder="Nhập mã nhân viên"
           value={employeeCode}
           onChange={(event) => setEmployeeCode(event.target.value)}
-          style={FIELD_STYLE}
+          className={INPUT_CLASS}
         />
-      </p>
-      <p>
-        <label htmlFor="password">Mật khẩu</label>
+      </div>
+      <div className="mt-3.5">
+        <label htmlFor="password" className={LABEL_CLASS}>
+          Mật khẩu
+        </label>
         <input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
-          style={FIELD_STYLE}
+          placeholder="Nhập mật khẩu"
+          className={INPUT_CLASS}
         />
-      </p>
-      {result && !result.ok ? <p role="alert">{result.message}</p> : null}
-      <button type="submit" disabled={pending}>
+      </div>
+      {result && !result.ok ? (
+        <p role="alert" className="mt-3.5 rounded-md bg-danger-soft px-2.5 py-2 text-danger">
+          {result.message}
+        </p>
+      ) : null}
+      <button
+        type="submit"
+        disabled={pending}
+        className="mt-5 h-9.5 w-full rounded-md bg-brand font-bold text-primary-foreground hover:bg-brand-hover disabled:opacity-70"
+      >
         {pending ? 'Đang đăng nhập...' : 'Đăng nhập'}
       </button>
     </form>
