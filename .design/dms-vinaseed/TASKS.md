@@ -16,7 +16,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 ## Giai đoạn 0 — Nền móng & Hub (tuần 1–3)
 
-- [ ] **F1. Đăng nhập → Hub 3 bộ phận chạy end-to-end**: Người dùng đăng nhập bằng tài khoản seed, vào `/hub` thấy 3 ô *Kinh doanh · CSKH · Quản trị*, bấm vào mỗi ô tới trang trống có layout riêng. _New. Cỡ L._
+- [x] **F1. Đăng nhập → Hub 3 bộ phận chạy end-to-end**: Người dùng đăng nhập bằng tài khoản seed, vào `/hub` thấy 3 ô *Kinh doanh · CSKH · Quản trị*, bấm vào mỗi ô tới trang trống có layout riêng. _New. Cỡ L._
   - Dựng monorepo trong chính slice này: `apps/web` (Next.js App Router), `apps/worker`, `apps/mobile` (Expo, chưa có màn), `packages/db` (Prisma), `packages/contracts` (Zod), `packages/ui`, `packages/config` (eslint, tsconfig, thông tin chân trang). Quy ước và phân công xem `AGENTS.md`, `docs/KHOI_TAO.md`.
   - Docker Compose dev: Postgres 16, Redis, MinIO, Mailpit.
   - Prisma schema tối thiểu: `User`, `Role`, `Permission`, `UserRole`, `OrgUnit`; seed 1 admin + 3 user mẫu (mỗi bộ phận 1 người).

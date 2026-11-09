@@ -18,7 +18,10 @@ services:
       - '6379:6379'
 
   minio:
-    image: minio/minio
+    # MinIO da ngung phat hanh image cong khai tren Docker Hub va Quay.
+    image: cgr.dev/chainguard/minio:latest
+    # Image mac dinh chay user khong co quyen ghi vao volume moi tao.
+    user: root
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
