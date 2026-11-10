@@ -40,6 +40,21 @@ export function formatDateTime(iso: string): string {
   return vietnamDateTime.format(new Date(iso)).replace(', ', ' ');
 }
 
+export function formatNumber(value: number): string {
+  return vietnameseNumber.format(value);
+}
+
+const ONE_DAY_MS = 86_400_000;
+
+// Moc dau ngay theo gio Viet Nam cua ngay dang yyyy-mm-dd.
+export function vietnamDayStart(date: string): Date {
+  return new Date(`${date}T00:00:00+07:00`);
+}
+
+export function vietnamNextDayStart(date: string): Date {
+  return new Date(vietnamDayStart(date).getTime() + ONE_DAY_MS);
+}
+
 export function formatVnd(value: number): string {
   return `${vietnameseNumber.format(value)} đ`;
 }

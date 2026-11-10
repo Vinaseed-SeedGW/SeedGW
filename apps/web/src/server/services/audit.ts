@@ -1,6 +1,6 @@
 import 'server-only';
 import { headers } from 'next/headers';
-import type { AuditAction, AuditChanges } from '@dms/contracts/audit';
+import type { AuditAction, AuditChanges, AuditEntityType } from '@dms/contracts/audit';
 import { db } from '@dms/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 
@@ -8,7 +8,7 @@ type AuditEntry = {
   // Bat buoc truyen ca nguoi dung de khong the quen ghi nguoi dang nhap thay.
   actor: Pick<CurrentUser, 'id' | 'impersonator'>;
   action: AuditAction;
-  entityType: string;
+  entityType: AuditEntityType;
   entityId: string;
   entityLabel: string;
   changes: AuditChanges;

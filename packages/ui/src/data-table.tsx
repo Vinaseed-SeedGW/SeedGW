@@ -224,6 +224,39 @@ function SelectFilter({ param, label, allLabel, options }: SelectFilterProps) {
   );
 }
 
+function DateFilter({ param, label }: { param: string; label: string }) {
+  const { state, actions } = useDataTable();
+  const current = state.readParam(param) ?? '';
+  const [value, setValue] = useState(current);
+
+  // Cap nhat o nhap khi URL doi tu ben ngoai, vi du bam nut quay lai.
+  const [previous, setPrevious] = useState(current);
+  if (previous !== current) {
+    setPrevious(current);
+    setValue(current);
+  }
+
+  function handleChange(next: string) {
+    setValue(next);
+    // Chi doi URL khi da go du nam, neu khong trang tai lai theo tung chu so.
+    if (next === '' || /^[12]\d{3}-/.test(next)) {
+      actions.setParams({ [param]: next || null, trang: null });
+    }
+  }
+
+  return (
+    <label className="flex items-center gap-1.5 text-sm">
+      {label}
+      <input
+        type="date"
+        className={CONTROL_CLASS}
+        value={value}
+        onChange={(event) => handleChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
 function Columns() {
   const { state } = useDataTable();
   const { open, setOpen, containerRef } = useDismissable();
@@ -490,6 +523,7 @@ export const DataTable = {
   Search,
   Filters,
   SelectFilter,
+  DateFilter,
   Columns,
   Export,
   BulkActions,

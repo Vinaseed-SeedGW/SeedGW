@@ -127,8 +127,31 @@ model AuditLog {
 
   @@index([createdAt(sort: Desc)])
   @@index([entityType, entityId])
-  @@index([actorId])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([entityType, createdAt(sort: Desc)])
   @@map("audit_logs")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model CodeSequence {
+  id         String   @id @default(uuid()) @db.Uuid
+  key        String   @unique
+  prefix     String
+  digits     Int
+  rangeStart Int      @map("range_start")
+  rangeEnd   Int      @map("range_end")
+  nextValue  Int      @map("next_value")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("code_sequences")
 }
 
 model Role {

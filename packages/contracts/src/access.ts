@@ -45,6 +45,7 @@ export const PERMISSIONS = [
   { code: 'admin.shift.read', name: 'Xem Ca làm việc' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
+  { code: 'admin.setting.manage', name: 'Sửa Tham số' },
   { code: 'admin.connection.read', name: 'Xem Kết nối' },
   { code: 'admin.audit-log.read', name: 'Xem Nhật ký' },
 ] as const;

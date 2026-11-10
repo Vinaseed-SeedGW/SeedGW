@@ -145,7 +145,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 - [ ] **A8. Kết nối & API key**: màn `/quan-tri/ket-noi` quản lý `ApiClient` cho FAST (tạo key — chỉ hiện 1 lần, lưu hash; secret HMAC; IP whitelist; quyền đọc/ghi từng endpoint; thu hồi), cấu hình Zalo OA (trạng thái token, nút kết nối lại), Mattermost (URL, bot token, kênh nhận thông báo). _Dùng lại: F5, R1, R2. Cỡ M._
   - **Xong khi**: thu hồi key → FAST gọi bị 401 ngay; xem được 100 request gần nhất của mỗi client.
 
-- [ ] **A9. Tham số hệ thống & nhật ký**: bán kính check-in hợp lệ (m), SLA CSKH theo mức ưu tiên, ngưỡng cảnh báo công nợ (%), chu kỳ đồng bộ FAST, dải mã KH của DMS (`CodeSequence`), số ngày N để coi là "đại lý không đặt hàng"; màn xem `AuditLog` có lọc theo người/thực thể/thời gian. _Dùng lại: F4, F5. Cỡ M._
+- [x] **A9. Tham số hệ thống & nhật ký**: bán kính check-in hợp lệ (m), SLA CSKH theo mức ưu tiên, ngưỡng cảnh báo công nợ (%), chu kỳ đồng bộ FAST, dải mã KH của DMS (`CodeSequence`), số ngày N để coi là "đại lý không đặt hàng"; màn xem `AuditLog` có lọc theo người/thực thể/thời gian. _Dùng lại: F4, F5. Cỡ M._
 
 - [ ] **A10. Trình cấu hình quy trình duyệt đơn theo đơn vị (`/quan-tri/quy-trinh-duyet`)**: mỗi đơn vị (A1) có quy trình riêng; đơn vị con **kế thừa** quy trình đơn vị cha nếu không tự cấu hình. _Dùng lại: A1, A3, F5. New: `WorkflowEditor` compound (`WorkflowEditor.Steps / Step / Condition / Preview`). Cỡ L — task rủi ro, làm sớm trong giai đoạn 1._
   - Mỗi bước: tên bước, **người duyệt** theo (a) vai trò trong đơn vị của người tạo đơn (vd "ASM của vùng"), (b) chức danh ở đơn vị cấp trên (vd "Giám đốc miền"), (c) người cụ thể; kiểu duyệt: 1 người bất kỳ / tất cả; SLA giờ + leo thang khi quá hạn.

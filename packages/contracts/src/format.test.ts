@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDateOnly, formatDateTime, formatVnd } from './format';
+import {
+  formatDate,
+  formatDateOnly,
+  formatDateTime,
+  formatVnd,
+  vietnamDayStart,
+  vietnamNextDayStart,
+} from './format';
+
+describe('moc ngay theo gio Viet Nam', () => {
+  it('dau ngay lui 7 gio so voi UTC', () => {
+    expect(vietnamDayStart('2026-11-10').toISOString()).toBe('2026-11-09T17:00:00.000Z');
+  });
+
+  it('dau ngay ke tiep cach dung mot ngay', () => {
+    expect(vietnamNextDayStart('2026-11-10').toISOString()).toBe('2026-11-10T17:00:00.000Z');
+  });
+});
 
 describe('formatDateTime', () => {
   it('hien ngay gio theo gio Viet Nam', () => {
