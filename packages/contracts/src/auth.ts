@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-export const LOGIN_MAX_FAILURES = 5;
+export const LOGIN_MAX_FAILURES = 10;
 export const LOGIN_FAILURE_WINDOW_MINUTES = 15;
-export const LOGIN_LOCK_MINUTES = 15;
+export const LOGIN_LOCK_MINUTES = 5;
 export const CHANGE_PASSWORD_PATH = '/doi-mat-khau';
 
 export const loginInput = z.object({

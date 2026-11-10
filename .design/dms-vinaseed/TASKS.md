@@ -108,7 +108,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 - [x] **A2. Quản lý tài khoản CBNV**: danh sách, tạo, sửa, khoá/mở khoá, đặt lại mật khẩu, gán đơn vị, chức danh, quản lý trực tiếp, vai trò. _Dùng lại: F4, F5, A1. Cỡ L._
   - Hồ sơ NV: mã NV, họ tên, SĐT, email, đơn vị, chức danh, ngày vào làm, thiết bị mobile đã đăng ký.
-  - Bắt đổi mật khẩu lần đầu; chính sách mật khẩu; khoá sau 5 lần sai trong 15 phút.
+  - Bắt đổi mật khẩu lần đầu; chính sách mật khẩu; tạm khoá 5 phút sau 10 lần sai trong 15 phút.
   - Import Excel danh sách NV (mẫu tải về, báo lỗi từng dòng, xem trước trước khi ghi).
   - "Đăng nhập thay" (impersonate) cho admin để hỗ trợ — có ghi audit.
   - Thu hồi phiên & thiết bị mobile khi khoá tài khoản.
