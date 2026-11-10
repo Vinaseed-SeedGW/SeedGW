@@ -4,9 +4,45 @@ import {
   formatDateOnly,
   formatDateTime,
   formatVnd,
+  isoDateToDisplay,
+  maskDateText,
   vietnamDayStart,
   vietnamNextDayStart,
 } from './format';
+
+describe('isoDateToDisplay', () => {
+  it('doi sang ngay thang nam', () => {
+    expect(isoDateToDisplay('2026-11-09')).toBe('09/11/2026');
+  });
+
+  it('giu nguyen chu dang go do', () => {
+    expect(isoDateToDisplay('09/1')).toBe('09/1');
+    expect(isoDateToDisplay('')).toBe('');
+  });
+});
+
+describe('maskDateText', () => {
+  it('tu chen dau gach cheo khi go so', () => {
+    expect(maskDateText('0')).toBe('0');
+    expect(maskDateText('09')).toBe('09');
+    expect(maskDateText('091')).toBe('09/1');
+    expect(maskDateText('09112026')).toBe('09/11/2026');
+  });
+
+  it('them so 0 khi nguoi dung tu go dau gach cheo', () => {
+    expect(maskDateText('1/')).toBe('01');
+    expect(maskDateText('01/2/')).toBe('01/02');
+  });
+
+  it('cat phan thua va bo chu', () => {
+    expect(maskDateText('09/11/20261')).toBe('09/11/2026');
+    expect(maskDateText('ab09')).toBe('09');
+  });
+
+  it('nhan ngay dan vao dang nam thang ngay', () => {
+    expect(maskDateText('2026-11-09')).toBe('09/11/2026');
+  });
+});
 
 describe('moc ngay theo gio Viet Nam', () => {
   it('dau ngay lui 7 gio so voi UTC', () => {

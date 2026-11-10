@@ -9,6 +9,7 @@
     "./confirm-dialog": "./src/confirm-dialog.tsx",
     "./data-table": "./src/data-table.tsx",
     "./data-table-skeleton": "./src/data-table-skeleton.tsx",
+    "./date-input": "./src/date-input.tsx",
     "./download-file": "./src/download-file.ts",
     "./form": "./src/form.tsx",
     "./form-page": "./src/form-page.tsx",
@@ -25,6 +26,7 @@
   },
   "dependencies": {
     "@dms/config": "workspace:*",
+    "@dms/contracts": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "lucide-react": "^1.70.0",
     "react-hook-form": "^7.91.0"

@@ -36,6 +36,21 @@ export function parseDisplayDate(text: string): string | null {
   return isReal ? date.toISOString().slice(0, 10) : null;
 }
 
+// Doi yyyy-mm-dd sang dd/mm/yyyy, gia tri khac giu nguyen de khong mat chu dang go.
+export function isoDateToDisplay(value: string): string {
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : value;
+}
+
+// Tu chen dau gach cheo khi go, go 1/2 thi hieu la ngay 01 thang 02.
+export function maskDateText(raw: string): string {
+  const padded = isoDateToDisplay(raw.trim())
+    .replace(/^(\d)\//, (_, day: string) => `0${day}/`)
+    .replace(/^(\d{2}\/)(\d)\//, (_, day: string, month: string) => `${day}0${month}/`);
+  const digits = padded.replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join('/');
+}
+
 export function formatDateTime(iso: string): string {
   return vietnamDateTime.format(new Date(iso)).replace(', ', ' ');
 }

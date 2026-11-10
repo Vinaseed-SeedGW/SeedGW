@@ -94,6 +94,7 @@ Prettier và ESLint là chuẩn cuối cùng. Không định dạng tay trái v�
   - Tiền là số nguyên VND, tên trường có đuôi `Vnd`.
   - Khối lượng lưu theo kg, tên trường có đuôi `Kg`.
   - Thời điểm là chuỗi ISO 8601 UTC, hiển thị `dd/MM/yyyy` theo giờ Việt Nam.
+  - Ô nhập ngày trên web dùng `Form.DateInput` hoặc `DataTable.DateFilter`, không dùng `type="date"` vì trình duyệt hiện theo ngôn ngữ máy.
   - Khoá chính là UUID. Đơn hàng và Phiếu có thêm mã nghiệp vụ `code`.
 
 ## 7. Hợp đồng dữ liệu và lỗi

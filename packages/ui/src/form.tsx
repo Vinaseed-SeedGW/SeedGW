@@ -20,6 +20,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 import { cn } from './cn';
+import { DateInput } from './date-input';
 import { useToast } from './toast';
 
 type FormActionResult<TData> =
@@ -187,6 +188,29 @@ function Input({ className, ...props }: ComponentProps<'input'>) {
   );
 }
 
+function DateField() {
+  const field = use(FieldContext);
+  if (!field) throw new Error('Form.DateInput phai nam trong Form.Field.');
+  const { field: controller } = useController({ name: field.name });
+
+  return (
+    <DateInput
+      ref={controller.ref}
+      id={field.inputId}
+      aria-invalid={field.hasError}
+      aria-describedby={field.messageId}
+      className="w-full"
+      inputClassName={cn(
+        'h-9.5 rounded-md border bg-surface px-2.5',
+        field.hasError ? 'border-danger' : 'border-input',
+      )}
+      value={controller.value as string}
+      onValueChange={controller.onChange}
+      onBlur={controller.onBlur}
+    />
+  );
+}
+
 type SelectProps = {
   options: ReadonlyArray<{ value: string; label: string }>;
   emptyLabel: string;
@@ -309,6 +333,7 @@ export const Form = {
   Root,
   Field,
   Input,
+  DateInput: DateField,
   Select,
   CheckboxField,
   CheckboxGroup,

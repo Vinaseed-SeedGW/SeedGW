@@ -353,6 +353,9 @@ importers:
       '@dms/config':
         specifier: workspace:*
         version: link:../config
+      '@dms/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.10(react@19.1.10))(react@19.1.10)

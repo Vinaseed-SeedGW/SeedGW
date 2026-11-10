@@ -22,7 +22,7 @@ export function UserProfileFields({ options }: { options: UserFormOptions }) {
         <Form.Input autoComplete="off" />
       </Form.Field>
       <Form.Field name="hiredAt" label="Ngày vào làm">
-        <Form.Input type="date" />
+        <Form.DateInput />
       </Form.Field>
       <Form.Field name="managerId" label="Quản lý trực tiếp">
         <Form.Select options={options.managers} emptyLabel="Không có" />

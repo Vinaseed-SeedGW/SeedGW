@@ -23,6 +23,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cn } from './cn';
+import { DateInput } from './date-input';
 import { downloadFile } from './download-file';
 import { useDismissable } from './use-dismissable';
 
@@ -38,6 +39,7 @@ declare module '@tanstack/react-table' {
 }
 
 const SEARCH_DEBOUNCE_MS = 300;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NUMBER_FORMAT = new Intl.NumberFormat('vi-VN');
 const CONTROL_CLASS = 'h-9 rounded-md border border-input bg-surface px-2.5';
 const BUTTON_CLASS =
@@ -226,20 +228,10 @@ function SelectFilter({ param, label, allLabel, options }: SelectFilterProps) {
 
 function DateFilter({ param, label }: { param: string; label: string }) {
   const { state, actions } = useDataTable();
-  const current = state.readParam(param) ?? '';
-  const [value, setValue] = useState(current);
-
-  // Cap nhat o nhap khi URL doi tu ben ngoai, vi du bam nut quay lai.
-  const [previous, setPrevious] = useState(current);
-  if (previous !== current) {
-    setPrevious(current);
-    setValue(current);
-  }
 
   function handleChange(next: string) {
-    setValue(next);
-    // Chi doi URL khi da go du nam, neu khong trang tai lai theo tung chu so.
-    if (next === '' || /^[12]\d{3}-/.test(next)) {
+    // Chi doi URL khi da go du ngay, neu khong trang tai lai theo tung chu so.
+    if (next === '' || ISO_DATE.test(next)) {
       actions.setParams({ [param]: next || null, trang: null });
     }
   }
@@ -247,11 +239,11 @@ function DateFilter({ param, label }: { param: string; label: string }) {
   return (
     <label className="flex items-center gap-1.5 text-sm">
       {label}
-      <input
-        type="date"
-        className={CONTROL_CLASS}
-        value={value}
-        onChange={(event) => handleChange(event.target.value)}
+      <DateInput
+        className="w-36"
+        inputClassName={CONTROL_CLASS}
+        value={state.readParam(param) ?? ''}
+        onValueChange={handleChange}
       />
     </label>
   );

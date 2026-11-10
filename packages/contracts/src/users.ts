@@ -91,7 +91,7 @@ const userAssignmentFields = {
     .trim()
     .refine(
       (value) => value === '' || z.iso.date().safeParse(value).success,
-      'Ngày vào làm không hợp lệ',
+      'Ngày vào làm không hợp lệ, cần dạng dd/mm/yyyy',
     ),
   orgUnitId: z.uuid({ error: 'Vui lòng chọn đơn vị' }),
   managerId: z.uuid({ error: 'Quản lý trực tiếp không hợp lệ' }).nullable(),
