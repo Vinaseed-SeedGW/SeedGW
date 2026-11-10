@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDateTime, formatVnd } from './format';
+import { formatDate, formatDateOnly, formatDateTime, formatVnd } from './format';
 
 describe('formatDateTime', () => {
   it('hien ngay gio theo gio Viet Nam', () => {
@@ -20,5 +20,15 @@ describe('formatVnd', () => {
 describe('formatDate', () => {
   it('hien theo gio Viet Nam', () => {
     expect(formatDate('2026-11-08T18:00:00.000Z')).toBe('09/11/2026');
+  });
+});
+
+describe('formatDateOnly', () => {
+  it('giu nguyen ngay da nhap', () => {
+    expect(formatDateOnly('2024-03-15')).toBe('15/03/2024');
+  });
+
+  it('tra null khi chua nhap ngay', () => {
+    expect(formatDateOnly('')).toBeNull();
   });
 });

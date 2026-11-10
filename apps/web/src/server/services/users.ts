@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { verify } from 'argon2';
 import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
 import type { ChangePasswordInput } from '@dms/contracts/auth';
-import { formatDate } from '@dms/contracts/format';
+import { formatDateOnly } from '@dms/contracts/format';
 import type {
   CreatedUser,
   CreateUserInput,
@@ -95,11 +95,6 @@ export function dateFromInput(value: string): Date | null {
 
 export function dateToInput(value: Date | null): string {
   return value ? value.toISOString().slice(0, 10) : '';
-}
-
-// Nhat ky hien thi nguyen van nen luu ngay theo dinh dang dd/MM/yyyy.
-export function auditDate(value: string): string | null {
-  return value === '' ? null : formatDate(`T00:00:00.000Z`);
 }
 
 function managerLabel(manager: { employeeCode: string; fullName: string } | null): string | null {
@@ -216,7 +211,7 @@ export async function createUser(
           phone: emptyToNull(input.phone),
           email: emptyToNull(input.email),
           jobTitle: emptyToNull(input.jobTitle),
-          hiredAt: auditDate(input.hiredAt),
+          hiredAt: formatDateOnly(input.hiredAt),
           orgUnit: orgUnit.name,
           directManager: managerLabel(manager),
           roles: roleNames(roles),
@@ -304,7 +299,7 @@ export async function updateUser(
       phone: current.phone,
       email: current.email,
       jobTitle: current.jobTitle,
-      hiredAt: auditDate(dateToInput(current.hiredAt)),
+      hiredAt: formatDateOnly(dateToInput(current.hiredAt)),
       orgUnit: current.orgUnit?.name ?? null,
       directManager: managerLabel(current.manager),
       roles: roleNames(currentRoles),
@@ -314,7 +309,7 @@ export async function updateUser(
       phone: emptyToNull(input.phone),
       email: emptyToNull(input.email),
       jobTitle: emptyToNull(input.jobTitle),
-      hiredAt: auditDate(input.hiredAt),
+      hiredAt: formatDateOnly(input.hiredAt),
       orgUnit: orgUnit.name,
       directManager: managerLabel(manager),
       roles: roleNames(roles),

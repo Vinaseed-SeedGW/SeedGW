@@ -47,3 +47,8 @@ export function formatVnd(value: number): string {
 export function formatDate(iso: string): string {
   return vietnamDate.format(new Date(iso));
 }
+
+// Ngay chi co yyyy-mm-dd, chuoi rong nghia la chua nhap.
+export function formatDateOnly(value: string): string | null {
+  return value === '' ? null : formatDate(`${value}T00:00:00.000Z`);
+}

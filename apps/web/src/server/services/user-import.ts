@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { AuditChanges } from '@dms/contracts/audit';
 import { auditChanges } from '@dms/contracts/audit';
 import type { ExportedFile } from '@dms/contracts/common';
+import { formatDateOnly } from '@dms/contracts/format';
 import {
   MAX_IMPORT_ROWS,
   USER_IMPORT_COLUMNS,
@@ -23,7 +24,6 @@ import {
   sheetWriter,
 } from '@/server/services/excel';
 import {
-  auditDate,
   dateFromInput,
   exceedsActor,
   isUniqueViolation,
@@ -220,7 +220,7 @@ export async function commitUserImport(
         phone: row.phone || null,
         email: row.email || null,
         jobTitle: row.jobTitle || null,
-        hiredAt: auditDate(row.hiredAt),
+        hiredAt: formatDateOnly(row.hiredAt),
         orgUnit: unitByCode.get(row.orgUnitCode)?.name ?? null,
         directManager: row.managerCode || null,
         roles: row.roleCodes.map((code) => roleByCode.get(code)?.name ?? code).join(', '),
