@@ -101,3 +101,13 @@ export function buildOrgTree<T extends OrgUnitLink & { name: string }>(
 
   return build(null, 1);
 }
+
+// Dan phang cay theo thu tu hien thi, ten co gach dau dong de chon trong o select.
+export function flattenOrgTree<T extends { name: string }>(
+  nodes: ReadonlyArray<OrgTreeNode<T>>,
+): T[] {
+  return nodes.flatMap((node) => [
+    { ...node, name: `${'-- '.repeat(node.depth - 1)}${node.name}` },
+    ...flattenOrgTree<T>(node.children),
+  ]);
+}

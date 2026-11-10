@@ -147,7 +147,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 - [x] **A9. Tham số hệ thống & nhật ký**: bán kính check-in hợp lệ (m), SLA CSKH theo mức ưu tiên, ngưỡng cảnh báo công nợ (%), chu kỳ đồng bộ FAST, dải mã KH của DMS (`CodeSequence`), số ngày N để coi là "đại lý không đặt hàng"; màn xem `AuditLog` có lọc theo người/thực thể/thời gian. _Dùng lại: F4, F5. Cỡ M._
 
-- [ ] **A10. Trình cấu hình quy trình duyệt đơn theo đơn vị (`/quan-tri/quy-trinh-duyet`)**: mỗi đơn vị (A1) có quy trình riêng; đơn vị con **kế thừa** quy trình đơn vị cha nếu không tự cấu hình. _Dùng lại: A1, A3, F5. New: `WorkflowEditor` compound (`WorkflowEditor.Steps / Step / Condition / Preview`). Cỡ L — task rủi ro, làm sớm trong giai đoạn 1._
+- [x] **A10. Trình cấu hình quy trình duyệt đơn theo đơn vị (`/quan-tri/quy-trinh-duyet`)**: mỗi đơn vị (A1) có quy trình riêng; đơn vị con **kế thừa** quy trình đơn vị cha nếu không tự cấu hình. _Dùng lại: A1, A3, F5. New: `WorkflowEditor` compound (`WorkflowEditor.Steps / Step / Condition / Preview`). Cỡ L — task rủi ro, làm sớm trong giai đoạn 1._
   - Mỗi bước: tên bước, **người duyệt** theo (a) vai trò trong đơn vị của người tạo đơn (vd "ASM của vùng"), (b) chức danh ở đơn vị cấp trên (vd "Giám đốc miền"), (c) người cụ thể; kiểu duyệt: 1 người bất kỳ / tất cả; SLA giờ + leo thang khi quá hạn.
   - **Điều kiện kích hoạt bước** (bước chỉ chạy khi đúng): tổng tiền > X; chiết khấu > Y%; **đơn có cờ vượt hạn mức công nợ**; **đơn có cờ thiếu tồn kho**; nhóm sản phẩm; loại đại lý. Ví dụ: đơn < 50 triệu, không cờ → chỉ ASM duyệt; có cờ vượt công nợ → thêm bước Kế toán công nợ.
   - Tự duyệt (bỏ qua bước) khi người tạo chính là người duyệt bước đó, hoặc khi đơn dưới ngưỡng cấu hình.

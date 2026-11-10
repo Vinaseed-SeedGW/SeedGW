@@ -41,6 +41,10 @@ export const AUDIT_ACTION_LABEL = {
   'role.delete': 'Xoá vai trò',
   'setting.update': 'Sửa tham số',
   'code-sequence.update': 'Sửa dải mã',
+  'workflow.publish': 'Tạo phiên bản quy trình duyệt',
+  'workflow.inherit': 'Chuyển quy trình về kế thừa',
+  'delegation.create': 'Tạo uỷ quyền',
+  'delegation.revoke': 'Thu hồi uỷ quyền',
 } as const;
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL;
 
@@ -50,6 +54,8 @@ export const AUDIT_ENTITY_LABEL = {
   Role: 'Vai trò',
   SystemSetting: 'Tham số',
   CodeSequence: 'Dải mã',
+  ApprovalWorkflow: 'Quy trình duyệt',
+  Delegation: 'Uỷ quyền',
 } as const;
 export type AuditEntityType = keyof typeof AUDIT_ENTITY_LABEL;
 
@@ -85,6 +91,13 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   digits: 'Số chữ số',
   rangeStart: 'Số đầu dải',
   rangeEnd: 'Số cuối dải',
+  version: 'Phiên bản',
+  steps: 'Các bước',
+  delegator: 'Người vắng',
+  delegate: 'Người nhận uỷ quyền',
+  period: 'Thời gian',
+  reason: 'Lý do',
+  status: 'Trạng thái',
   ...SETTING_LABEL,
 };
 

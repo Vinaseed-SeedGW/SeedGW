@@ -146,10 +146,21 @@ export async function createRole(input: CreateRoleInput): Promise<RoleOutcome> {
 export async function deleteRole(id: string): Promise<RoleOutcome> {
   const role = await db.role.findUnique({
     where: { id },
-    select: { code: true, name: true, dataScope: true },
+    select: {
+      code: true,
+      name: true,
+      dataScope: true,
+      _count: { select: { approvalSteps: true } },
+    },
   });
   if (!role) throw new DomainError('NOT_FOUND', 'Không tìm thấy vai trò này');
   if (isPresetRole(role.code)) throw new DomainError('CONFLICT', 'Không thể xoá vai trò mặc định');
+  if (role._count.approvalSteps > 0) {
+    throw new DomainError(
+      'CONFLICT',
+      'Vai trò đã được dùng trong quy trình duyệt nên không xoá được',
+    );
+  }
 
   // Dieu kien nam trong cau lenh de khong xoa nham khi vua co nguoi duoc gan vai tro.
   const { count } = await db.role.deleteMany({ where: { id, users: { none: {} } } });

@@ -60,6 +60,7 @@ export function formatNumber(value: number): string {
 }
 
 const ONE_DAY_MS = 86_400_000;
+const VIETNAM_OFFSET_MS = 7 * 60 * 60 * 1000;
 
 // Moc dau ngay theo gio Viet Nam cua ngay dang yyyy-mm-dd.
 export function vietnamDayStart(date: string): Date {
@@ -68,6 +69,11 @@ export function vietnamDayStart(date: string): Date {
 
 export function vietnamNextDayStart(date: string): Date {
   return new Date(vietnamDayStart(date).getTime() + ONE_DAY_MS);
+}
+
+// Ngay hom nay theo gio Viet Nam, dang yyyy-mm-dd.
+export function vietnamToday(now: Date = new Date()): string {
+  return new Date(now.getTime() + VIETNAM_OFFSET_MS).toISOString().slice(0, 10);
 }
 
 export function formatVnd(value: number): string {

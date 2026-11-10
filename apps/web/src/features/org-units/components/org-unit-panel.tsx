@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { buildOrgTree, checkOrgUnitMove, type OrgTreeNode } from '@dms/contracts/org-tree';
+import { buildOrgTree, checkOrgUnitMove, flattenOrgTree } from '@dms/contracts/org-tree';
 import {
   createOrgUnitInput,
   moveOrgUnitInput,
@@ -101,13 +101,6 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
   );
 }
 
-function flattenForSelect(nodes: Array<OrgTreeNode<OrgUnitRow>>): OrgUnitRow[] {
-  return nodes.flatMap((node) => [
-    { ...node, name: `${'-- '.repeat(node.depth - 1)}${node.name}` },
-    ...flattenForSelect(node.children),
-  ]);
-}
-
 type MoveSheetProps = { unit: OrgUnitRow; units: OrgUnitRow[]; onClose: () => void };
 
 function MoveSheet({ unit, units, onClose }: MoveSheetProps) {
@@ -117,7 +110,7 @@ function MoveSheet({ unit, units, onClose }: MoveSheetProps) {
   });
   const options = useMemo(
     () =>
-      flattenForSelect(buildOrgTree(units))
+      flattenOrgTree<OrgUnitRow>(buildOrgTree(units))
         .filter((item) => checkOrgUnitMove(units, unit.id, item.id).ok)
         .map((item) => ({ value: item.id, label: item.name })),
     [units, unit.id],

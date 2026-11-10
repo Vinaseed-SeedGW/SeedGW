@@ -6,6 +6,7 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   User: { ownerField: 'id', orgUnitField: 'orgUnitId' },
   MobileDevice: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   AuditLog: { ownerField: 'actorId', orgUnitField: 'actor.orgUnitId' },
+  Delegation: { ownerField: 'delegatorId', orgUnitField: 'delegator.orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([

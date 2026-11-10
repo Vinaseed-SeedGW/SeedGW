@@ -26,6 +26,7 @@ model OrgUnit {
   managerId String?   @map("manager_id") @db.Uuid
   manager   User?     @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
   users     User[]    @relation("org_unit_members")
+  approvalWorkflows ApprovalWorkflow[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -70,6 +71,12 @@ model User {
   mobileDevices          MobileDevice[]
   impersonationsStarted  ImpersonationSession[] @relation("impersonation_actor")
   impersonationsReceived ImpersonationSession[] @relation("impersonation_target")
+  workflowVersionsCreated ApprovalWorkflowVersion[] @relation("workflow_version_creator")
+  approvalStepsAssigned  ApprovalStep[]         @relation("approval_step_approver")
+  approvalStepsEscalated ApprovalStep[]         @relation("approval_step_escalation")
+  delegationsGiven       Delegation[]           @relation("delegation_delegator")
+  delegationsReceived    Delegation[]           @relation("delegation_delegate")
+  delegationsCreated     Delegation[]           @relation("delegation_creator")
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
 
@@ -154,6 +161,117 @@ model CodeSequence {
   @@map("code_sequences")
 }
 
+enum ApprovalSubject {
+  ORDER
+
+  @@map("approval_subject")
+}
+
+enum ApproverType {
+  ROLE
+  JOB_TITLE
+  USER
+
+  @@map("approver_type")
+}
+
+enum ApprovalMode {
+  ANY
+  ALL
+
+  @@map("approval_mode")
+}
+
+enum EscalationType {
+  NONE
+  DIRECT_MANAGER
+  USER
+
+  @@map("escalation_type")
+}
+
+enum ConditionMatch {
+  ALL
+  ANY
+
+  @@map("condition_match")
+}
+
+model ApprovalWorkflow {
+  id            String                    @id @default(uuid()) @db.Uuid
+  orgUnitId     String                    @map("org_unit_id") @db.Uuid
+  orgUnit       OrgUnit                   @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  subject       ApprovalSubject
+  // Null nghia la don vi dang ke thua, cac phien ban cu van giu de xem lich su.
+  activeVersion Int?                      @map("active_version")
+  versions      ApprovalWorkflowVersion[]
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+
+  @@unique([orgUnitId, subject])
+  @@map("approval_workflows")
+}
+
+// Moi phien ban khong bao gio bi sua, luu thay doi la tao phien ban moi.
+model ApprovalWorkflowVersion {
+  id          String           @id @default(uuid()) @db.Uuid
+  workflowId  String           @map("workflow_id") @db.Uuid
+  workflow    ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  version     Int
+  createdById String           @map("created_by_id") @db.Uuid
+  createdBy   User             @relation("workflow_version_creator", fields: [createdById], references: [id])
+  steps       ApprovalStep[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  @@unique([workflowId, version])
+  @@map("approval_workflow_versions")
+}
+
+model ApprovalStep {
+  id               String                  @id @default(uuid()) @db.Uuid
+  versionId        String                  @map("version_id") @db.Uuid
+  version          ApprovalWorkflowVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  position         Int
+  name             String
+  approverType     ApproverType            @map("approver_type")
+  approverRoleId   String?                 @map("approver_role_id") @db.Uuid
+  approverRole     Role?                   @relation(fields: [approverRoleId], references: [id])
+  approverJobTitle String?                 @map("approver_job_title")
+  approverUserId   String?                 @map("approver_user_id") @db.Uuid
+  approverUser     User?                   @relation("approval_step_approver", fields: [approverUserId], references: [id])
+  approvalMode     ApprovalMode            @map("approval_mode")
+  slaHours         Int                     @map("sla_hours")
+  escalationType   EscalationType          @map("escalation_type")
+  escalationUserId String?                 @map("escalation_user_id") @db.Uuid
+  escalationUser   User?                   @relation("approval_step_escalation", fields: [escalationUserId], references: [id])
+  skipBelowVnd     BigInt                  @map("skip_below_vnd")
+  conditionMatch   ConditionMatch          @map("condition_match")
+  conditions       Json
+
+  @@unique([versionId, position])
+  @@index([approverRoleId])
+  @@map("approval_steps")
+}
+
+model Delegation {
+  id          String    @id @default(uuid()) @db.Uuid
+  delegatorId String    @map("delegator_id") @db.Uuid
+  delegator   User      @relation("delegation_delegator", fields: [delegatorId], references: [id])
+  delegateId  String    @map("delegate_id") @db.Uuid
+  delegate    User      @relation("delegation_delegate", fields: [delegateId], references: [id])
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime  @map("end_date") @db.Date
+  reason      String
+  revokedAt   DateTime? @map("revoked_at")
+  createdById String    @map("created_by_id") @db.Uuid
+  createdBy   User      @relation("delegation_creator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([delegatorId, endDate])
+  @@index([startDate, endDate])
+  @@map("delegations")
+}
+
 model Role {
   id          String       @id @default(uuid()) @db.Uuid
   code        String       @unique
@@ -161,6 +279,7 @@ model Role {
   dataScope   DataScope    @default(OWN) @map("data_scope")
   permissions Permission[] @relation("role_permissions")
   users       UserRole[]
+  approvalSteps ApprovalStep[]
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 

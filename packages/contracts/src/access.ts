@@ -42,6 +42,7 @@ export const PERMISSIONS = [
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },
   { code: 'admin.price-list.read', name: 'Xem Bảng giá' },
   { code: 'admin.workflow.read', name: 'Xem Quy trình duyệt' },
+  { code: 'admin.workflow.manage', name: 'Sửa Quy trình duyệt' },
   { code: 'admin.shift.read', name: 'Xem Ca làm việc' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },

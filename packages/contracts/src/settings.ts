@@ -121,7 +121,7 @@ export const SETTING_LABEL = Object.fromEntries(
 ) as Record<SettingKey, string>;
 
 // Form gui chuoi nen ep kieu ve so, o trong thanh 0 va bi chan boi gia tri nho nhat.
-function integerInRange(min: number, max: number) {
+export function integerInRange(min: number, max: number) {
   const message = `Nhập số nguyên từ ${min} đến ${max}`;
   return z.coerce
     .number<number>({ error: message })

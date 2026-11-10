@@ -242,6 +242,32 @@ function Select({ options, emptyLabel }: SelectProps) {
   );
 }
 
+// Truong bat buoc co san gia tri mac dinh nen khong co dong trong.
+function ChoiceSelect({ options }: Pick<SelectProps, 'options'>) {
+  const field = use(FieldContext);
+  if (!field) throw new Error('Form.ChoiceSelect phai nam trong Form.Field.');
+  const { register } = useFormContext();
+
+  return (
+    <select
+      {...register(field.name)}
+      id={field.inputId}
+      aria-invalid={field.hasError}
+      aria-describedby={field.messageId}
+      className={cn(
+        'h-9.5 w-full rounded-md border bg-surface px-2',
+        field.hasError ? 'border-danger' : 'border-input',
+      )}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function CheckboxField({ name, label, hint }: Omit<FieldProps, 'children'>) {
   const inputId = useId();
   const messageId = useId();
@@ -335,6 +361,7 @@ export const Form = {
   Input,
   DateInput: DateField,
   Select,
+  ChoiceSelect,
   CheckboxField,
   CheckboxGroup,
   Error: FormError,
