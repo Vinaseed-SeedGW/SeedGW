@@ -27,7 +27,8 @@ Trước khi vào app, người dùng luôn đi qua một **Hub** chia thành 3 
 | Admin bán hàng / Sales Admin | Kinh doanh | Kiểm tra đơn, theo dõi đồng bộ FAST, xử lý lỗi đồng bộ |
 | NV CSKH | CSKH | Trả lời tin nhắn Zalo, tạo/xử lý phiếu tiếp nhận |
 | Trưởng nhóm CSKH | CSKH | Phân công, theo dõi SLA, báo cáo |
-| Quản trị hệ thống (IT) | Quản trị | Tài khoản, phân quyền, danh mục, API key FAST, tham số hệ thống |
+| Quản trị hệ thống | Toàn bộ | Mọi chức năng, gồm phân quyền, tạo vai trò, danh mục, API key FAST, tham số hệ thống |
+| Quản trị đơn vị (người phụ trách App tại đơn vị) | Quản trị | Trong đơn vị của mình và cấp dưới: tạo tài khoản, sửa thông tin cá nhân, chức danh, đơn vị, quản lý trực tiếp, Trưởng đơn vị |
 | Lãnh đạo | Tổng quan điều hành + Dashboard Kinh doanh, CSKH (chỉ xem) | Theo dõi chỉ số, chỉ tiêu, điểm cần chú ý |
 | Hệ thống FAST | (máy) | Gọi API lấy đơn hàng, báo lại số chứng từ |
 
@@ -139,6 +140,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 13 | Nhận diện (2026-11-09) | **Logo có câu "A MEMBER OF THE PAN GROUP", theo quy chuẩn Brand Guideline trang 11-13; toàn bộ chữ UTM Neo Sans Intel, đã được phép nhúng; gạch chân chỉ khi di chuột; chủ đạo `#005b36` và trắng** | Xem [BRAND.md](BRAND.md). Bỏ màu riêng từng bộ phận và giao diện tối trong giai đoạn này (task F2). |
 | 14 | Cỡ logo và chân trang (2026-11-09) | **4 cỡ logo S, M, L, XL theo vị trí; cuối trang có bản quyền và liên hệ Phòng ĐMST&CĐS** | Xem [BRAND.md](BRAND.md) §1, §5 (task F2, M1). |
 | 15 | Công cụ xây dựng (2026-11-09) | **Claude xây dựng toàn bộ Backend, Frontend và app** | Các lớp và định dạng code ở [AGENTS.md](../../AGENTS.md); cách khởi tạo ở [docs/KHOI_TAO.md](../../docs/KHOI_TAO.md). |
+| 16 | Hai cấp quản trị (2026-11-10) | **Quản trị hệ thống toàn quyền; Quản trị đơn vị chỉ quản lý tài khoản và Trưởng đơn vị trong phạm vi của mình** | Chỉ Quản trị hệ thống sửa ma trận quyền, tạo và xoá vai trò, đăng nhập thay. Không ai sửa vai trò mình đang giữ. Quản trị đơn vị không gán được vai trò có phạm vi rộng hơn mình. |
 
 ## 10. Chiến lược mã khách hàng (đề xuất — chờ duyệt)
 

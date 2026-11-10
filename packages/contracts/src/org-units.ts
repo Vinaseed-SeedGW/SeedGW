@@ -36,6 +36,9 @@ export const moveOrgUnitInput = z.object({
 });
 export type MoveOrgUnitInput = z.infer<typeof moveOrgUnitInput>;
 
+export const assignOrgUnitManagerInput = z.object({ id: z.uuid(), managerId });
+export type AssignOrgUnitManagerInput = z.infer<typeof assignOrgUnitManagerInput>;
+
 export const deleteOrgUnitInput = z.object({ id: z.uuid() });
 export type DeleteOrgUnitInput = z.infer<typeof deleteOrgUnitInput>;
 
@@ -50,3 +53,9 @@ export type OrgUnitRow = {
 };
 
 export type ManagerOption = { value: string; label: string };
+
+// assignableUnitIds bang null nghia la doi duoc Truong don vi cua moi don vi.
+export type OrgUnitAssignScope = {
+  assignableUnitIds: string[] | null;
+  managerOptions: ManagerOption[];
+};

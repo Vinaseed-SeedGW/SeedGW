@@ -115,9 +115,10 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - **Xong khi**: import 200 NV từ Excel; NV mới đăng nhập được cả web và (sau M1) mobile; khoá tài khoản → mobile bị đăng xuất ở lần gọi API tiếp theo.
   - Phần mobile kiểm tra ở M1: API mobile phải đối chiếu `sessionVersion` và trạng thái `MobileDevice` mỗi lần gọi, đăng nhập dùng lại `checkCredentials`.
 
-- [ ] **A3. Vai trò & ma trận quyền (UI)**: màn hình bảng vai trò × quyền dạng checkbox nhóm theo bộ phận, chọn phạm vi dữ liệu. _Dùng lại: F3. Cỡ M._
-  - Vai trò mặc định: NV kinh doanh, ASM, Sales Admin, NV CSKH, Trưởng nhóm CSKH, Quản trị, Lãnh đạo (chỉ xem).
-  - **Xong khi**: bỏ quyền `sales.order.approve` của ASM → nút Duyệt biến mất và gọi API trực tiếp bị 403.
+- [x] **A3. Vai trò & ma trận quyền (UI)**: màn hình bảng vai trò × quyền dạng checkbox nhóm theo bộ phận, chọn phạm vi dữ liệu. _Dùng lại: F3. Cỡ M._
+  - Vai trò mặc định: Quản trị hệ thống, Quản trị đơn vị, NV kinh doanh, ASM, Sales Admin, NV CSKH, Trưởng nhóm CSKH, Lãnh đạo (chỉ xem).
+  - Chỉ Quản trị hệ thống được sửa ma trận, tạo và xoá vai trò. Quản trị đơn vị chỉ thao tác trong đơn vị của mình và cấp dưới: tài khoản, chức danh, đơn vị, quản lý trực tiếp, Trưởng đơn vị.
+  - **Xong khi**: bỏ quyền `sales.order.approve` của ASM → nút Duyệt biến mất và gọi API trực tiếp bị 403. Nút Duyệt thuộc S4 nên kiểm tra đúng tiêu chí này ở S4; A3 đã kiểm tra cơ chế bằng quyền `admin.user.manage` (mất nút, trang 403, gọi Server Action trực tiếp bị `FORBIDDEN`).
 
 - [ ] **A4. Danh mục sản phẩm — đồng bộ từ FAST (FAST chuẩn 100%)**: DMS **không có nút tạo sản phẩm**. Worker đồng bộ vật tư từ FBO (mỗi giờ + nút "Đồng bộ ngay"): mã, tên, ĐVT, VAT, trạng thái. Các trường từ FAST hiển thị khoá (chỉ đọc). DMS chỉ bổ sung: nhóm hiển thị (lúa, ngô, rau màu…), ảnh, mô tả kỹ thuật, quy cách bán (bao 1kg/5kg/25kg), cờ "cho phép bán trên DMS". _Dùng lại: F4, F5, R1. Cỡ L._
   - Sản phẩm mới trên FAST → vào DMS ở trạng thái "Chưa bán" chờ Sales Admin bổ sung thông tin và bật bán.
@@ -187,7 +188,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Duyệt hàng loạt; lý do bắt buộc khi từ chối/huỷ; ghi `OrderStatusHistory`.
   - Khi chuyển sang `Đã duyệt` → ghi `SyncOutbox` **trong cùng transaction**.
   - Thông báo cho người tạo (in-app; Mattermost nếu bật).
-  - **Xong khi**: không thể nhảy trạng thái sai kể cả gọi API trực tiếp; test cho mọi cạnh của state machine.
+  - **Xong khi**: không thể nhảy trạng thái sai kể cả gọi API trực tiếp; test cho mọi cạnh của state machine; bỏ quyền `sales.order.approve` của ASM ở `/quan-tri/vai-tro` → nút Duyệt biến mất, gọi Server Action trực tiếp bị `FORBIDDEN`, API di động trả 403 (tiêu chí chuyển từ A3).
 
 - [ ] **S5. Kết nối FBO cho đơn hàng (Push client và/hoặc API v1 Pull)**: triển khai thật hợp đồng đã chốt ở R1. _Dùng lại: R1, A8, S4. Cỡ L._
   - Nếu **Push** (FBO có API nhận chứng từ): worker `fast-push` đọc `SyncOutbox`, ánh xạ đơn → chứng từ FBO, gọi API với idempotency = mã đơn, lưu số chứng từ trả về. Phần API v1 dưới đây vẫn làm cho luồng FBO đẩy ngược (công nợ, giao hàng) và tra cứu.

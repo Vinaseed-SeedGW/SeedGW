@@ -5,6 +5,7 @@ import { after } from 'next/server';
 import type { AuditAction } from '@dms/contracts/audit';
 import type { ActionResult } from '@dms/contracts/common';
 import {
+  assignOrgUnitManagerInput,
   createOrgUnitInput,
   deleteOrgUnitInput,
   moveOrgUnitInput,
@@ -15,6 +16,7 @@ import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import {
+  assignOrgUnitManager,
   createOrgUnit,
   deleteOrgUnit,
   moveOrgUnit,
@@ -82,6 +84,23 @@ export async function moveOrgUnitAction(raw: unknown): Promise<ActionResult<{ id
 
     const outcome = await moveOrgUnit(parsed.data);
     await recordChange(user, 'org-unit.move', outcome);
+    return { ok: true, data: { id: outcome.id } };
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+export async function assignOrgUnitManagerAction(
+  raw: unknown,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const user = await requireUser();
+    assertCan(user, 'admin.org-unit.assign');
+    const parsed = assignOrgUnitManagerInput.safeParse(raw);
+    if (!parsed.success) return validationError(parsed.error);
+
+    const outcome = await assignOrgUnitManager(parsed.data);
+    await recordChange(user, 'org-unit.assign', outcome);
     return { ok: true, data: { id: outcome.id } };
   } catch (error) {
     return toActionError(error);

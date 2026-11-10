@@ -1,6 +1,7 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
 import { verify } from 'argon2';
+import { roleExceedsActor } from '@dms/contracts/access';
 import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
 import type { ChangePasswordInput } from '@dms/contracts/auth';
 import { formatDateOnly } from '@dms/contracts/format';
@@ -27,6 +28,7 @@ const IMPERSONATE_PERMISSION = 'admin.user.impersonate';
 export const ROLE_PERMISSIONS_SELECT = {
   id: true,
   name: true,
+  dataScope: true,
   permissions: { select: { code: true } },
 } satisfies Prisma.RoleSelect;
 
@@ -37,14 +39,8 @@ export const USER_ROLES_SELECT = {
 type RoleWithPermissions = Prisma.RoleGetPayload<{ select: typeof ROLE_PERMISSIONS_SELECT }>;
 type UserRoleRow = { role: RoleWithPermissions };
 
-// Chi so quyen quan tri: nguoi quan ly tai khoan van gan duoc vai tro nghiep vu minh khong co,
-// nhung khong duoc cham toi vai tro co quyen quan tri cao hon de tranh leo quyen.
-// Chi so quyen quan tri: nguoi quan ly tai khoan van gan duoc vai tro nghiep vu minh khong co,
-// nhung khong duoc cham toi vai tro co quyen quan tri cao hon de tranh leo quyen.
 export function exceedsActor(actor: CurrentUser, roles: readonly RoleWithPermissions[]): boolean {
-  return roles.some((role) =>
-    role.permissions.some(({ code }) => code.startsWith('admin.') && !actor.permissions.has(code)),
-  );
+  return roles.some((role) => roleExceedsActor(actor, role));
 }
 
 // Khong cho thao tac tren tai khoan co quyen cao hon, neu khong co the dat lai mat khau

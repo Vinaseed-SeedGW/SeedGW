@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   PERMISSIONS,
+  RESERVED_PERMISSIONS,
   ROLE_PRESETS,
   ROUTE_RULES,
+  SYSTEM_ROLE_CODE,
   canAccessDepartment,
   canAccessPath,
   departmentLanding,
   permissionForPath,
+  roleExceedsActor,
   scopeWhere,
   widestDataScope,
   type ScopeContext,
@@ -36,7 +39,7 @@ const PAGE_PROBES = [
 // Ma tran mong doi viet tay de phat hien khi quyen cua vai tro bi doi ngoai y muon.
 const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>> = {
   admin: PAGE_PROBES,
-  operations: ['/quan-tri/tai-khoan', '/quan-tri/ket-noi'],
+  operations: ['/quan-tri/tai-khoan'],
   sales: ['/kinh-doanh/dashboard', '/kinh-doanh/don-hang', '/kinh-doanh/don-hang/tao-moi'],
   asm: [
     '/kinh-doanh/dashboard',
@@ -102,6 +105,56 @@ describe('danh muc quyen', () => {
     for (const rule of ROUTE_RULES) expect(codes).toContain(rule.permission);
     for (const role of ROLE_PRESETS) {
       for (const permission of role.permissions) expect(codes).toContain(permission);
+    }
+  });
+});
+
+describe('quyen danh rieng', () => {
+  it('chi Quan tri he thong co', () => {
+    for (const role of ROLE_PRESETS) {
+      for (const code of RESERVED_PERMISSIONS) {
+        expect(role.permissions.includes(code)).toBe(role.code === SYSTEM_ROLE_CODE);
+      }
+    }
+  });
+});
+
+describe('roleExceedsActor', () => {
+  const unitAdmin = {
+    permissions: permissionsOf('operations'),
+    dataScope: 'ORG_UNIT_TREE' as const,
+  };
+
+  function presetAuthority(code: string) {
+    const preset = ROLE_PRESETS.find((role) => role.code === code);
+    if (!preset) throw new Error(`Khong co vai tro ${code}`);
+    return {
+      dataScope: preset.dataScope,
+      permissions: preset.permissions.map((permission) => ({ code: permission })),
+    };
+  }
+
+  it('Quan tri don vi gan duoc vai tro nghiep vu trong pham vi cua minh', () => {
+    expect(roleExceedsActor(unitAdmin, presetAuthority('sales'))).toBe(false);
+    expect(roleExceedsActor(unitAdmin, presetAuthority('asm'))).toBe(false);
+    expect(roleExceedsActor(unitAdmin, presetAuthority('operations'))).toBe(false);
+  });
+
+  it('Quan tri don vi khong gan duoc vai tro co pham vi toan cong ty', () => {
+    expect(roleExceedsActor(unitAdmin, presetAuthority('sales-admin'))).toBe(true);
+    expect(roleExceedsActor(unitAdmin, presetAuthority('executive'))).toBe(true);
+    expect(roleExceedsActor(unitAdmin, presetAuthority('admin'))).toBe(true);
+  });
+
+  it('khong gan duoc vai tro co quyen quan tri minh khong co', () => {
+    const role = { dataScope: 'OWN' as const, permissions: [{ code: 'admin.setting.read' }] };
+    expect(roleExceedsActor(unitAdmin, role)).toBe(true);
+  });
+
+  it('Quan tri he thong gan duoc moi vai tro', () => {
+    const admin = { permissions: permissionsOf('admin'), dataScope: 'ALL' as const };
+    for (const role of ROLE_PRESETS) {
+      expect(roleExceedsActor(admin, presetAuthority(role.code))).toBe(false);
     }
   });
 });

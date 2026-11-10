@@ -1,8 +1,9 @@
 import 'server-only';
-import type { ManagerOption, OrgUnitRow } from '@dms/contracts/org-units';
+import type { ManagerOption, OrgUnitAssignScope, OrgUnitRow } from '@dms/contracts/org-units';
 import { db } from '@dms/db/client';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
+import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 
 export async function listOrgUnits(): Promise<OrgUnitRow[]> {
   const user = await requireUser();
@@ -25,6 +26,28 @@ export async function listOrgUnits(): Promise<OrgUnitRow[]> {
     managerName: manager?.fullName ?? null,
     memberCount: _count.users,
   }));
+}
+
+export async function getOrgUnitAssignScope(): Promise<OrgUnitAssignScope> {
+  const [user, scoped, assignableUnits] = await Promise.all([
+    requireUser(),
+    getScopedDb(),
+    getAssignableOrgUnitIds(),
+  ]);
+  assertCan(user, 'admin.org-unit.assign');
+
+  const rows = await scoped.user.findMany({
+    where: { isActive: true },
+    orderBy: { employeeCode: 'asc' },
+    select: { id: true, employeeCode: true, fullName: true },
+  });
+  return {
+    assignableUnitIds: assignableUnits ? [...assignableUnits] : null,
+    managerOptions: rows.map((row) => ({
+      value: row.id,
+      label: `${row.employeeCode} - ${row.fullName}`,
+    })),
+  };
 }
 
 export async function listManagerOptions(): Promise<ManagerOption[]> {

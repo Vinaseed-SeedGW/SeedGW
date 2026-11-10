@@ -3,11 +3,13 @@ import { Prisma } from '@prisma/client';
 import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
 import { MAX_ORG_DEPTH, checkOrgUnitMove, orgDepth } from '@dms/contracts/org-tree';
 import type {
+  AssignOrgUnitManagerInput,
   CreateOrgUnitInput,
   MoveOrgUnitInput,
   UpdateOrgUnitInput,
 } from '@dms/contracts/org-units';
 import { db } from '@dms/db/client';
+import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { DomainError } from '@/server/services/domain-error';
 
 export type OrgUnitOutcome = { id: string; label: string; changes: AuditChanges };
@@ -99,6 +101,48 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
     }
     return { id: input.id, label: input.code, changes };
   });
+}
+
+// Quan tri don vi chi doi duoc Truong don vi trong pham vi cua minh va chi chon nguoi trong pham vi.
+export async function assignOrgUnitManager({
+  id,
+  managerId,
+}: AssignOrgUnitManagerInput): Promise<OrgUnitOutcome> {
+  const [assignableUnits, scoped, unit] = await Promise.all([
+    getAssignableOrgUnitIds(),
+    getScopedDb(),
+    db.orgUnit.findUnique({
+      where: { id },
+      select: { code: true, managerId: true, manager: { select: { fullName: true } } },
+    }),
+  ]);
+  if (!unit) throw new DomainError('NOT_FOUND', 'Không tìm thấy đơn vị này');
+  if (assignableUnits && !assignableUnits.has(id)) {
+    throw new DomainError('FORBIDDEN', 'Đơn vị này nằm ngoài phạm vi của bạn');
+  }
+  if (managerId === unit.managerId) return { id, label: unit.code, changes: {} };
+
+  const manager = managerId
+    ? await scoped.user.findFirst({
+        where: { id: managerId, isActive: true },
+        select: { fullName: true },
+      })
+    : null;
+  if (managerId && !manager) {
+    throw new DomainError('VALIDATION', 'Trưởng đơn vị không hợp lệ', {
+      managerId: 'Người này không tồn tại, đã bị khoá hoặc ngoài phạm vi của bạn',
+    });
+  }
+
+  await db.orgUnit.update({ where: { id }, data: { managerId } });
+  return {
+    id,
+    label: unit.code,
+    changes: auditChanges(
+      { manager: unit.manager?.fullName ?? null },
+      { manager: manager?.fullName ?? null },
+    ),
+  };
 }
 
 export function moveOrgUnit({ id, newParentId }: MoveOrgUnitInput): Promise<OrgUnitOutcome> {

@@ -33,6 +33,10 @@ export const AUDIT_ACTION_LABEL = {
   'org-unit.update': 'Sửa đơn vị',
   'org-unit.move': 'Chuyển đơn vị',
   'org-unit.delete': 'Xoá đơn vị',
+  'org-unit.assign': 'Đổi Trưởng đơn vị',
+  'role.create': 'Tạo vai trò',
+  'role.update': 'Sửa quyền của vai trò',
+  'role.delete': 'Xoá vai trò',
 } as const;
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL;
 
@@ -51,6 +55,9 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   name: 'Tên',
   parent: 'Đơn vị cha',
   manager: 'Trưởng đơn vị',
+  dataScope: 'Phạm vi dữ liệu',
+  permissionsAdded: 'Thêm quyền',
+  permissionsRemoved: 'Bỏ quyền',
 };
 
 export function formatAuditValue(value: unknown): string {

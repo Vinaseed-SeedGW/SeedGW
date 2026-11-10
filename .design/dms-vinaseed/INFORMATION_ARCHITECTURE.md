@@ -135,7 +135,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 | ASM | Cần duyệt | — | — |
 | Sales Admin | Đơn hàng | — | — |
 | Nhân viên / Trưởng nhóm CSKH | — | Hộp thư / Phiếu tiếp nhận | — |
-| Quản trị | — | — | Tài khoản |
+| Quản trị hệ thống, Quản trị đơn vị | — | — | Tài khoản |
 | Lãnh đạo | Dashboard | Dashboard | — |
 
 ## 3. Dashboard và chỉ số

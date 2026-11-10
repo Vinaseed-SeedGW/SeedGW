@@ -33,8 +33,10 @@ export const PERMISSIONS = [
   { code: 'admin.user.export', name: 'Xuất Excel Tài khoản' },
   { code: 'admin.user.impersonate', name: 'Đăng nhập thay' },
   { code: 'admin.role.read', name: 'Xem Vai trò và quyền' },
+  { code: 'admin.role.manage', name: 'Quản lý Vai trò và quyền' },
   { code: 'admin.org-unit.read', name: 'Xem Cơ cấu tổ chức' },
   { code: 'admin.org-unit.manage', name: 'Quản lý Cơ cấu tổ chức' },
+  { code: 'admin.org-unit.assign', name: 'Đổi Trưởng đơn vị' },
   { code: 'admin.product.read', name: 'Xem Sản phẩm' },
   { code: 'admin.warehouse.read', name: 'Xem Kho' },
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },
@@ -48,6 +50,14 @@ export const PERMISSIONS = [
 ] as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[number]['code'];
+
+export const SYSTEM_ROLE_CODE = 'admin';
+
+// Chi vai tro Quan tri he thong co hai quyen nay, ma tran khong cho cap cho vai tro khac.
+export const RESERVED_PERMISSIONS: readonly PermissionCode[] = [
+  'admin.role.manage',
+  'admin.user.impersonate',
+];
 
 type RouteRule = {
   path: string;
@@ -197,6 +207,19 @@ export function widestDataScope(scopes: readonly DataScope[]): DataScope {
   );
 }
 
+type ActorAuthority = { permissions: PermissionSet; dataScope: DataScope };
+type RoleAuthority = { dataScope: DataScope; permissions: ReadonlyArray<{ code: string }> };
+
+// Chi so quyen quan tri va pham vi: nguoi quan ly tai khoan van gan duoc vai tro nghiep vu minh
+// khong co, nhung khong duoc cham toi vai tro co quyen quan tri hoac pham vi rong hon de tranh leo quyen.
+export function roleExceedsActor(actor: ActorAuthority, role: RoleAuthority): boolean {
+  const ranked = dataScope.options;
+  return (
+    ranked.indexOf(role.dataScope) > ranked.indexOf(actor.dataScope) ||
+    role.permissions.some(({ code }) => code.startsWith('admin.') && !actor.permissions.has(code))
+  );
+}
+
 export type ScopeContext = {
   dataScope: DataScope;
   userId: string;
@@ -262,9 +285,14 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
   { code: 'admin', name: 'Quản trị hệ thống', dataScope: 'ALL', permissions: ALL_CODES },
   {
     code: 'operations',
-    name: 'Quản trị',
-    dataScope: 'ALL',
-    permissions: without(codesInModule('admin'), ['admin.user.impersonate']),
+    name: 'Quản trị đơn vị',
+    dataScope: 'ORG_UNIT_TREE',
+    permissions: [
+      'admin.user.read',
+      'admin.user.manage',
+      'admin.org-unit.read',
+      'admin.org-unit.assign',
+    ],
   },
   {
     code: 'sales',
