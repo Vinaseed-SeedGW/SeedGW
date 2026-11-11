@@ -159,7 +159,14 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Động cơ duyệt viết tách biệt, thuần (`packages/contracts/approval-engine.ts`) để dùng lại sau cho duyệt KH mới, giải trình chấm công (T3).
   - **Xong khi**: cấu hình 2 đơn vị khác nhau → 2 đơn cùng giá trị đi 2 chuỗi duyệt khác nhau; xem trước khớp thực tế; test cho kế thừa, điều kiện, uỷ quyền, đổi phiên bản giữa chừng.
 
-- [ ] **A11. Ca làm việc & lịch nghỉ (`/quan-tri/ca-lam-viec`)**: định nghĩa ca (giờ vào/ra, nghỉ trưa, ngưỡng đi muộn/về sớm, số công/ca), lịch nghỉ lễ năm, gán ca theo đơn vị hoặc từng NV, ngày làm việc trong tuần. _Dùng lại: A1, F4, F5. Cỡ M._
+- [x] **A11. Ca làm việc & lịch nghỉ (`/quan-tri/ca-lam-viec`)**: định nghĩa ca (giờ vào/ra, nghỉ trưa, ngưỡng đi muộn/về sớm, số công/ca), lịch nghỉ lễ năm, gán ca theo đơn vị hoặc từng NV, ngày làm việc trong tuần. _Dùng lại: A1, F4, F5. Cỡ M._
+  - Trang có 3 tab: Ca làm việc, Gán ca (kèm Tra cứu ca của nhân viên), Lịch nghỉ (`?tab=gan-ca`, `?tab=lich-nghi`, `?nam=`).
+  - Ca: giờ vào, giờ ra (giờ ra nhỏ hơn giờ vào là ca qua đêm), nghỉ giữa ca, cho phép muộn và sớm, số công (bội của 0,25), ngày làm trong tuần. Ca đã từng được gán thì không xoá được.
+  - Gán ca theo dòng thời gian: mỗi lần gán có hiệu lực từ ngày áp dụng tới lần gán sau. Gán riêng cho nhân viên ưu tiên hơn đơn vị, đơn vị chưa gán thì lấy đơn vị cấp trên gần nhất, có lựa chọn "theo đơn vị cấp trên" để bỏ gán riêng. Chỉ xoá được lần gán chưa tới ngày.
+  - Lịch nghỉ có 2 loại: Nghỉ lễ và Ngày làm bù, thêm theo khoảng ngày.
+  - Ca và lịch nghỉ chỉ người có phạm vi toàn công ty sửa; gán ca theo phạm vi đơn vị. Quyền mới `admin.shift.manage`.
+  - Động cơ `resolveWorkday` trong `packages/contracts/src/shifts.ts` dùng chung cho Tra cứu và T1.
+  - **Xong khi** (bổ sung 11/11/2026): tra cứu một nhân viên cho đúng ca và loại ngày trong các trường hợp: ca theo đơn vị cấp trên, gán riêng có hiệu lực từ ngày sau, ngày nghỉ trong tuần, ngày lễ, ngày làm bù; xoá ca đang gán và xoá lần gán đã hiệu lực bị chặn kể cả gọi thẳng action.
   - **Xong khi**: NV có ca 7:30–17:00 check-in 7:45 → hệ thống tính "muộn 15 phút" (dùng ở T1).
 
 ---
