@@ -9,7 +9,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 - Mã task (`F1`, `S3`…) dùng để tham chiếu phụ thuộc.
 - Cỡ: **S** ≤ 1 ngày · **M** 2–3 ngày · **L** 4–5 ngày (1 dev full-stack).
 - Codebase hiện trống → mọi component đều *New*; cột "Dùng lại" chỉ các phần do task trước tạo ra.
-- Thứ tự: nền móng → **3 spike rủi ro cao làm sớm** → Quản trị (danh mục là dữ liệu gốc) → Kinh doanh + Mobile + Chấm công → CSKH → Dashboard & chỉ tiêu → hoàn thiện & go-live.
+- Thứ tự: nền móng → **3 spike rủi ro cao làm sớm** → Quản trị (danh mục là dữ liệu gốc) → Kinh doanh + Mobile + Báo cáo ghé thăm → CSKH → Dashboard & chỉ tiêu → hoàn thiện & go-live.
 - Đường dẫn và tên gọi trên giao diện theo INFORMATION_ARCHITECTURE.md.
 
 ---
@@ -156,7 +156,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - **Uỷ quyền** khi người duyệt vắng (từ ngày – đến ngày) — có audit.
   - **Phiên bản hoá**: sửa quy trình tạo phiên bản mới; đơn đang chạy giữ phiên bản cũ, đơn mới dùng phiên bản mới.
   - Màn **Xem trước**: nhập đơn giả định (đơn vị, giá trị, cờ) → hiện chuỗi bước & người duyệt thực tế.
-  - Động cơ duyệt viết tách biệt, thuần (`packages/contracts/approval-engine.ts`) để dùng lại sau cho duyệt KH mới, giải trình chấm công (T3).
+  - Động cơ duyệt viết tách biệt, thuần (`packages/contracts/approval-engine.ts`) để dùng lại sau cho duyệt KH mới.
   - **Xong khi**: cấu hình 2 đơn vị khác nhau → 2 đơn cùng giá trị đi 2 chuỗi duyệt khác nhau; xem trước khớp thực tế; test cho kế thừa, điều kiện, uỷ quyền, đổi phiên bản giữa chừng.
 
 - **A11. Ca làm việc & lịch nghỉ: ĐÃ BỎ (11/11/2026).** CBKD đi thị trường ở nhiều địa điểm, giờ làm khác nhau nên không có giờ làm thống nhất. Nhân viên dùng dữ liệu check-in để tính công với kế toán của đơn vị, DMS không quản lý ca. Đã gỡ trang `/quan-tri/ca-lam-viec`, quyền `admin.shift.*` và các bảng ca, gán ca, lịch nghỉ (migration `20261111130000_remove_shifts`).
@@ -184,7 +184,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 - [ ] **S4. Quy trình duyệt đơn (state machine + động cơ duyệt theo đơn vị)**: `Nháp → Chờ duyệt (bước 1..n) → Đã duyệt → Đã chuyển FAST → Đang giao → Hoàn thành`, nhánh `Từ chối` / `Trả lại sửa` / `Huỷ`; chuỗi bước lấy từ quy trình của đơn vị người tạo (A10), chụp lại phiên bản quy trình vào đơn khi gửi duyệt. _Dùng lại: S3, F3, A10. Cỡ L._
   - Người duyệt thấy rõ cờ cảnh báo (vượt công nợ, thiếu tồn) với số liệu tại thời điểm tạo **và** thời điểm duyệt.
-  - Trang **Cần duyệt** `/kinh-doanh/can-duyet` với `ApprovalQueue` dùng chung (tab Đơn hàng trước; tab Đại lý mới thêm ở S10, Đơn từ ở T3, Check-in nghi vấn ở S9): gồm mục được uỷ quyền, sắp quá hạn lên đầu, duyệt ngay trên dòng; leo thang khi quá SLA bước.
+  - Trang **Cần duyệt** `/kinh-doanh/can-duyet` với `ApprovalQueue` dùng chung (tab Đơn hàng trước; tab Đại lý mới thêm ở S10): gồm mục được uỷ quyền, sắp quá hạn lên đầu, duyệt ngay trên dòng; leo thang khi quá SLA bước.
   - State machine định nghĩa một chỗ (`packages/contracts/order-machine.ts`), bảng chuyển trạng thái hợp lệ + quyền cần có cho từng bước.
   - Duyệt hàng loạt; lý do bắt buộc khi từ chối/huỷ; ghi `OrderStatusHistory`.
   - Lưu lượt duyệt chuyển tiếp mà `approvalProgress` trả về (`carried`) thành bản ghi duyệt do hệ thống tạo, có ghi bước gốc, và ghi nhật ký riêng. Không gửi thông báo cần duyệt cho bước đã tự qua.
@@ -233,23 +233,23 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Nhận diện theo `BRAND.md`: nạp 4 font bằng `expo-font`, component `<Text>` chung chọn `fontFamily` theo kiểu chữ; icon app và màn khởi động xanh với logo ngang màu trắng cỡ L, không xếp chồng; thanh tiêu đề logo cỡ M; cuối tab Tôi có logo cỡ S, bản quyền và liên hệ Phòng ĐMST&CĐS.
   - **Xong khi**: khoá tài khoản trên web → app bị đăng xuất; đăng nhập trên máy thứ 2 bị chặn kèm hướng dẫn.
 
-- [ ] **M2. Check-in vào/ra ca (chấm công)**: một nút lớn "Vào ca"/"Ra ca" trên màn chính; ghi toạ độ, độ chính xác, ảnh selfie, giờ thiết bị; server ghi giờ server khi nhận. _Dùng lại: R3, M1. Cỡ M._
-  - **Xong khi**: check-in khi có mạng hiện trên web < 5s; ảnh có watermark thời gian + toạ độ.
+- [ ] **M2. Check-in tại một điểm** (viết lại 11/11/2026): nút **Check-in** lớn trên tab Hôm nay. Chọn điểm: **Đại lý** hoặc **Khách hàng** (gợi ý điểm gần vị trí hiện tại nhất, tìm theo tên hoặc số điện thoại), hoặc **Điểm khác** (nhập tên điểm, ví dụ "Ruộng trình diễn xã A"). App tự ghi toạ độ, độ chính xác, giờ trên máy; máy chủ ghi thêm giờ nhận. Ô **Nội dung làm việc** không bắt buộc. Ảnh: chờ chốt (DESIGN_BRIEF §11). Không còn Vào ca, Ra ca. _Dùng lại: R3, M1, A7, S1. Cỡ M._
+  - **Xong khi**: check-in đủ 3 loại điểm, khi có mạng hiện trên báo cáo web (V2) trong 5 giây.
 
 - [ ] **M3. Hàng đợi offline — "check-in lúc nào cũng được ghi nhận"**: mọi check-in ghi SQLite trước với `clientId` UUID, trạng thái `pending/synced/failed`; đồng bộ khi có mạng, khi mở app và chạy nền (expo-background-fetch); API `POST /api/mobile/check-ins` idempotent theo `clientId`; ảnh upload riêng, có resume. _Dùng lại: M2. Cỡ L._
   - Hiện số check-in chờ gửi; không cho đăng xuất khi còn bản ghi chưa đồng bộ.
   - **Xong khi**: bật chế độ máy bay, check-in 5 lần, tắt máy bay → đủ 5 bản ghi trên server, không trùng, giờ thiết bị được giữ nguyên.
 
-- [ ] **M4. Check-in viếng thăm đại lý (geofence)**: chọn đại lý từ danh sách tuyến hôm nay hoặc "gần tôi"; tính khoảng cách tới toạ độ đại lý; ngoài bán kính (A9) vẫn cho check-in nhưng **bắt nhập lý do** và gắn cờ; ghi chú, ảnh cửa hàng/trưng bày; check-out để tính thời gian ở điểm bán. _Dùng lại: M3, S8, A7. Cỡ L._
+- [ ] **M4. Kiểm tra vị trí khi check-in đại lý, khách hàng (geofence)**: tính khoảng cách từ vị trí hiện tại tới toạ độ đã lưu của điểm được chọn; ngoài bán kính (A9) vẫn ghi nhận nhưng **bắt nhập lý do** và gắn cờ. Điểm khác không kiểm tra bán kính. _Dùng lại: M2, M3, S8, A7. Cỡ M._
   - Cho phép cập nhật toạ độ đại lý lần đầu (đại lý chưa có toạ độ) — cần ASM duyệt.
   - **Xong khi**: check-in cách đại lý 50m → hợp lệ; cách 2km → có cờ + lý do; web thấy cả hai.
 
 - [ ] **M5. Chống gian lận check-in**: cờ nghi vấn khi: mock location (Android), độ chính xác GPS kém (> 100m), chênh giờ thiết bị/server > 5 phút, ảnh từ thư viện, thiết bị root/jailbreak, tốc độ di chuyển giữa 2 điểm phi lý. _Dùng lại: M3, M4. Cỡ M._
-  - Không chặn cứng (để luôn ghi nhận) — gắn cờ và lý do cho quản lý xem ở S9.
+  - Không chặn cứng (để luôn ghi nhận) — gắn cờ và lý do cho quản lý xem ở báo cáo ghé thăm (V2).
 
-- [ ] **M6. Lịch sử & lịch tuyến của tôi**: xem check-in theo ngày/tháng, trạng thái đồng bộ, kế hoạch viếng thăm hôm nay/tuần (S8), bản đồ điểm cần đến. _Dùng lại: M3, S8. Cỡ M._
+- [ ] **M6. Lịch sử & lịch tuyến của tôi**: xem check-in của mình theo ngày/tháng kèm nội dung làm việc, km từ điểm trước và tổng km trong ngày (V1), trạng thái đồng bộ, kế hoạch viếng thăm hôm nay/tuần (S8), bản đồ điểm cần đến. _Dùng lại: M3, S8, V1. Cỡ M._
 
-- [ ] **M7. Thông báo đẩy**: expo-notifications; nhắc vào ca, đơn được duyệt/từ chối, kế hoạch mới. _Dùng lại: M1, S4. Cỡ S._
+- [ ] **M7. Thông báo đẩy**: expo-notifications; đơn được duyệt/từ chối, kế hoạch mới. _Dùng lại: M1, S4. Cỡ S._
 
 - [ ] **M8. Tạo đơn nhanh trên mobile (tuỳ chọn — Giai đoạn 2)**: tạo đơn ngay tại đại lý sau check-in, dùng `resolvePrice` chung, lưu nháp offline, gửi duyệt khi có mạng. _Dùng lại: S2 (logic), M3 (offline). Cỡ L._
 
@@ -263,36 +263,27 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 - [ ] **M10. Thêm đại lý mới trên app**: tab Tuyến › Thêm đại lý; lưu trên máy khi mất mạng; gửi lên khi có mạng rồi mới được cấp mã (S10); lấy toạ độ tại chỗ. _Dùng lại: M3, S10. Cỡ M._
   - **Xong khi**: thêm đại lý lúc mất mạng → có mạng thì được cấp mã, duyệt, xuất hiện trên FBO đúng mã.
 
-- [ ] **M11. Cần duyệt và chỉ tiêu của tôi trên app**: người có quyền duyệt thấy đơn hàng và đơn từ cần duyệt ngay trong tab Đơn hàng (cùng API với web); tab Hôm nay hiện % chỉ tiêu tháng của nhân viên. Phần chỉ tiêu làm sau K3, K4. _Dùng lại: S4, T3, K3. Cỡ M._
+- [ ] **M11. Cần duyệt và chỉ tiêu của tôi trên app**: người có quyền duyệt thấy đơn hàng cần duyệt ngay trong tab Đơn hàng (cùng API với web); tab Hôm nay hiện % chỉ tiêu tháng của nhân viên. Phần chỉ tiêu làm sau K3, K4. _Dùng lại: S4, K3. Cỡ M._
 
-- [ ] **S9. Trang Check-in trên web cho quản lý (`/kinh-doanh/check-in`)**: danh sách và bản đồ vị trí check-in trong ngày (cluster), xem ảnh, lọc cờ nghi vấn, duyệt/từ chối check-in nghi vấn (tab Check-in nghi vấn của Cần duyệt). Bảng công nằm ở T2. _Dùng lại: F4, M2–M5, A1, S4. New: `CheckInMap` (`next/dynamic`). Cỡ M._
-  - **Xong khi**: ASM chỉ thấy nhân viên vùng mình; duyệt một check-in nghi vấn → ngày công tính lại đúng.
+- **S9. Trang Check-in trên web cho quản lý: đã gộp vào V2 (11/11/2026).**
 
 ---
 
-## Giai đoạn 2c — Chấm công thay máy chấm công (tuần 12–15)
+## Giai đoạn 2c — Báo cáo ghé thăm (tuần 12–14)
 
-> **Cần xem lại (11/11/2026):** người dùng chốt bỏ Ca làm việc (A11), công do kế toán đơn vị tính từ dữ liệu check-in. Các task T1 đến T5 dưới đây đang dựa vào ca và lịch nghỉ, cần xác định lại phạm vi trước khi làm, ví dụ chỉ giữ bảng check-in và xuất Excel cho kế toán.
+> **Quyết định 11/11/2026 (DESIGN_BRIEF §9 mục 20):** DMS không tính công. Check-in chỉ ghi lại nhân viên đã ở đâu, lúc nào, làm gì và đi bao nhiêu km. Kế toán đơn vị dùng file Excel để tính công. Các task T1 đến T5 (tổng hợp ngày công, bảng công, giải trình và đơn từ, chốt kỳ công, tích hợp HRM) đã bỏ.
 
-> Check-in là nguồn chấm công chính thức cho cán bộ kinh doanh → dữ liệu phải đầy đủ, giải trình được, khoá được theo kỳ, và xuất được sang HRM sau này mà không phải sửa code.
+- [ ] **V1. Quãng đường giữa các điểm check-in**: khi nhận check-in, máy chủ tính số km từ điểm check-in liền trước **trong cùng ngày** của nhân viên đó; điểm đầu tiên trong ngày ghi 0 km. Thứ tự theo giờ trên máy của nhân viên, nên check-in gửi trễ do mất mạng vẫn chen đúng chỗ và các dòng sau nó được tính lại. Lưu `distanceFromPreviousKm` trên `CheckIn` để báo cáo không phải tính lại. _Dùng lại: M2, M3. Cỡ M._
+  - Cách tính km chờ chốt (DESIGN_BRIEF §11): **đường thẳng** giữa hai toạ độ (tính ngay, miễn phí) hoặc **đường đi thực tế** theo bản đồ (cần máy chủ tìm đường). Code tách riêng hàm tính để đổi cách mà không sửa báo cáo.
+  - **Xong khi**: 5 check-in làm lúc mất mạng, gửi lên lệch thứ tự → km từng dòng và tổng km trong ngày giống như khi gửi đúng thứ tự; test cho điểm đầu ngày, qua nửa đêm, hai điểm trùng toạ độ.
 
-- [ ] **T1. Tổng hợp ngày công tự động**: job cuối ngày (và chạy lại khi có check-in đến muộn do offline) tính `AttendanceDay` cho từng NV từ `CheckIn` vào/ra ca + ca được gán (A11): giờ vào, giờ ra, số phút muộn/sớm, số công, trạng thái (đủ công, thiếu check-out, vắng, nghỉ lễ, nghỉ phép, công tác). _Dùng lại: M2, M3, A11. Cỡ M._
-  - Check-in nghi vấn (M5) chưa được duyệt → ngày công ở trạng thái "chờ xác nhận".
-  - **Xong khi**: 20 kịch bản chuẩn (muộn, quên ra ca, qua đêm, ngày lễ, check-in offline gửi trễ 2 ngày) cho ra đúng công.
-
-- [ ] **T2. Bảng công tháng (`/kinh-doanh/cham-cong`)**: lưới NV × ngày với ký hiệu (X, P, L, CT, M15…), tổng công, tổng phút muộn; bấm vào ô xem chi tiết check-in, ảnh, vị trí; lọc theo đơn vị; xuất Excel. Trang có tab Bảng công · Đơn từ · Kỳ công. _Dùng lại: T1, F4. Cỡ L._
-
-- [ ] **T3. Giải trình & đơn từ**: trên mobile và web NV gửi: quên check-in/out, đi công tác ngoài tuyến, nghỉ phép, làm thêm; đính kèm ảnh; quản lý trực tiếp duyệt ở Cần duyệt › Đơn từ (dùng động cơ duyệt A10, quy trình riêng cho đơn từ). Duyệt xong → T1 tính lại công. _Dùng lại: A10, T1, M7. Cỡ L._
-  - **Xong khi**: NV quên ra ca → gửi giải trình trên mobile → ASM duyệt trên mobile/web → ô công đổi từ "thiếu" sang "đủ".
-
-- [ ] **T4. Chốt & khoá kỳ công**: kỳ công tháng `Mở → Đang rà soát → Đã chốt`; sau khi chốt không sửa được check-in/giải trình của kỳ đó (muốn sửa phải mở lại kỳ, có audit và lý do); NV xác nhận bảng công cá nhân trên mobile trước hạn chốt. _Dùng lại: T2, T3. Cỡ M._
-
-- [ ] **T5. Sẵn sàng tích hợp HRM**: _Dùng lại: T2, T4, S5 (khung API). Cỡ M._
-  - Định dạng dữ liệu chấm công chuẩn (NV, ngày, giờ vào, giờ ra, số công, mã loại ngày) tài liệu hoá trong OpenAPI.
-  - `GET /api/v1/attendance?period=2026-11&orgUnit=` cho kỳ đã chốt, dùng chung cơ chế API key/HMAC như FAST → sau này HRM nào cũng chỉ cần cấp key.
-  - **Mẫu xuất Excel tuỳ chỉnh**: admin chọn cột, đặt tên cột, thứ tự, mã ký hiệu → lưu thành mẫu; xuất 1 click. Đây là "thao tác đơn giản" khi chưa có HRM.
-  - Mã NV trong DMS khớp mã NV công ty (A2) để ghép với HRM sau này.
-  - **Xong khi**: tạo mẫu xuất theo định dạng phòng nhân sự đang dùng → file xuất mở ra dùng được ngay không cần chỉnh tay.
+- [ ] **V2. Báo cáo ghé thăm (`/kinh-doanh/check-in`)**: một bảng check-in có phân trang phía máy chủ. _Dùng lại: F4, M2–M5, V1, A1. New: `CheckInMap` (`next/dynamic`). Cỡ L._
+  - Cột: Ngày, Giờ, Nhân viên, Đơn vị, Loại điểm (Đại lý, Khách hàng, Điểm khác), Tên điểm, Địa chỉ hoặc toạ độ (bấm mở bản đồ), Nội dung làm việc, Km từ điểm trước, Cờ nghi vấn (M5, chỉ để xem, không chặn).
+  - Lọc: khoảng ngày (mặc định hôm nay), nhân viên, đơn vị, loại điểm, chỉ dòng có cờ. Dưới bảng có tổng số lượt và tổng km theo bộ lọc.
+  - **Xuất Excel** đúng bộ lọc đang chọn, thêm một sheet tổng hợp theo nhân viên theo ngày (số điểm, tổng km). Giới hạn `MAX_EXPORT_ROWS`.
+  - Chọn một nhân viên và một ngày → xem các điểm trên bản đồ nối theo thứ tự thời gian.
+  - **Phạm vi**: nhân viên chỉ thấy check-in của mình; quản lý thấy nhân viên trong đơn vị mình quản lý theo phạm vi dữ liệu của vai trò (`own`, `orgUnit`, `orgUnitTree`, `all`). Áp ở cả trang, xuất Excel và API.
+  - **Xong khi**: nhân viên A chỉ thấy và xuất được dòng của A; quản lý vùng 1 thấy nhân viên vùng 1, không thấy vùng 2, kể cả gọi thẳng action; file Excel mở ra đúng cột, tổng km khớp với trang.
 
 ---
 
@@ -382,13 +373,13 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Ánh xạ đơn hàng lịch sử sang KH sau hợp nhất; nạp số liệu bán các năm trước vào bảng tổng hợp để dashboard so được cùng kỳ; nhập chỉ tiêu vụ hiện tại.
   - Chạy thử chuyển đổi ≥ 2 lần trên staging; đối soát số lượng & tổng công nợ khớp FAST; ký biên bản.
 
-- [ ] **G2. UAT theo kịch bản từng bộ phận**: kịch bản Kinh doanh (tạo → duyệt → FAST nhận → giao), Mobile (check-in offline, ngoài geofence), CSKH (Zalo → phiếu → Mattermost → đóng → CSAT), Quản trị (tạo NV → phân quyền → đăng nhập mobile), Chấm công (vào ca → giải trình → chốt kỳ → xuất mẫu), Dashboard (đối soát Thực bán với báo cáo FAST; kiểm tra phạm vi từng vai trò). Ghi nhận lỗi, sửa, ký biên bản. _Cỡ L._
+- [ ] **G2. UAT theo kịch bản từng bộ phận**: kịch bản Kinh doanh (tạo → duyệt → FAST nhận → giao), Mobile (check-in offline, ngoài geofence), CSKH (Zalo → phiếu → Mattermost → đóng → CSAT), Quản trị (tạo NV → phân quyền → đăng nhập mobile), Báo cáo ghé thăm (check-in 3 loại điểm → km → quản lý xem → xuất Excel), Dashboard (đối soát Thực bán với báo cáo FAST; kiểm tra phạm vi từng vai trò). Ghi nhận lỗi, sửa, ký biên bản. _Cỡ L._
 
 - [ ] **G3. Đào tạo & tài liệu**: hướng dẫn sử dụng theo vai trò (PDF/video ngắn), tài liệu vận hành cho IT (deploy, backup/restore, xoay API key, kết nối lại Zalo OA), tài liệu API cho FAST. _Cỡ M._
 
 - [ ] **G4. Go-live theo đợt**: mỗi đợt có kế hoạch rollback và theo dõi Sentry/log 2 tuần. _Cỡ M._
   - Đợt 1: Quản trị + Kinh doanh web + kết nối FAST cho 1 vùng thí điểm; Dashboard nguồn Đặt hàng.
-  - Đợt 2: app check-in toàn bộ nhân viên thị trường; **chấm công chạy song song với máy chấm công ít nhất 1 kỳ công** rồi mới thay thế.
+  - Đợt 2: app check-in toàn bộ nhân viên thị trường; kế toán đơn vị dùng thử file Excel báo cáo ghé thăm ít nhất 1 tháng.
   - Đợt 3: CSKH (Zalo + Mattermost).
   - Đợt 4: bật Thực bán, chỉ tiêu và Tổng quan điều hành sau khi đối soát số với FAST.
 
@@ -407,8 +398,8 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 | 0b · Spike | 2–5 | Hợp đồng FBO 2 chiều + dải mã KH đã chốt, nhận/gửi tin Zalo, GPS trên Android & iPhone, đã nộp hồ sơ Apple Developer |
 | 1 · Quản trị | 4–8 | Tài khoản, vai trò, sản phẩm/kho/tồn từ FAST, bảng giá, đại lý mã FAST, **quy trình duyệt theo đơn vị** |
 | 2 · Kinh doanh + FAST | 8–14 | Đơn có cảnh báo tồn/công nợ, duyệt nhiều bước, đơn & KH mới sang FBO, công nợ về DMS |
-| 2b · App check-in | 9–14 | Vào/ra ca + viếng thăm, offline, chống gian lận, phát hành Android + iOS |
-| 2c · Chấm công | 12–15 | Ngày công tự động, bảng công, giải trình, chốt kỳ, mẫu xuất HRM |
+| 2b · App check-in | 9–14 | Check-in đại lý, khách hàng, điểm khác, offline, chống gian lận, phát hành Android + iOS |
+| 2c · Báo cáo ghé thăm | 12–14 | Quãng đường giữa các điểm check-in, báo cáo theo phạm vi quản lý, xuất Excel |
 | 3 · CSKH | 13–18 | Hộp thư Zalo + hạn mức gói Nâng cao, phiếu + SLA, Mattermost |
 | 3b · Dashboard & chỉ tiêu | 16–20 | Số lượng hàng bán (Đặt hàng/Thực bán), đại lý đặt mua, % chỉ tiêu, Tổng quan điều hành, Báo cáo |
 | 4 · Hoàn thiện | 20–23 | Hub có số việc chờ, tìm kiếm toàn cục, thông báo, rà soát hiệu năng/bảo mật |
@@ -425,7 +416,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 | Khối Marketing & PTSP | Tạo app Zalo for Developers, cấp quyền OA, bàn giao App ID/Secret | Tuần 3 |
 | IT Vinaseed | Server, DMZ, domain/HTTPS, quyền bot Mattermost | Tuần 2 |
 | Pháp chế / Hành chính | Hồ sơ D-U-N-S, tài khoản Apple Developer & Google Play đứng tên Vinaseed | Tuần 1–4 |
-| Nhân sự | Quy định ca, cách tính công, mẫu bảng công đang dùng | Tuần 6 |
+| Kế toán đơn vị | Mẫu Excel đang dùng để tính công từ check-in (để báo cáo ghé thăm xuất đúng cột) | Tuần 10 |
 | Kinh doanh các vùng | Quy trình duyệt đơn của từng đơn vị | Tuần 6 |
 | Lãnh đạo Kinh doanh | Lịch vụ, cách giao chỉ tiêu, mẫu chỉ tiêu đang dùng | Tuần 14 |
 | Kế toán | Số liệu bán các năm trước để so cùng kỳ | Tuần 20 |

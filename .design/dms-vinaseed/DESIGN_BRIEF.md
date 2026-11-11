@@ -22,7 +22,7 @@ Trước khi vào app, người dùng luôn đi qua một **Hub** chia thành 3 
 
 | Vai trò | Bộ phận | Việc chính |
 |---|---|---|
-| NV kinh doanh (thị trường) | Kinh doanh | Check-in chấm công & viếng thăm đại lý (mobile), tạo đơn, chăm sóc đại lý/KH theo tuyến |
+| NV kinh doanh (thị trường) | Kinh doanh | Check-in tại đại lý, khách hàng hoặc điểm khác (mobile), tạo đơn, chăm sóc đại lý/KH theo tuyến |
 | Quản lý vùng / ASM | Kinh doanh | Duyệt đơn, xem check-in & bản đồ NV, báo cáo vùng |
 | Admin bán hàng / Sales Admin | Kinh doanh | Kiểm tra đơn, theo dõi đồng bộ FAST, xử lý lỗi đồng bộ |
 | NV CSKH | CSKH | Trả lời tin nhắn Zalo, tạo/xử lý phiếu tiếp nhận |
@@ -37,7 +37,7 @@ Trước khi vào app, người dùng luôn đi qua một **Hub** chia thành 3 
 Toàn bộ sơ đồ trang, điều hướng, thứ tự nội dung, luồng người dùng, tên gọi và URL nằm ở **[INFORMATION_ARCHITECTURE.md](INFORMATION_ARCHITECTURE.md)**. Tóm tắt:
 
 - Đăng nhập → **Hub** → một trong 3 bộ phận → menu trái tối đa 2 cấp → chi tiết dùng tab.
-- **Kinh doanh** (12 trang): Dashboard, Cần duyệt · Đơn hàng, Tồn kho, Chỉ tiêu · Đại lý, Khách hàng · Tuyến viếng thăm, Check-in, Chấm công · Đồng bộ FAST, Báo cáo.
+- **Kinh doanh** (11 trang): Dashboard, Cần duyệt · Đơn hàng, Tồn kho, Chỉ tiêu · Đại lý, Khách hàng · Tuyến viếng thăm, Check-in · Đồng bộ FAST, Báo cáo.
 - **CSKH** (5 trang): Hộp thư, Phiếu tiếp nhận, Khách hàng, Mẫu trả lời, Dashboard.
 - **Quản trị** (12 trang): Tài khoản, Vai trò và quyền, Cơ cấu tổ chức · Sản phẩm, Kho, Đại lý, Bảng giá · Quy trình duyệt, Lịch vụ, Tham số · Kết nối, Nhật ký.
 - **App điện thoại** (5 tab): Hôm nay, Tuyến, Đơn hàng, Công, Tôi.
@@ -80,9 +80,9 @@ Toàn bộ sơ đồ trang, điều hướng, thứ tự nội dung, luồng ng�
 - **Tổ chức & người**: `User`, `Role`, `Permission`, `UserRole`, `OrgUnit` (Công ty → Miền → Vùng → Khu vực), `Employee` (mã NV, chức danh, đơn vị, quản lý trực tiếp).
 - **Danh mục** (mã theo FAST): `ProductCategory`, `Product` (**mã FAST = mã chính**, chỉ đọc; thuộc tính bổ sung của DMS: ảnh, mô tả kỹ thuật, nhóm hiển thị, quy cách bán), `Unit`, `UnitConversion`, `Warehouse` (mã FAST), `InventorySnapshot` (tồn theo kho × sản phẩm, thời điểm đồng bộ), `PriceList`, `PriceListItem`, `DiscountPolicy`.
 - **Khách hàng**: `Dealer` (id UUID + **mã nghiệp vụ = mã FAST**, `legacyCode` mã DMS cũ, trạng thái đồng bộ FAST, cấp 1/cấp 2, MST, địa chỉ hành chính, toạ độ, NV phụ trách, hạn mức & công nợ từ FAST), `CodeSequence` (dải mã DMS được cấp), `Customer` (nông dân/HTX/hộ — chỉ mã DMS, SĐT, Zalo ID, diện tích, cây trồng), `Contact`.
-- **Bán hàng**: `Route`, `VisitPlan`, `CheckIn` (loại: vào ca / ra ca / viếng thăm; toạ độ, độ chính xác, ảnh, thời gian thiết bị + thời gian server, cờ nghi vấn), `Order` (cờ cảnh báo: vượt công nợ, thiếu tồn; phiên bản quy trình duyệt), `OrderLine`, `OrderStatusHistory`.
+- **Bán hàng**: `Route`, `VisitPlan`, `CheckIn` (chi tiết ở mục Check-in bên dưới), `Order` (cờ cảnh báo: vượt công nợ, thiếu tồn; phiên bản quy trình duyệt), `OrderLine`, `OrderStatusHistory`.
 - **Quy trình duyệt**: `ApprovalWorkflow` (theo `OrgUnit`, có phiên bản, kế thừa từ đơn vị cha), `ApprovalStep` (thứ tự, người duyệt theo vai trò/chức danh/người cụ thể, điều kiện kích hoạt, SLA), `ApprovalInstance`, `ApprovalAction`, `Delegation` (uỷ quyền khi vắng).
-- **Chấm công**: không quản lý ca làm việc (bỏ ngày 11/11/2026, xem §9 mục 19), `AttendanceDay` (tổng hợp ngày công từ `CheckIn`), `AttendanceRequest` (giải trình quên check-in, công tác, nghỉ phép), `AttendancePeriod` (kỳ công tháng, trạng thái chốt/khóa).
+- **Check-in**: `CheckIn` (nhân viên, loại điểm Đại lý / Khách hàng / Điểm khác, đại lý hoặc khách hàng hoặc tên điểm khác, toạ độ, độ chính xác, giờ trên máy, giờ máy chủ nhận, nội dung làm việc, ảnh nếu có, km từ điểm trước, cờ nghi vấn, `clientId` để chống trùng). DMS không quản lý ca và không tính công (§9 mục 19, 20).
 - **Tích hợp**: `ApiClient` (FAST, key hash, IP whitelist), `SyncOutbox` (sự kiện chờ đồng bộ, có thứ tự phụ thuộc: KH trước đơn), `SyncLog`, `IntegrationAccount` (Zalo OA token, Mattermost bot), `ZaloQuota` (hạn mức tin ngoài khung đã dùng/còn lại).
 - **CSKH**: `Channel`, `Conversation`, `Message`, `Attachment`, `Ticket` (loại, mức ưu tiên, SLA, người xử lý, liên kết KH/đại lý/đơn), `TicketEvent`, `CannedReply`.
 - **Số liệu và chỉ tiêu**: `FastSalesLine` (dòng hoá đơn bán và hàng trả lại từ FAST), `SalesDailyFact` (tổng hợp theo ngày × đại lý × sản phẩm × nhân viên × đơn vị tại thời điểm bán × nguồn Đặt hàng/Thực bán; sản lượng kg, doanh thu), `SalesTarget` (kỳ, đơn vị hoặc nhân viên, nhóm sản phẩm, sản lượng, doanh thu), `Season` (lịch vụ).
@@ -131,7 +131,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 4 | Mattermost | **Tự host** | DMS gọi trực tiếp trong mạng nội bộ; cần admin Mattermost bật Bot Accounts + Integrations (slash command, outgoing webhook). |
 | 5 | Hạ tầng | **Server nội bộ, có domain công khai** | Nginx reverse proxy ở vùng DMZ; chỉ mở ra Internet: web đăng nhập, `/api/mobile/*`, `/api/v1/*` (giới hạn IP của FBO nếu có), `/api/webhooks/zalo`. Xem task F7. |
 | 6 | Người dùng | **300–400**, cần **Android và iOS** | Cần tài khoản Apple Developer đứng tên pháp nhân Vinaseed (cần số D-U-N-S); phát hành iOS dạng Unlisted App hoặc Custom App qua Apple Business Manager. Ảnh check-in ~90–180 GB/năm → lưu trữ & chính sách nén. |
-| 7 | Chấm công | Check-in **thay máy chấm công** cho cán bộ kinh doanh; chưa có HRM | Bổ sung phân hệ **Chấm công**: ca làm việc, lịch nghỉ, giải trình/đơn từ, chốt công tháng, bảng công; chuẩn hoá dữ liệu & API/Excel xuất sang HRM sau này (task T1–T5). |
+| 7 | Chấm công (đổi ngày 11/11/2026, xem mục 20) | Check-in **thay máy chấm công** cho cán bộ kinh doanh; chưa có HRM | Bổ sung phân hệ **Chấm công**: ca làm việc, lịch nghỉ, giải trình/đơn từ, chốt công tháng, bảng công; chuẩn hoá dữ liệu & API/Excel xuất sang HRM sau này (task T1–T5). |
 | 8 | Duyệt đơn | **Mỗi đơn vị một quy trình riêng, tự cấu hình**. Khi tạo đơn: **cảnh báo** tồn kho giống & hạn mức công nợ, **không chặn** | Trình cấu hình quy trình duyệt theo đơn vị (task A10). Đơn mang cờ "vượt công nợ"/"thiếu tồn" để người duyệt thấy; quy trình có thể thêm bước duyệt khi có cờ. |
 | 9 | Điều hướng (2026-11-09) | **Luôn qua Hub**; menu tối đa 2 cấp | Ngoại lệ duy nhất: link từ thông báo tới thẳng đối tượng. Xem IA §0, §2. |
 | 10 | Vị trí Dashboard (2026-11-09) | **Tổng quan điều hành mở từ Hub + Dashboard trong từng bộ phận** | Hub vẫn là 3 bộ phận. Phạm vi số liệu theo vai trò. Xem IA §3. |
@@ -144,6 +144,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 17 | Một người duyệt hai bước liên tiếp (2026-11-11) | **Bước sau tự qua, chỉ khi hai bước nằm liền nhau trong chuỗi của đơn** | Bước không chạy hoặc tự duyệt theo ngưỡng thì bỏ qua khi xét liền nhau. Có người khác duyệt xen giữa thì phải duyệt lại. Chỉ người đã thực sự duyệt bước trước mới được tính, kể cả khi nhận uỷ quyền. Hệ thống ghi một lượt duyệt chuyển tiếp riêng để kiểm toán phân biệt với lượt duyệt thật (task A10, S4). |
 | 18 | Trình cấu hình quy trình (2026-11-11) | **Dựng chuỗi bước bằng kéo thả** | Kéo khối loại người duyệt vào chuỗi để chèn bước, kéo tay nắm để đổi thứ tự. Vẫn có nút lên, xuống và phím mũi tên cho người không kéo được. Không thêm thư viện. |
 | 19 | Ca làm việc (2026-11-11) | **Bỏ ca làm việc, gán ca và lịch nghỉ khỏi DMS** | CBKD đi nhiều địa điểm, giờ làm khác nhau. Nhân viên dùng dữ liệu check-in để tính công với kế toán đơn vị. Phân hệ Chấm công (T1 đến T5) cần xác định lại phạm vi. |
+| 20 | Check-in và chấm công (2026-11-11) | **DMS chỉ ghi lại check-in và xuất báo cáo ghé thăm, không tính công** | Mỗi check-in ghi: điểm (đại lý, khách hàng hoặc điểm khác), thời gian, nội dung làm việc (không bắt buộc), km từ điểm check-in trước trong ngày. Nhân viên xem của mình, quản lý xem nhân viên mình quản lý, xuất Excel cho kế toán đơn vị tính công. Bỏ Vào ca, Ra ca, bảng công, đơn từ, chốt kỳ công, tích hợp HRM (task T1 đến T5). |
 
 ## 10. Chiến lược mã khách hàng (đề xuất — chờ duyệt)
 
@@ -184,7 +185,7 @@ Mã FAST chỉ áp cho đối tượng **mua hàng và xuất hoá đơn** từ 
 1. FBO: có API tích hợp không (nhận đơn bán/chứng từ, tạo KH với mã truyền vào, trả tồn kho, công nợ, **hoá đơn bán và hàng trả lại**)? Chi phí mở API? Đầu mối kỹ thuật FAST?
 2. Định dạng mã KH hiện tại trên FAST (tiền tố, độ dài) để chốt dải mã cho DMS.
 3. Tồn kho cảnh báo theo kho nào: kho của chi nhánh phụ trách vùng hay tổng các kho?
-4. Chấm công: ~~quy định ca, cách tính đi muộn/về sớm~~ đã trả lời 11/11/2026, DMS không quản lý ca (§9 mục 19). Còn mở: DMS cần đưa cho kế toán dữ liệu check-in dạng nào.
+4. Check-in (§9 mục 20): (a) km tính theo **đường thẳng** giữa hai điểm hay **đường đi thực tế** theo bản đồ? Nếu km dùng để thanh toán công tác phí thì nên dùng đường đi thực tế. (b) Ảnh khi check-in: bắt buộc, không bắt buộc, hay bỏ? (c) Mẫu Excel kế toán các đơn vị đang dùng để file xuất ra đúng cột.
 5. Mattermost: phiên bản và URL nội bộ; có cho DMS tạo bot account không.
 6. Khách mới có bắt buộc qua Sales Admin duyệt trước khi sang FAST không? (Khuyến nghị: bật.)
 7. Dashboard: danh sách vụ và thời gian từng vụ; số ngày N để coi là "đại lý không đặt hàng"; ai được giao chỉ tiêu; số liệu lịch sử cần nạp từ bao nhiêu năm để so cùng kỳ.

@@ -19,8 +19,8 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 
 | Vai trò | Việc thường xuyên nhất (giảm dần) | Trang dùng ~80% thời gian |
 |---|---|---|
-| Nhân viên kinh doanh | Vào/ra ca → check-in đại lý → tạo đơn → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
-| ASM / quản lý vùng | Duyệt đơn → xem check-in và chấm công → xem số vùng | **Cần duyệt** |
+| Nhân viên kinh doanh | Check-in đại lý, khách hàng, điểm khác → tạo đơn → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| ASM / quản lý vùng | Duyệt đơn → xem báo cáo ghé thăm → xem số vùng | **Cần duyệt** |
 | Sales Admin | Kiểm tra đơn → xử lý lỗi đồng bộ → đại lý mới | **Đơn hàng** |
 | Nhân viên CSKH | Trả lời tin nhắn → cập nhật phiếu | **Hộp thư** |
 | Trưởng nhóm CSKH | Phân công → theo dõi quá hạn → xem số | **Phiếu tiếp nhận** |
@@ -43,7 +43,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - **Kinh doanh** `/kinh-doanh` (chuyển tới trang đích theo vai trò)
   - Tổng quan
     - Dashboard `/kinh-doanh/dashboard`
-    - Cần duyệt* `/kinh-doanh/can-duyet` (tab: Đơn hàng · Đại lý mới · Đơn từ · Check-in nghi vấn)
+    - Cần duyệt* `/kinh-doanh/can-duyet` (tab: Đơn hàng · Đại lý mới)
   - Bán hàng
     - Đơn hàng `/kinh-doanh/don-hang`
       - Tạo đơn `/kinh-doanh/don-hang/tao-moi`
@@ -58,8 +58,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
     - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham`
-    - Check-in `/kinh-doanh/check-in` (danh sách, bản đồ, ảnh, cờ nghi vấn)
-    - Chấm công `/kinh-doanh/cham-cong` (tab: Bảng công · Đơn từ · Kỳ công)
+    - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm: danh sách, km giữa các điểm, xuất Excel, bản đồ theo ngày, cờ nghi vấn)
   - Đối soát
     - Đồng bộ FAST `/kinh-doanh/dong-bo-fast` (tab: Đơn hàng · Đại lý · Yêu cầu cập nhật · Danh mục)
     - Báo cáo `/kinh-doanh/bao-cao`
@@ -99,10 +98,10 @@ Trang có dấu `*` là bổ sung so với plan trước.
 ### Site Map app điện thoại
 
 - Đăng nhập / Đăng ký thiết bị
-- Tab **Hôm nay**: nút Vào ca/Ra ca · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
-- Tab **Tuyến**: đại lý hôm nay / gần tôi → Check-in đại lý → Check-out · Thêm đại lý
+- Tab **Hôm nay**: nút Check-in · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
+- Tab **Tuyến**: đại lý hôm nay / gần tôi → Check-in · Thêm đại lý
 - Tab **Đơn hàng**: đơn của tôi · Tạo đơn nhanh (M8) · **Cần duyệt** (chỉ hiện với người có quyền duyệt)
-- Tab **Công**: lịch sử check-in · bảng công · gửi đơn từ · xác nhận kỳ công
+- Tab **Lịch sử**: check-in của tôi theo ngày, nội dung làm việc, km từ điểm trước, tổng km trong ngày
 - Tab **Tôi**: hồ sơ, thiết bị, thông báo, đăng xuất
 
 ### Quy tắc "một hồ sơ, nhiều lối vào"
@@ -120,7 +119,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
 - **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 12 trang chia 5 nhóm; CSKH 5 trang không chia nhóm; Quản trị 13 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
-- **Điều hướng phụ**: tab trong trang chi tiết; tab cấp trang cho Cần duyệt, Chấm công, Đồng bộ FAST. Breadcrumb từ cấp bộ phận.
+- **Điều hướng phụ**: tab trong trang chi tiết; tab cấp trang cho Cần duyệt, Đồng bộ FAST. Breadcrumb từ cấp bộ phận.
 - **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
 - **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Cần duyệt, Hộp thư, Đồng bộ FAST.
 - **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Hộp thư 3 cột thu thành 1 cột theo bước (danh sách → hội thoại → thông tin khách). Bảng dữ liệu ẩn bớt cột phụ.
@@ -154,13 +153,13 @@ Mọi khối số hiện **"cập nhật lúc hh:mm"**. Mọi khối bấm đư�
 | **Đại lý** | Top đại lý theo sản lượng · đại lý mới có đơn đầu tiên · **đại lý không đặt hàng quá N ngày** · độ phủ theo vùng |
 | **Đơn hàng** | Số đơn theo trạng thái · đơn duyệt quá hạn · đơn có cảnh báo vượt công nợ/thiếu tồn · chênh lệch Đặt hàng và Thực bán |
 | **Công nợ và tồn kho** | Tổng công nợ · đại lý vượt hạn mức · sản phẩm tồn thấp |
-| **Thị trường** | Nhân viên đã vào ca hôm nay · tỉ lệ hoàn thành tuyến · số lượt viếng thăm · tỉ lệ viếng thăm có phát sinh đơn |
+| **Thị trường** | Nhân viên đã check-in hôm nay · tổng km đi thị trường · tỉ lệ hoàn thành tuyến · số lượt viếng thăm · tỉ lệ viếng thăm có phát sinh đơn |
 
 Theo vai trò: **Nhân viên** thấy số của mình và đại lý mình phụ trách, ẩn khối "Đơn duyệt quá hạn". **ASM** thấy vùng và có thêm bảng xếp hạng nhân viên. **Lãnh đạo** thấy toàn công ty và so sánh giữa các miền.
 
 ### 3.3 Tổng quan điều hành `/tong-quan`
 
-Một màn hình, không cuộn trên màn 1440px: Thực bán so với chỉ tiêu · Doanh thu · Số đại lý đặt mua · Công nợ · Phiếu quá hạn · Nhân viên vào ca hôm nay; so sánh các miền; danh sách **"Cần chú ý"** (vùng dưới chỉ tiêu, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, phiếu khiếu nại mức cao).
+Một màn hình, không cuộn trên màn 1440px: Thực bán so với chỉ tiêu · Doanh thu · Số đại lý đặt mua · Công nợ · Phiếu quá hạn · Nhân viên đã check-in hôm nay; so sánh các miền; danh sách **"Cần chú ý"** (vùng dưới chỉ tiêu, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, phiếu khiếu nại mức cao).
 
 ### 3.4 Dashboard CSKH `/cskh/dashboard`
 
@@ -221,16 +220,11 @@ Quy tắc tính:
 3. Đại lý cần chú ý và top đại lý — chỗ có thể hành động
 4. Đơn hàng, công nợ, thị trường
 
-### Check-in
-1. Danh sách/bản đồ trong ngày
-2. Cờ nghi vấn cần xem
-3. Ảnh và chi tiết khi chọn một lượt
-
-### Chấm công — Bảng công
-1. Lưới nhân viên × ngày
-2. Ô bất thường (thiếu, muộn, chờ xác nhận) — nổi bật màu
-3. Trạng thái kỳ công và hạn chốt
-4. Xuất theo mẫu
+### Báo cáo ghé thăm (Check-in)
+1. Bộ lọc: khoảng ngày, nhân viên, đơn vị, loại điểm. Nút Xuất Excel
+2. Bảng check-in: giờ, nhân viên, điểm, nội dung làm việc, km từ điểm trước, cờ nghi vấn
+3. Tổng số lượt và tổng km theo bộ lọc
+4. Bản đồ các điểm của một nhân viên trong một ngày, nối theo thứ tự giờ
 
 ### Đồng bộ FAST
 1. Số lỗi và danh sách lỗi — chỉ việc lỗi mới cần người xử lý
@@ -250,7 +244,7 @@ Quy tắc tính:
 4. Lịch sử phiên bản
 
 ### Hôm nay (app điện thoại)
-1. Nút Vào ca / Ra ca — việc bắt buộc mỗi ngày
+1. Nút Check-in — việc chính khi đi thị trường
 2. Điểm cần thăm tiếp theo
 3. Chỉ tiêu tháng của tôi
 4. Số check-in chờ gửi
@@ -285,13 +279,13 @@ Quy tắc tính:
 4. Đẩy sang FAST → Đã xác nhận.
    - Mã đã tồn tại trên FAST hoặc lỗi → báo lỗi để xử lý tay, không ghi đè.
 
-### Check-in và chấm công
-1. App: Vào ca → GPS + ảnh → lưu trên máy → gửi khi có mạng.
-2. Trong ngày: check-in đại lý.
-   - Ngoài bán kính → bắt nhập lý do, gắn cờ, vẫn ghi nhận.
-3. Hệ thống tổng hợp ngày công.
-   - Thiếu/nghi vấn → nhân viên gửi đơn từ → vào Cần duyệt.
-4. Cuối kỳ: nhân viên xác nhận trên app → quản lý chốt kỳ → xuất theo mẫu.
+### Check-in và báo cáo ghé thăm
+1. App: bấm Check-in → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
+2. App tự ghi vị trí và giờ; nhân viên nhập Nội dung làm việc nếu muốn → lưu trên máy → gửi khi có mạng.
+   - Đại lý, khách hàng ngoài bán kính → bắt nhập lý do, gắn cờ, vẫn ghi nhận.
+3. Máy chủ tính km từ điểm check-in trước trong cùng ngày.
+4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
+5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.
 
 ### Tin Zalo → phiếu → đóng
 1. Khách nhắn OA → tin vào Hộp thư, tạo hoặc ghép khách và phiếu.
@@ -319,9 +313,11 @@ Quy tắc tính:
 | Mã ở DMS cũ | **Mã cũ** | Chỉ để tra cứu |
 | Nông dân, HTX, hộ không có mã FAST | **Khách hàng** | Không dùng từ này cho đại lý |
 | Giao dịch bán | **Đơn hàng** | Không viết tắt là "đơn" trong nhãn |
-| Giải trình, xin nghỉ, công tác | **Đơn từ** | |
-| Vào làm / tan làm | **Vào ca / Ra ca** | |
-| Ghé đại lý | **Check-in đại lý** | Phân biệt với Vào ca |
+| Ghi nhận có mặt tại một điểm | **Check-in** | Điểm là Đại lý, Khách hàng hoặc Điểm khác |
+| Nơi check-in không phải đại lý hay khách hàng | **Điểm khác** | Nhân viên tự đặt tên điểm |
+| Việc đã làm tại điểm | **Nội dung làm việc** | Không bắt buộc |
+| Quãng đường từ điểm check-in trước | **Km từ điểm trước** | Tính trong cùng ngày |
+| Trang check-in trên web | **Báo cáo ghé thăm** | Đường dẫn vẫn là `/kinh-doanh/check-in` |
 | Yêu cầu của khách cần xử lý | **Phiếu** | Thay "ticket" |
 | Chuỗi tin với một khách | **Hội thoại** | |
 | Mục tiêu được giao | **Chỉ tiêu** | Luôn là con số kế hoạch |
@@ -351,7 +347,7 @@ Quy tắc tính:
 | `SyncBadge` | Đơn hàng, Đại lý, Đồng bộ FAST | Trạng thái chung |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
 | `Inbox` (compound) | Hộp thư | Thu thành 1 cột dưới 1024px |
-| `WorkflowEditor` | Quy trình duyệt | Dùng cho đơn hàng, đại lý mới, đơn từ |
+| `WorkflowEditor` | Quy trình duyệt | Dùng cho đơn hàng, đại lý mới |
 
 ## 8. Content Growth Plan
 
