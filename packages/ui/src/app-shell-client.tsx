@@ -13,6 +13,7 @@ import {
   type ReactNode,
 } from 'react';
 import { SIDEBAR_STORAGE_KEY } from './sidebar-storage';
+import { SkipLink } from './skip-link';
 import { useDismissable } from './use-dismissable';
 
 type ShellContextValue = {
@@ -93,6 +94,7 @@ export function ShellRoot({ children }: { children: ReactNode }) {
   return (
     <ShellContext value={value}>
       <div className="app-shell" data-drawer={drawerOpen ? 'open' : 'closed'}>
+        <SkipLink />
         {children}
         <button
           type="button"

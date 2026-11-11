@@ -8,6 +8,7 @@ import {
   ShellRoot,
 } from './app-shell-client';
 import { Logo, LogoSymbol } from './logo';
+import { MAIN_CONTENT_ID } from './skip-link';
 
 type SlotProps = { children: ReactNode };
 
@@ -59,7 +60,15 @@ function Breadcrumb({ children }: SlotProps) {
 }
 
 function Content({ children }: SlotProps) {
-  return <main className="min-w-0 flex-1 px-5 pt-4.5 pb-6">{children}</main>;
+  return (
+    <main
+      id={MAIN_CONTENT_ID}
+      tabIndex={-1}
+      className="min-w-0 flex-1 px-5 pt-4.5 pb-6 outline-none"
+    >
+      {children}
+    </main>
+  );
 }
 
 export const AppShell = {

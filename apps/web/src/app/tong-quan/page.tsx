@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AppFooter } from '@dms/ui/app-footer';
 import { Logo } from '@dms/ui/logo';
+import { MAIN_CONTENT_ID, SkipLink } from '@dms/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { requirePermission } from '@/server/auth/can';
 
@@ -12,6 +13,7 @@ export default async function ExecutivePage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <SkipLink />
       <header className="flex h-16 flex-none items-center justify-between gap-4 border-b border-border px-4 sm:px-6">
         <Link href="/hub" aria-label="Về Hub" className="flex-none">
           <Logo variant="color" size="m" />
@@ -23,7 +25,7 @@ export default async function ExecutivePage() {
           <LogoutButton />
         </div>
       </header>
-      <main className="flex-1 px-4 py-9 sm:px-6">
+      <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 px-4 py-9 outline-none sm:px-6">
         <h1 className="text-2xl font-bold text-brand">Tổng quan điều hành</h1>
         <p className="mt-2 text-text-muted">Chức năng này đang được xây dựng.</p>
       </main>

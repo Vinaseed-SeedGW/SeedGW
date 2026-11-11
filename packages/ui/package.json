@@ -16,6 +16,7 @@
     "./form-sheet": "./src/form-sheet.tsx",
     "./logo": "./src/logo.tsx",
     "./sidebar-storage": "./src/sidebar-storage.ts",
+    "./skip-link": "./src/skip-link.tsx",
     "./styles/*": "./src/styles/*",
     "./toast": "./src/toast.tsx",
     "./tree-view": "./src/tree-view.tsx",
