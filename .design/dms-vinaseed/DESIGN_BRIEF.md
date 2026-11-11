@@ -141,6 +141,8 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 14 | Cỡ logo và chân trang (2026-11-09) | **4 cỡ logo S, M, L, XL theo vị trí; cuối trang có bản quyền và liên hệ Phòng ĐMST&CĐS** | Xem [BRAND.md](BRAND.md) §1, §5 (task F2, M1). |
 | 15 | Công cụ xây dựng (2026-11-09) | **Claude xây dựng toàn bộ Backend, Frontend và app** | Các lớp và định dạng code ở [AGENTS.md](../../AGENTS.md); cách khởi tạo ở [docs/KHOI_TAO.md](../../docs/KHOI_TAO.md). |
 | 16 | Hai cấp quản trị (2026-11-10) | **Quản trị hệ thống toàn quyền; Quản trị đơn vị chỉ quản lý tài khoản và Trưởng đơn vị trong phạm vi của mình** | Chỉ Quản trị hệ thống sửa ma trận quyền, tạo và xoá vai trò, đăng nhập thay. Không ai sửa vai trò mình đang giữ. Quản trị đơn vị không gán được vai trò có phạm vi rộng hơn mình. |
+| 17 | Một người duyệt hai bước liên tiếp (2026-11-11) | **Bước sau tự qua, chỉ khi hai bước nằm liền nhau trong chuỗi của đơn** | Bước không chạy hoặc tự duyệt theo ngưỡng thì bỏ qua khi xét liền nhau. Có người khác duyệt xen giữa thì phải duyệt lại. Chỉ người đã thực sự duyệt bước trước mới được tính, kể cả khi nhận uỷ quyền. Hệ thống ghi một lượt duyệt chuyển tiếp riêng để kiểm toán phân biệt với lượt duyệt thật (task A10, S4). |
+| 18 | Trình cấu hình quy trình (2026-11-11) | **Dựng chuỗi bước bằng kéo thả** | Kéo khối loại người duyệt vào chuỗi để chèn bước, kéo tay nắm để đổi thứ tự. Vẫn có nút lên, xuống và phím mũi tên cho người không kéo được. Không thêm thư viện. |
 
 ## 10. Chiến lược mã khách hàng (đề xuất — chờ duyệt)
 

@@ -270,26 +270,60 @@ export function buildApprovalChain(
   };
 }
 
-function isStepComplete(step: ChainStep, approvals: readonly ApprovalRecord[]): boolean {
-  const approved = new Set(
-    approvals.filter(({ position }) => position === step.position).map(({ userId }) => userId),
-  );
+// Luot duyet he thong tu ghi khi mot nguoi vua duyet buoc truoc lai la nguoi duyet buoc lien sau.
+export type CarriedApproval = { position: number; userId: string; fromPosition: number };
+
+export type ApprovalProgress = {
+  // Buoc dang cho, null nghia la don da duyet xong.
+  current: ChainStep | null;
+  carried: CarriedApproval[];
+};
+
+function isStepComplete(step: ChainStep, approved: ReadonlySet<string>): boolean {
   const hasApproved = ({ userId }: ChainApprover) => approved.has(userId);
   return step.approvalMode === 'ANY'
     ? step.approvers.some(hasApproved)
     : step.approvers.every(hasApproved);
 }
 
-// Tra ve buoc dang cho, null nghia la don da duyet xong.
+/*
+ * Hai buoc lien tiep la hai buoc can nguoi duyet nam canh nhau trong chuoi cua don.
+ * Buoc khong chay hoac tu duyet theo nguong khong tinh, vi don khong dung o do.
+ * Chi nguoi da thuc su duyet buoc truoc moi duoc tinh sang buoc sau, nen co nguoi khac
+ * duyet xen giua thi nguoi do phai duyet lai.
+ */
+export function approvalProgress(
+  chain: ApprovalChain,
+  approvals: readonly ApprovalRecord[],
+): ApprovalProgress {
+  const carried: CarriedApproval[] = [];
+  let previous: { position: number; approvedBy: ReadonlySet<string> } | null = null;
+
+  for (const step of chain.steps) {
+    if (step.status === 'NO_APPROVER') return { current: step, carried };
+    if (step.status !== 'WAITING') continue;
+
+    const approvedBy = new Set(
+      approvals.filter(({ position }) => position === step.position).map(({ userId }) => userId),
+    );
+    if (previous) {
+      for (const { userId } of step.approvers) {
+        if (approvedBy.has(userId) || !previous.approvedBy.has(userId)) continue;
+        approvedBy.add(userId);
+        carried.push({ position: step.position, userId, fromPosition: previous.position });
+      }
+    }
+    if (!isStepComplete(step, approvedBy)) return { current: step, carried };
+    previous = { position: step.position, approvedBy };
+  }
+  return { current: null, carried };
+}
+
 export function currentApprovalStep(
   chain: ApprovalChain,
   approvals: readonly ApprovalRecord[],
 ): ChainStep | null {
-  for (const step of chain.steps) {
-    if (step.status === 'NO_APPROVER') return step;
-    if (step.status === 'WAITING' && !isStepComplete(step, approvals)) return step;
-  }
-  return null;
+  return approvalProgress(chain, approvals).current;
 }
 
 export function canApproveCurrentStep(
@@ -297,10 +331,24 @@ export function canApproveCurrentStep(
   approvals: readonly ApprovalRecord[],
   userId: string,
 ): boolean {
-  const step = currentApprovalStep(chain, approvals);
-  if (!step) return false;
-  const hasApproved = approvals.some(
-    (record) => record.position === step.position && record.userId === userId,
+  const { current, carried } = approvalProgress(chain, approvals);
+  if (!current) return false;
+  const isSelf = (record: ApprovalRecord) =>
+    record.position === current.position && record.userId === userId;
+  const hasApproved = approvals.some(isSelf) || carried.some(isSelf);
+  return !hasApproved && current.approvers.some((approver) => approver.userId === userId);
+}
+
+// Nhung nguoi duyet cua buoc nay ma neu ho da duyet buoc lien truoc thi khong phai duyet lai.
+export function carryOverApprovers(chain: ApprovalChain, position: number): ChainApprover[] {
+  // Buoc khong tim duoc nguoi duyet giu don lai nen cung cat mach lien tiep.
+  const waiting = chain.steps.filter(
+    (step) => step.status === 'WAITING' || step.status === 'NO_APPROVER',
   );
-  return !hasApproved && step.approvers.some((approver) => approver.userId === userId);
+  const index = waiting.findIndex((step) => step.position === position);
+  const step = waiting[index];
+  const previous = index > 0 ? waiting[index - 1] : undefined;
+  if (!step || !previous) return [];
+  const previousIds = new Set(previous.approvers.map(({ userId }) => userId));
+  return step.approvers.filter(({ userId }) => previousIds.has(userId));
 }

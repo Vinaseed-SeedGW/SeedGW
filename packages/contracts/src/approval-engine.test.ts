@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildApprovalChain,
   canApproveCurrentStep,
+  approvalProgress,
+  carryOverApprovers,
   currentApprovalStep,
   resolveEffectiveWorkflow,
   type ApprovalDirectory,
@@ -412,5 +414,86 @@ describe('hai don vi khac nhau', () => {
 
     expect(chainFor('vung-1').map((step) => step.name)).toEqual(['ASM vung 1']);
     expect(chainFor('vung-2').map((step) => step.name)).toEqual(['ASM vung 2', 'Ke toan']);
+  });
+});
+
+describe('mot nguoi duyet hai buoc lien tiep', () => {
+  const userStep = (name: string, userId: string, extra: Partial<ApprovalStepInput> = {}) =>
+    ({
+      ...newApprovalStep(),
+      name,
+      approverType: 'USER',
+      approverUserId: userId,
+      ...extra,
+    }) satisfies ApprovalStepInput;
+  const kt1 = (name: string, extra: Partial<ApprovalStepInput> = {}) =>
+    userStep(name, 'kt-1', extra);
+
+  it('buoc lien sau tu qua va duoc ghi la luot duyet chuyen tiep', () => {
+    const chain = chainOf([kt1('Ke toan'), kt1('Ke toan lan hai')]);
+    const progress = approvalProgress(chain, [{ position: 1, userId: 'kt-1' }]);
+    expect(progress.current).toBeNull();
+    expect(progress.carried).toEqual([{ position: 2, userId: 'kt-1', fromPosition: 1 }]);
+  });
+
+  it('chuyen tiep noi duoc qua nhieu buoc lien tiep', () => {
+    const chain = chainOf([kt1('A'), kt1('B'), kt1('C')]);
+    const progress = approvalProgress(chain, [{ position: 1, userId: 'kt-1' }]);
+    expect(progress.current).toBeNull();
+    expect(progress.carried.map(({ position }) => position)).toEqual([2, 3]);
+  });
+
+  it('co nguoi khac duyet xen giua thi phai duyet lai', () => {
+    const chain = chainOf([kt1('Ke toan'), roleStep('ASM', ROLE_ASM), kt1('Ke toan lan hai')]);
+    const approvals = [
+      { position: 1, userId: 'kt-1' },
+      { position: 2, userId: 'asm-1' },
+    ];
+    const progress = approvalProgress(chain, approvals);
+    expect(progress.current?.position).toBe(3);
+    expect(progress.carried).toEqual([]);
+    expect(canApproveCurrentStep(chain, approvals, 'kt-1')).toBe(true);
+  });
+
+  it('buoc o giua khong chay thi hai buoc hai ben van tinh la lien tiep', () => {
+    const overCredit: StepCondition = { type: 'OVER_CREDIT' };
+    const chain = chainOf([
+      kt1('Ke toan'),
+      roleStep('ASM', ROLE_ASM, { conditions: [overCredit] }),
+      kt1('Ke toan lan hai'),
+    ]);
+    expect(currentApprovalStep(chain, [{ position: 1, userId: 'kt-1' }])).toBeNull();
+  });
+
+  it('chi nguoi da thuc su duyet buoc truoc moi duoc chuyen tiep', () => {
+    const chain = chainOf([roleStep('Ke toan', ROLE_DEBT), kt1('Ke toan truong')]);
+    const approvals = [{ position: 1, userId: 'kt-2' }];
+    expect(currentApprovalStep(chain, approvals)?.position).toBe(2);
+    expect(canApproveCurrentStep(chain, approvals, 'kt-1')).toBe(true);
+  });
+
+  it('nguoi nhan uy quyen o buoc sau cung duoc chuyen tiep', () => {
+    const directory: ApprovalDirectory = {
+      ...DIRECTORY,
+      delegations: [{ delegatorId: 'asm-1', delegateId: 'kt-1', startDate: TODAY, endDate: TODAY }],
+    };
+    const chain = chainOf([kt1('Ke toan'), roleStep('ASM', ROLE_ASM)], {}, directory);
+    expect(currentApprovalStep(chain, [{ position: 1, userId: 'kt-1' }])).toBeNull();
+  });
+
+  it('buoc tat ca cung duyet chi tinh san nguoi da duyet, nguoi con lai van phai duyet', () => {
+    const chain = chainOf([kt1('Ke toan'), roleStep('Ca hai', ROLE_DEBT, { approvalMode: 'ALL' })]);
+    const approvals = [{ position: 1, userId: 'kt-1' }];
+    expect(currentApprovalStep(chain, approvals)?.position).toBe(2);
+    expect(canApproveCurrentStep(chain, approvals, 'kt-1')).toBe(false);
+    expect(canApproveCurrentStep(chain, approvals, 'kt-2')).toBe(true);
+    expect(currentApprovalStep(chain, [...approvals, { position: 2, userId: 'kt-2' }])).toBeNull();
+  });
+
+  it('xem truoc chi ra nguoi se khong phai duyet lai', () => {
+    const chain = chainOf([roleStep('Ke toan', ROLE_DEBT), kt1('Ke toan truong'), kt1('Lan ba')]);
+    expect(approverIds({ approvers: carryOverApprovers(chain, 1) })).toEqual([]);
+    expect(approverIds({ approvers: carryOverApprovers(chain, 2) })).toEqual(['kt-1']);
+    expect(approverIds({ approvers: carryOverApprovers(chain, 3) })).toEqual(['kt-1']);
   });
 });

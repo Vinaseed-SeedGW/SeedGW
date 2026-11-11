@@ -3,7 +3,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useTransition } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import type { ChainStep, ChainStepStatus } from '@dms/contracts/approval-engine';
+import {
+  carryOverApprovers,
+  type ChainApprover,
+  type ChainStep,
+  type ChainStepStatus,
+} from '@dms/contracts/approval-engine';
 import {
   APPROVAL_MODE_LABEL,
   DEALER_TIER_OPTIONS,
@@ -34,7 +39,7 @@ const STATUS_CLASS: Record<ChainStepStatus, string> = {
   NO_APPROVER: 'bg-danger-soft text-danger',
 };
 
-function ChainStepItem({ step }: { step: ChainStep }) {
+function ChainStepItem({ step, carryOver }: { step: ChainStep; carryOver: ChainApprover[] }) {
   return (
     <li className="rounded-md border border-border bg-surface p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -65,6 +70,12 @@ function ChainStepItem({ step }: { step: ChainStep }) {
           <p className="text-sm text-text-muted">
             {APPROVAL_MODE_LABEL[step.approvalMode]}, SLA {step.slaHours} giờ
           </p>
+          {carryOver.length > 0 ? (
+            <p className="mt-1.5 rounded-md bg-brand-soft px-2.5 py-1.5 text-sm">
+              {carryOver.map(({ fullName }) => fullName).join(', ')} cũng duyệt bước liền trước. Nếu
+              đã duyệt ở bước đó thì bước này tự tính là đã duyệt, không phải duyệt lại.
+            </p>
+          ) : null}
         </>
       ) : null}
     </li>
@@ -75,6 +86,10 @@ function PreviewResult({ preview }: { preview: NonNullable<ApprovalPreview> }) {
   const { chain, sourceUnitName, isInherited, isDraft } = preview;
   const waitingCount = chain.steps.filter((step) => step.status === 'WAITING').length;
   const hasMissingApprover = chain.steps.some((step) => step.status === 'NO_APPROVER');
+  const carryOverByPosition = new Map(
+    chain.steps.map((step) => [step.position, carryOverApprovers(chain, step.position)]),
+  );
+  const carryOverCount = [...carryOverByPosition.values()].filter((list) => list.length > 0).length;
 
   return (
     <div className="mt-4">
@@ -89,6 +104,11 @@ function PreviewResult({ preview }: { preview: NonNullable<ApprovalPreview> }) {
             ? 'Đơn chưa có người duyệt.'
             : 'Đơn được tự duyệt, không cần ai duyệt.'}
       </p>
+      {carryOverCount > 0 ? (
+        <p className="text-sm text-text-muted">
+          Trong đó {carryOverCount} bước có thể tự qua khi cùng một người đã duyệt bước liền trước.
+        </p>
+      ) : null}
       {hasMissingApprover ? (
         <p role="alert" className="mt-2 rounded-md bg-danger-soft px-2.5 py-2 text-danger">
           Có bước chưa tìm được người duyệt. Đơn thật sẽ dừng ở bước đó.
@@ -96,7 +116,11 @@ function PreviewResult({ preview }: { preview: NonNullable<ApprovalPreview> }) {
       ) : null}
       <ol className="mt-2.5 grid gap-2">
         {chain.steps.map((step) => (
-          <ChainStepItem key={step.position} step={step} />
+          <ChainStepItem
+            key={step.position}
+            step={step}
+            carryOver={carryOverByPosition.get(step.position) ?? []}
+          />
         ))}
       </ol>
     </div>
