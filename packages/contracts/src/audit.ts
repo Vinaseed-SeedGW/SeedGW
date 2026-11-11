@@ -74,7 +74,16 @@ const AUDIT_ENTITY_TYPES = Object.keys(AUDIT_ENTITY_LABEL) as [
   ...AuditEntityType[],
 ];
 
-export const AUDIT_ENTITY_OPTIONS = AUDIT_ENTITY_TYPES.map((value) => ({
+// Chuc nang Ca lam viec da bo ngay 11/11/2026. Van giu nhan de doc nhat ky cu, nhung khong dua vao bo loc.
+const RETIRED_ENTITY_TYPES: ReadonlySet<AuditEntityType> = new Set([
+  'Shift',
+  'ShiftAssignment',
+  'Holiday',
+]);
+
+export const AUDIT_ENTITY_OPTIONS = AUDIT_ENTITY_TYPES.filter(
+  (value) => !RETIRED_ENTITY_TYPES.has(value),
+).map((value) => ({
   value,
   label: AUDIT_ENTITY_LABEL[value],
 }));

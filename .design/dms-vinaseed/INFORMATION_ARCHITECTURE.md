@@ -85,7 +85,6 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Bảng giá `/quan-tri/bang-gia`
   - Quy định
     - Quy trình duyệt `/quan-tri/quy-trinh-duyet`, chi tiết: `/quan-tri/quy-trinh-duyet/[donViId]`
-    - Ca làm việc `/quan-tri/ca-lam-viec` (tab: Ca làm việc · Gán ca · Lịch nghỉ)
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
     - Tham số `/quan-tri/tham-so`
   - Hệ thống

@@ -3,7 +3,6 @@ import {
   CalendarDays,
   ChartColumn,
   ClipboardCheck,
-  Clock,
   FileChartColumn,
   Inbox,
   LayoutDashboard,
@@ -106,7 +105,6 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       label: 'Quy định',
       items: [
         { label: 'Quy trình duyệt', href: '/quan-tri/quy-trinh-duyet', icon: Workflow },
-        { label: 'Ca làm việc', href: '/quan-tri/ca-lam-viec', icon: Clock },
         { label: 'Lịch vụ', href: '/quan-tri/lich-vu', icon: CalendarDays },
         { label: 'Tham số', href: '/quan-tri/tham-so', icon: SlidersHorizontal },
       ],

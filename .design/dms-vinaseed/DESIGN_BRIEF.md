@@ -39,7 +39,7 @@ Toàn bộ sơ đồ trang, điều hướng, thứ tự nội dung, luồng ng�
 - Đăng nhập → **Hub** → một trong 3 bộ phận → menu trái tối đa 2 cấp → chi tiết dùng tab.
 - **Kinh doanh** (12 trang): Dashboard, Cần duyệt · Đơn hàng, Tồn kho, Chỉ tiêu · Đại lý, Khách hàng · Tuyến viếng thăm, Check-in, Chấm công · Đồng bộ FAST, Báo cáo.
 - **CSKH** (5 trang): Hộp thư, Phiếu tiếp nhận, Khách hàng, Mẫu trả lời, Dashboard.
-- **Quản trị** (13 trang): Tài khoản, Vai trò và quyền, Cơ cấu tổ chức · Sản phẩm, Kho, Đại lý, Bảng giá · Quy trình duyệt, Ca làm việc, Lịch vụ, Tham số · Kết nối, Nhật ký.
+- **Quản trị** (12 trang): Tài khoản, Vai trò và quyền, Cơ cấu tổ chức · Sản phẩm, Kho, Đại lý, Bảng giá · Quy trình duyệt, Lịch vụ, Tham số · Kết nối, Nhật ký.
 - **App điện thoại** (5 tab): Hôm nay, Tuyến, Đơn hàng, Công, Tôi.
 
 ## 4. Công nghệ (Combo 4 — Web app sản phẩm React / Next.js)
@@ -82,7 +82,7 @@ Toàn bộ sơ đồ trang, điều hướng, thứ tự nội dung, luồng ng�
 - **Khách hàng**: `Dealer` (id UUID + **mã nghiệp vụ = mã FAST**, `legacyCode` mã DMS cũ, trạng thái đồng bộ FAST, cấp 1/cấp 2, MST, địa chỉ hành chính, toạ độ, NV phụ trách, hạn mức & công nợ từ FAST), `CodeSequence` (dải mã DMS được cấp), `Customer` (nông dân/HTX/hộ — chỉ mã DMS, SĐT, Zalo ID, diện tích, cây trồng), `Contact`.
 - **Bán hàng**: `Route`, `VisitPlan`, `CheckIn` (loại: vào ca / ra ca / viếng thăm; toạ độ, độ chính xác, ảnh, thời gian thiết bị + thời gian server, cờ nghi vấn), `Order` (cờ cảnh báo: vượt công nợ, thiếu tồn; phiên bản quy trình duyệt), `OrderLine`, `OrderStatusHistory`.
 - **Quy trình duyệt**: `ApprovalWorkflow` (theo `OrgUnit`, có phiên bản, kế thừa từ đơn vị cha), `ApprovalStep` (thứ tự, người duyệt theo vai trò/chức danh/người cụ thể, điều kiện kích hoạt, SLA), `ApprovalInstance`, `ApprovalAction`, `Delegation` (uỷ quyền khi vắng).
-- **Chấm công**: `Shift` (ca, giờ vào/ra, nghỉ trưa, ngưỡng muộn/sớm, số công, ngày làm trong tuần), `OrgUnitShift` và `UserShift` (gán ca theo đơn vị hoặc nhân viên, có hiệu lực từ ngày), `Holiday` (nghỉ lễ, ngày làm bù), `AttendanceDay` (tổng hợp ngày công từ `CheckIn`), `AttendanceRequest` (giải trình quên check-in, công tác, nghỉ phép), `AttendancePeriod` (kỳ công tháng, trạng thái chốt/khóa).
+- **Chấm công**: không quản lý ca làm việc (bỏ ngày 11/11/2026, xem §9 mục 19), `AttendanceDay` (tổng hợp ngày công từ `CheckIn`), `AttendanceRequest` (giải trình quên check-in, công tác, nghỉ phép), `AttendancePeriod` (kỳ công tháng, trạng thái chốt/khóa).
 - **Tích hợp**: `ApiClient` (FAST, key hash, IP whitelist), `SyncOutbox` (sự kiện chờ đồng bộ, có thứ tự phụ thuộc: KH trước đơn), `SyncLog`, `IntegrationAccount` (Zalo OA token, Mattermost bot), `ZaloQuota` (hạn mức tin ngoài khung đã dùng/còn lại).
 - **CSKH**: `Channel`, `Conversation`, `Message`, `Attachment`, `Ticket` (loại, mức ưu tiên, SLA, người xử lý, liên kết KH/đại lý/đơn), `TicketEvent`, `CannedReply`.
 - **Số liệu và chỉ tiêu**: `FastSalesLine` (dòng hoá đơn bán và hàng trả lại từ FAST), `SalesDailyFact` (tổng hợp theo ngày × đại lý × sản phẩm × nhân viên × đơn vị tại thời điểm bán × nguồn Đặt hàng/Thực bán; sản lượng kg, doanh thu), `SalesTarget` (kỳ, đơn vị hoặc nhân viên, nhóm sản phẩm, sản lượng, doanh thu), `Season` (lịch vụ).
@@ -143,6 +143,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 16 | Hai cấp quản trị (2026-11-10) | **Quản trị hệ thống toàn quyền; Quản trị đơn vị chỉ quản lý tài khoản và Trưởng đơn vị trong phạm vi của mình** | Chỉ Quản trị hệ thống sửa ma trận quyền, tạo và xoá vai trò, đăng nhập thay. Không ai sửa vai trò mình đang giữ. Quản trị đơn vị không gán được vai trò có phạm vi rộng hơn mình. |
 | 17 | Một người duyệt hai bước liên tiếp (2026-11-11) | **Bước sau tự qua, chỉ khi hai bước nằm liền nhau trong chuỗi của đơn** | Bước không chạy hoặc tự duyệt theo ngưỡng thì bỏ qua khi xét liền nhau. Có người khác duyệt xen giữa thì phải duyệt lại. Chỉ người đã thực sự duyệt bước trước mới được tính, kể cả khi nhận uỷ quyền. Hệ thống ghi một lượt duyệt chuyển tiếp riêng để kiểm toán phân biệt với lượt duyệt thật (task A10, S4). |
 | 18 | Trình cấu hình quy trình (2026-11-11) | **Dựng chuỗi bước bằng kéo thả** | Kéo khối loại người duyệt vào chuỗi để chèn bước, kéo tay nắm để đổi thứ tự. Vẫn có nút lên, xuống và phím mũi tên cho người không kéo được. Không thêm thư viện. |
+| 19 | Ca làm việc (2026-11-11) | **Bỏ ca làm việc, gán ca và lịch nghỉ khỏi DMS** | CBKD đi nhiều địa điểm, giờ làm khác nhau. Nhân viên dùng dữ liệu check-in để tính công với kế toán đơn vị. Phân hệ Chấm công (T1 đến T5) cần xác định lại phạm vi. |
 
 ## 10. Chiến lược mã khách hàng (đề xuất — chờ duyệt)
 
@@ -183,7 +184,7 @@ Mã FAST chỉ áp cho đối tượng **mua hàng và xuất hoá đơn** từ 
 1. FBO: có API tích hợp không (nhận đơn bán/chứng từ, tạo KH với mã truyền vào, trả tồn kho, công nợ, **hoá đơn bán và hàng trả lại**)? Chi phí mở API? Đầu mối kỹ thuật FAST?
 2. Định dạng mã KH hiện tại trên FAST (tiền tố, độ dài) để chốt dải mã cho DMS.
 3. Tồn kho cảnh báo theo kho nào: kho của chi nhánh phụ trách vùng hay tổng các kho?
-4. Chấm công: quy định ca (giờ vào/ra, nghỉ trưa), cách tính đi muộn/về sớm, công tác ngoài tuyến tính công thế nào.
+4. Chấm công: ~~quy định ca, cách tính đi muộn/về sớm~~ đã trả lời 11/11/2026, DMS không quản lý ca (§9 mục 19). Còn mở: DMS cần đưa cho kế toán dữ liệu check-in dạng nào.
 5. Mattermost: phiên bản và URL nội bộ; có cho DMS tạo bot account không.
 6. Khách mới có bắt buộc qua Sales Admin duyệt trước khi sang FAST không? (Khuyến nghị: bật.)
 7. Dashboard: danh sách vụ và thời gian từng vụ; số ngày N để coi là "đại lý không đặt hàng"; ai được giao chỉ tiêu; số liệu lịch sử cần nạp từ bao nhiêu năm để so cùng kỳ.
