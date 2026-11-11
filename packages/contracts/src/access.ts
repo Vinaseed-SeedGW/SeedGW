@@ -16,7 +16,6 @@ export const PERMISSIONS = [
   { code: 'sales.customer.read', name: 'Xem Khách hàng' },
   { code: 'sales.route.read', name: 'Xem Tuyến viếng thăm' },
   { code: 'sales.check-in.read', name: 'Xem Check-in' },
-  { code: 'sales.attendance.read', name: 'Xem Chấm công' },
   { code: 'sales.fast-sync.read', name: 'Xem Đồng bộ FAST' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
 
@@ -93,7 +92,6 @@ export const ROUTE_RULES: readonly RouteRule[] = [
     department: 'kinh-doanh',
   },
   { path: '/kinh-doanh/check-in', permission: 'sales.check-in.read', department: 'kinh-doanh' },
-  { path: '/kinh-doanh/cham-cong', permission: 'sales.attendance.read', department: 'kinh-doanh' },
   {
     path: '/kinh-doanh/dong-bo-fast',
     permission: 'sales.fast-sync.read',
@@ -309,7 +307,6 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.customer.read',
       'sales.route.read',
       'sales.check-in.read',
-      'sales.attendance.read',
     ],
   },
   {

@@ -1,5 +1,4 @@
 import {
-  CalendarCheck,
   CalendarDays,
   ChartColumn,
   ClipboardCheck,
@@ -61,7 +60,6 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       items: [
         { label: 'Tuyến viếng thăm', href: '/kinh-doanh/tuyen-vieng-tham', icon: Route },
         { label: 'Check-in', href: '/kinh-doanh/check-in', icon: MapPin },
-        { label: 'Chấm công', href: '/kinh-doanh/cham-cong', icon: CalendarCheck },
       ],
     },
     {
