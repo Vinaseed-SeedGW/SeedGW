@@ -150,7 +150,8 @@ Xanh `#005b36` và trắng là chủ đạo (trang 15, 16). Tạm thời **chưa
 | `--brand-90` đến `--brand-10` | `#1a6b4a` `#337c5e` `#4d8c72` `#669d86` `#80ad9b` `#99bdaf` `#b3cec3` `#ccded7` `#e6efeb` | Nền chọn, nền nhãn, biểu đồ | Dải nhạt trang 15 |
 | `--surface` | `#ffffff` | Nền chính | Trắng |
 | `--surface-subtle` | `#f1f2f2` | Nền phụ | Trang 15 |
-| `--border` | `#d1d3d4` | Đường kẻ | Trang 15 |
+| `--border` | `#d1d3d4` | Đường kẻ, khung thẻ | Trang 15 |
+| `--input` | `#808285` | Viền ô nhập, ô chọn, bộ lọc | Trang 15, đã duyệt 11/11/2026 |
 | `--text` | `#000000` | Chữ chính | Trang 15 |
 | `--text-muted` | `#58595b` | Chữ phụ | Ngoài bảng màu, đã duyệt |
 | `--warning` | `#e8b909` | Cảnh báo, chữ đen | Trang 15 |
@@ -159,7 +160,7 @@ Xanh `#005b36` và trắng là chủ đạo (trang 15, 16). Tạm thời **chưa
 | `--logo-brown` | `#351800` | Chỉ nằm trong logo | Trang 15 |
 
 - Thang nhạt tính bằng cách trộn `#005b36` với trắng theo từng 10%, theo dải ở trang 15.
-- Xám `#808285` của Guideline chỉ đạt 3,85:1 trên nền trắng, không dùng cho chữ.
+- Xám `#808285` của Guideline chỉ đạt 3,85:1 trên nền trắng, không dùng cho chữ. Đủ chuẩn 3:1 cho viền ô nhập (WCAG 1.4.11) nên dùng làm `--input`.
 - Trang PDF hiển thị xanh hơi khác `#005b36` vì in theo CMYK. Phần mềm luôn dùng đúng mã HEX.
 
 ### Độ tương phản đã đo
@@ -171,7 +172,7 @@ Xanh `#005b36` và trắng là chủ đạo (trang 15, 16). Tạm thời **chưa
 | `#58595b` trên trắng | 7,01:1 | Đạt |
 | `#b33131` trên trắng | 6,18:1 | Đạt |
 | Đen trên `#e8b909` | 11,37:1 | Đạt |
-| `#808285` trên trắng | 3,85:1 | Không đạt |
+| `#808285` trên trắng | 3,85:1 | Không đạt cho chữ, đạt chuẩn 3:1 cho viền ô nhập |
 
 ## 4. Bố cục đề xuất
 

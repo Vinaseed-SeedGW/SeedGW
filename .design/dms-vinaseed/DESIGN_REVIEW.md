@@ -48,7 +48,7 @@ Trang đúng thương hiệu, đủ nhãn, đủ trạng thái và đi đúng th
 
 ## Vấn đề chung của cả hệ thống, cần duyệt trước khi sửa
 
-- **Viền ô nhập quá nhạt.** Màu `#d1d3d4` trên nền trắng chỉ đạt 1,5:1, dưới mức 3:1 (WCAG 1.4.11 AA). Lỗi có ở mọi form, không riêng trang này. Muốn sửa phải thêm một màu xám trung gian vào token, việc này cần duyệt màu.
+- **Viền ô nhập quá nhạt.** Màu `#d1d3d4` trên nền trắng chỉ đạt 1,5:1, dưới mức 3:1 (WCAG 1.4.11 AA). Lỗi có ở mọi form, không riêng trang này. Muốn sửa phải thêm một màu xám trung gian vào token, việc này cần duyệt màu. _Đã sửa 11/11/2026: `--input` dùng xám `#808285` của Guideline, đạt 3,85:1._
 - **Chưa có link "Bỏ qua tới nội dung chính"** trong khung chung AppShell (WCAG 2.4.1 A).
 - **Chưa có quy tắc `prefers-reduced-motion`.** Trang gần như không có hiệu ứng chuyển động nên rủi ro thấp.
 

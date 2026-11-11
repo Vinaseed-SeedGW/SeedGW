@@ -28,6 +28,8 @@
   --vs-black: #000000;
   --vs-gray-5: #f1f2f2;
   --vs-gray-20: #d1d3d4;
+  /* Xam cua Guideline, du 3:1 tren nen trang cho vien o nhap, khong dung cho chu. */
+  --vs-gray-50: #808285;
   --vs-gray-80: #58595b;
 
   /* Lop 2: y nghia */
@@ -64,7 +66,7 @@
   --accent-foreground: var(--brand);
   --destructive: var(--danger);
   --border: var(--vs-gray-20);
-  --input: var(--vs-gray-20);
+  --input: var(--vs-gray-50);
   --ring: var(--brand);
   --radius: 6px;
 
