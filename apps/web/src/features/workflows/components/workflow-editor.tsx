@@ -1,8 +1,18 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
-import { createContext, use, useMemo, type ReactNode } from 'react';
+import { ArrowDown, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-react';
+import {
+  createContext,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import {
   useFieldArray,
   useForm,
@@ -28,14 +38,17 @@ import {
   type ConditionType,
   type EscalationType,
   type PublishWorkflowInput,
+  type SelectOption,
   type StepCondition,
   type WorkflowFormOptions,
 } from '@dms/contracts/workflows';
+import { cn } from '@dms/ui/cn';
 import { Form } from '@dms/ui/form';
 import {
   WorkflowPreviewPanel,
   type DraftResult,
 } from '@/features/workflows/components/workflow-preview';
+import { isNoopSlot, useStepDrag } from '@/features/workflows/hooks/use-step-drag';
 import { publishWorkflowAction } from '@/server/actions/workflows';
 
 type EditorContextValue = {
@@ -277,22 +290,127 @@ function EscalationTarget({ stepIndex }: { stepIndex: number }) {
   );
 }
 
-type StepProps = {
+const PALETTE: { type: ApproverType; label: string }[] = [
+  { type: 'ROLE', label: 'Duyệt theo vai trò' },
+  { type: 'JOB_TITLE', label: 'Duyệt theo chức danh' },
+  { type: 'USER', label: 'Người duyệt cụ thể' },
+];
+
+function optionLabel(options: readonly SelectOption[], value: string | null): string | null {
+  if (!value) return null;
+  return options.find((option) => option.value === value)?.label ?? null;
+}
+
+function useStepSummary(index: number): { title: string; detail: string } {
+  const { meta } = useEditor();
+  const step = useWatch({ name: `steps.${index}` }) as ApprovalStepInput | undefined;
+  if (!step) return { title: '', detail: '' };
+
+  const target =
+    step.approverType === 'ROLE'
+      ? `Vai trò ${optionLabel(meta.options.roles, step.approverRoleId) ?? 'chưa chọn'}`
+      : step.approverType === 'JOB_TITLE'
+        ? `Chức danh ${step.approverJobTitle ?? 'chưa chọn'}`
+        : (optionLabel(meta.options.users, step.approverUserId) ?? 'Chưa chọn người duyệt');
+  const conditions = step.conditions.length > 0 ? `, ${step.conditions.length} điều kiện` : '';
+  return { title: step.name.trim() || 'Chưa đặt tên', detail: `${target}${conditions}` };
+}
+
+type StepRowProps = {
+  index: number;
+  isSelected: boolean;
+  isDragged: boolean;
+  hasError: boolean;
+  onSelect: () => void;
+  onHandlePointerDown: (event: ReactPointerEvent<HTMLElement>, label: string) => void;
+  onHandleKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
+};
+
+function StepRow({
+  index,
+  isSelected,
+  isDragged,
+  hasError,
+  onSelect,
+  onHandlePointerDown,
+  onHandleKeyDown,
+}: StepRowProps) {
+  const { title, detail } = useStepSummary(index);
+  const position = index + 1;
+
+  return (
+    <div
+      data-step-row
+      className={cn(
+        'flex items-stretch rounded-md border',
+        isSelected ? 'border-brand bg-brand-soft' : 'border-border bg-surface',
+        isDragged && 'opacity-40',
+      )}
+    >
+      <button
+        type="button"
+        data-step-handle={index}
+        aria-label={`Kéo để đổi thứ tự bước ${position}, hoặc dùng phím mũi tên lên xuống`}
+        className="flex w-11 flex-none cursor-grab touch-none items-center justify-center text-text-muted hover:text-brand sm:w-9"
+        onPointerDown={(event) => onHandlePointerDown(event, `Bước ${position}: ${title}`)}
+        onKeyDown={onHandleKeyDown}
+      >
+        <GripVertical size={18} aria-hidden />
+      </button>
+      <button
+        type="button"
+        aria-current={isSelected ? 'step' : undefined}
+        className="min-h-11 min-w-0 flex-1 py-2 pr-3 text-left"
+        onClick={onSelect}
+      >
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <b className="text-brand">Bước {position}</b>
+          <span className="min-w-0 truncate font-bold">{title}</span>
+          {hasError ? (
+            <span className="rounded-full bg-danger-soft px-2 py-0.5 text-xs font-bold text-danger">
+              Còn lỗi
+            </span>
+          ) : null}
+        </span>
+        <span className="block truncate text-sm text-text-muted">{detail}</span>
+      </button>
+    </div>
+  );
+}
+
+function DropLine({ isVisible }: { isVisible: boolean }) {
+  return (
+    <div aria-hidden className="relative h-0">
+      {isVisible ? (
+        <div className="absolute inset-x-0 -top-1.25 h-0.5 rounded-full bg-brand" />
+      ) : null}
+    </div>
+  );
+}
+
+type StepDetailProps = {
   index: number;
   count: number;
   onMove: (from: number, to: number) => void;
   onRemove: (index: number) => void;
 };
 
-function Step({ index, count, onMove, onRemove }: StepProps) {
+function StepDetail({ index, count, onMove, onRemove }: StepDetailProps) {
+  const position = index + 1;
   return (
-    <li className="rounded-md border border-border bg-surface p-4">
+    <section
+      id="chi-tiet-buoc"
+      aria-labelledby="buoc-dang-sua"
+      className="scroll-mt-18 rounded-md border border-border bg-surface p-4"
+    >
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-bold text-brand">Bước {index + 1}</h3>
+        <h3 id="buoc-dang-sua" className="font-bold text-brand">
+          Bước {position}
+        </h3>
         <div className="flex gap-1.5">
           <button
             type="button"
-            aria-label={`Chuyển bước ${index + 1} lên trên`}
+            aria-label={`Chuyển bước ${position} lên trên`}
             className={ICON_BUTTON_CLASS}
             disabled={index === 0}
             onClick={() => onMove(index, index - 1)}
@@ -301,7 +419,7 @@ function Step({ index, count, onMove, onRemove }: StepProps) {
           </button>
           <button
             type="button"
-            aria-label={`Chuyển bước ${index + 1} xuống dưới`}
+            aria-label={`Chuyển bước ${position} xuống dưới`}
             className={ICON_BUTTON_CLASS}
             disabled={index === count - 1}
             onClick={() => onMove(index, index + 1)}
@@ -310,7 +428,7 @@ function Step({ index, count, onMove, onRemove }: StepProps) {
           </button>
           <button
             type="button"
-            aria-label={`Xoá bước ${index + 1}`}
+            aria-label={`Xoá bước ${position}`}
             className={ICON_BUTTON_CLASS}
             disabled={count === 1}
             onClick={() => onRemove(index)}
@@ -360,48 +478,205 @@ function Step({ index, count, onMove, onRemove }: StepProps) {
       </div>
 
       <StepConditions stepIndex={index} />
-    </li>
+    </section>
   );
 }
 
+// Giu buoc dang chon dung la buoc do sau khi doi thu tu.
+function indexAfterMove(selected: number, from: number, to: number): number {
+  if (selected === from) return to;
+  if (from < selected && selected <= to) return selected - 1;
+  if (to <= selected && selected < from) return selected + 1;
+  return selected;
+}
+
+type FocusTarget = { kind: 'name' | 'handle' | 'reveal'; tick: number };
+
 function Steps() {
   const { state } = useEditor();
-  const { fields, append, remove, move } = useFieldArray({
-    control: state.form.control,
-    name: 'steps',
+  const { control, setFocus } = state.form;
+  const { fields, insert, remove, move } = useFieldArray({ control, name: 'steps' });
+  const { errors, submitCount } = useFormState({ control, name: 'steps' });
+  const [selected, setSelected] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
+  const [focusTarget, setFocusTarget] = useState<FocusTarget | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const count = fields.length;
+  const selectedIndex = Math.min(selected, count - 1);
+  const stepErrors = errors.steps;
+  const stepsError = stepErrors?.root?.message ?? stepErrors?.message;
+  const isFull = count >= MAX_WORKFLOW_STEPS;
+
+  const moveStep = (from: number, to: number) => {
+    if (to < 0 || to >= count || from === to) return;
+    move(from, to);
+    setSelected((current) => indexAfterMove(current, from, to));
+    setAnnouncement(`Đã chuyển bước ${from + 1} tới vị trí ${to + 1}.`);
+  };
+
+  const addStep = (approverType: ApproverType, slot: number) => {
+    if (isFull) return;
+    insert(slot, { ...newApprovalStep(), approverType }, { shouldFocus: false });
+    setSelected(slot);
+    setFocusTarget({ kind: 'name', tick: Date.now() });
+    setAnnouncement(`Đã thêm bước mới ở vị trí ${slot + 1}.`);
+  };
+
+  const removeStep = (index: number) => {
+    remove(index);
+    setSelected((current) => (current > index ? current - 1 : Math.min(current, count - 2)));
+    setAnnouncement(`Đã xoá bước ${index + 1}.`);
+  };
+
+  const { drag, startDrag } = useStepDrag({
+    listRef,
+    onDrop: (source, slot) => {
+      if (source.kind === 'insert') {
+        addStep(source.approverType, slot);
+        return;
+      }
+      moveStep(source.fromIndex, slot > source.fromIndex ? slot - 1 : slot);
+    },
   });
-  const { errors } = useFormState({ control: state.form.control, name: 'steps' });
-  const stepsError = errors.steps?.root?.message ?? errors.steps?.message;
+
+  // Loi cua buoc dang dong khong hien duoi o nhap, nen mo buoc loi dau tien sau moi lan bam Luu.
+  const [seenSubmitCount, setSeenSubmitCount] = useState(submitCount);
+  if (submitCount !== seenSubmitCount) {
+    setSeenSubmitCount(submitCount);
+    if (stepErrors && stepErrors[selectedIndex] === undefined) {
+      const first = fields.findIndex((_, index) => stepErrors[index] !== undefined);
+      if (first >= 0) setSelected(first);
+    }
+  }
+
+  useEffect(() => {
+    switch (focusTarget?.kind) {
+      case 'name':
+        setFocus(`steps.${selectedIndex}.name`);
+        return;
+      case 'handle':
+        listRef.current
+          ?.querySelector<HTMLButtonElement>(`[data-step-handle="${selectedIndex}"]`)
+          ?.focus();
+        return;
+      case 'reveal': {
+        // Man hinh hep xep chi tiet duoi danh sach, chi cuon khi phan chi tiet dang khuat.
+        const detail = document.getElementById('chi-tiet-buoc');
+        if (detail && detail.getBoundingClientRect().top > window.innerHeight - 120) {
+          detail.scrollIntoView({ block: 'start' });
+        }
+        return;
+      }
+    }
+  }, [focusTarget, selectedIndex, setFocus]);
+
+  const dropSlot =
+    drag && drag.slot !== null && !isNoopSlot(drag.source, drag.slot) ? drag.slot : null;
+  const draggedIndex = drag?.source.kind === 'move' ? drag.source.fromIndex : null;
+  const selectedField = fields[selectedIndex];
 
   return (
-    <>
-      <h2 className="mb-2 font-bold text-brand">Các bước duyệt</h2>
-      <ol className="grid gap-3">
-        {fields.map((field, index) => (
-          <Step
-            key={field.id}
-            index={index}
-            count={fields.length}
-            onMove={move}
-            onRemove={remove}
+    <div className={cn(drag && 'select-none')}>
+      <h2 className="mb-1 font-bold text-brand">Các bước duyệt</h2>
+      <p className="mb-3 text-sm text-text-muted">
+        Kéo biểu tượng ở đầu mỗi bước để đổi thứ tự. Bấm vào một bước để sửa chi tiết.
+      </p>
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+        <div className="xl:sticky xl:top-18">
+          <div ref={listRef} role="list" aria-label="Chuỗi bước duyệt" className="grid gap-2">
+            {fields.map((field, index) => (
+              <div key={field.id} role="listitem">
+                <DropLine isVisible={dropSlot === index} />
+                <StepRow
+                  index={index}
+                  isSelected={index === selectedIndex}
+                  isDragged={draggedIndex === index}
+                  hasError={stepErrors?.[index] !== undefined}
+                  onSelect={() => {
+                    setSelected(index);
+                    setFocusTarget({ kind: 'reveal', tick: Date.now() });
+                  }}
+                  onHandlePointerDown={(event, label) =>
+                    startDrag({ kind: 'move', fromIndex: index, label })(event)
+                  }
+                  onHandleKeyDown={(event) => {
+                    const to =
+                      event.key === 'ArrowUp'
+                        ? index - 1
+                        : event.key === 'ArrowDown'
+                          ? index + 1
+                          : null;
+                    if (to === null) return;
+                    event.preventDefault();
+                    if (to < 0 || to >= count) return;
+                    moveStep(index, to);
+                    setSelected(to);
+                    setFocusTarget({ kind: 'handle', tick: Date.now() });
+                  }}
+                />
+              </div>
+            ))}
+            <DropLine isVisible={dropSlot === count} />
+          </div>
+          {stepsError ? (
+            <p role="alert" className="mt-2 text-sm text-danger">
+              {stepsError}
+            </p>
+          ) : null}
+
+          <div className="mt-4 rounded-md border border-dashed border-input p-3">
+            <p className="text-sm font-bold">Thêm bước</p>
+            <p className="text-sm text-text-muted">
+              {isFull
+                ? `Đã đủ ${MAX_WORKFLOW_STEPS} bước, không thêm được nữa.`
+                : 'Kéo một khối vào chuỗi để chèn đúng vị trí, hoặc bấm để thêm vào cuối.'}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {PALETTE.map((item) => (
+                <button
+                  key={item.type}
+                  type="button"
+                  disabled={isFull}
+                  className={`${ADD_BUTTON_CLASS} min-h-11 cursor-grab touch-none sm:min-h-0`}
+                  onPointerDown={startDrag({
+                    kind: 'insert',
+                    approverType: item.type,
+                    label: item.label,
+                  })}
+                  onClick={() => addStep(item.type, count)}
+                >
+                  <Plus size={16} aria-hidden />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {selectedField ? (
+          <StepDetail
+            key={selectedField.id}
+            index={selectedIndex}
+            count={count}
+            onMove={moveStep}
+            onRemove={removeStep}
           />
-        ))}
-      </ol>
-      {stepsError ? (
-        <p role="alert" className="mt-2 text-sm text-danger">
-          {stepsError}
-        </p>
+        ) : null}
+      </div>
+
+      <p aria-live="polite" className="sr-only">
+        {announcement}
+      </p>
+      {drag ? (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed z-50 max-w-64 truncate rounded-md border-2 border-brand bg-surface px-3 py-2 font-bold text-brand"
+          style={{ left: drag.x + 14, top: drag.y + 14 }}
+        >
+          {drag.source.label}
+        </div>
       ) : null}
-      <button
-        type="button"
-        className={`${ADD_BUTTON_CLASS} mt-3`}
-        disabled={fields.length >= MAX_WORKFLOW_STEPS}
-        onClick={() => append(newApprovalStep())}
-      >
-        <Plus size={16} aria-hidden />
-        Thêm bước
-      </button>
-    </>
+    </div>
   );
 }
 
@@ -420,7 +695,7 @@ export const WorkflowEditor = {
   Root,
   Form: EditorForm,
   Steps,
-  Step,
+  StepDetail,
   Condition,
   Preview,
 };

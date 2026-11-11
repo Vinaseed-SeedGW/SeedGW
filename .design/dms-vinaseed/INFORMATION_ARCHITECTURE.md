@@ -245,7 +245,7 @@ Quy tắc tính:
 4. Bộ đếm hạn mức tin ngoài khung
 
 ### Quy trình duyệt (cấu hình)
-1. Chuỗi bước của đơn vị và nguồn (riêng / kế thừa từ đơn vị cha)
+1. Chuỗi bước của đơn vị và nguồn (riêng / kế thừa từ đơn vị cha); dựng bằng kéo thả, chi tiết bước đang chọn nằm cạnh chuỗi
 2. Điều kiện của từng bước
 3. Xem trước với đơn giả định
 4. Lịch sử phiên bản

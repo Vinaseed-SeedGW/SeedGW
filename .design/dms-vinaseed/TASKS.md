@@ -147,10 +147,12 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 
 - [x] **A9. Tham số hệ thống & nhật ký**: bán kính check-in hợp lệ (m), SLA CSKH theo mức ưu tiên, ngưỡng cảnh báo công nợ (%), chu kỳ đồng bộ FAST, dải mã KH của DMS (`CodeSequence`), số ngày N để coi là "đại lý không đặt hàng"; màn xem `AuditLog` có lọc theo người/thực thể/thời gian. _Dùng lại: F4, F5. Cỡ M._
 
-- [x] **A10. Trình cấu hình quy trình duyệt đơn theo đơn vị (`/quan-tri/quy-trinh-duyet`)**: mỗi đơn vị (A1) có quy trình riêng; đơn vị con **kế thừa** quy trình đơn vị cha nếu không tự cấu hình. _Dùng lại: A1, A3, F5. New: `WorkflowEditor` compound (`WorkflowEditor.Steps / Step / Condition / Preview`). Cỡ L — task rủi ro, làm sớm trong giai đoạn 1._
+- [x] **A10. Trình cấu hình quy trình duyệt đơn theo đơn vị (`/quan-tri/quy-trinh-duyet`)**: mỗi đơn vị (A1) có quy trình riêng; đơn vị con **kế thừa** quy trình đơn vị cha nếu không tự cấu hình. _Dùng lại: A1, A3, F5. New: `WorkflowEditor` compound (`WorkflowEditor.Steps / StepDetail / Condition / Preview`). Cỡ L — task rủi ro, làm sớm trong giai đoạn 1._
   - Mỗi bước: tên bước, **người duyệt** theo (a) vai trò trong đơn vị của người tạo đơn (vd "ASM của vùng"), (b) chức danh ở đơn vị cấp trên (vd "Giám đốc miền"), (c) người cụ thể; kiểu duyệt: 1 người bất kỳ / tất cả; SLA giờ + leo thang khi quá hạn.
   - **Điều kiện kích hoạt bước** (bước chỉ chạy khi đúng): tổng tiền > X; chiết khấu > Y%; **đơn có cờ vượt hạn mức công nợ**; **đơn có cờ thiếu tồn kho**; nhóm sản phẩm; loại đại lý. Ví dụ: đơn < 50 triệu, không cờ → chỉ ASM duyệt; có cờ vượt công nợ → thêm bước Kế toán công nợ.
   - Tự duyệt (bỏ qua bước) khi người tạo chính là người duyệt bước đó, hoặc khi đơn dưới ngưỡng cấu hình.
+  - **Một người duyệt hai bước liên tiếp** (bổ sung 11/11/2026): người đã duyệt bước trước không phải duyệt lại bước liền sau, bước đó tự qua. Chỉ áp dụng khi hai bước nằm liền nhau trong chuỗi của đơn, xem DESIGN_BRIEF §9 mục 17.
+  - **Kéo thả** (bổ sung 11/11/2026): chuỗi bước bên trái, chi tiết bước đang chọn bên phải; kéo khối "Duyệt theo vai trò", "Duyệt theo chức danh", "Người duyệt cụ thể" vào chuỗi để chèn bước, kéo tay nắm để đổi thứ tự.
   - **Uỷ quyền** khi người duyệt vắng (từ ngày – đến ngày) — có audit.
   - **Phiên bản hoá**: sửa quy trình tạo phiên bản mới; đơn đang chạy giữ phiên bản cũ, đơn mới dùng phiên bản mới.
   - Màn **Xem trước**: nhập đơn giả định (đơn vị, giá trị, cờ) → hiện chuỗi bước & người duyệt thực tế.
@@ -186,6 +188,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Trang **Cần duyệt** `/kinh-doanh/can-duyet` với `ApprovalQueue` dùng chung (tab Đơn hàng trước; tab Đại lý mới thêm ở S10, Đơn từ ở T3, Check-in nghi vấn ở S9): gồm mục được uỷ quyền, sắp quá hạn lên đầu, duyệt ngay trên dòng; leo thang khi quá SLA bước.
   - State machine định nghĩa một chỗ (`packages/contracts/order-machine.ts`), bảng chuyển trạng thái hợp lệ + quyền cần có cho từng bước.
   - Duyệt hàng loạt; lý do bắt buộc khi từ chối/huỷ; ghi `OrderStatusHistory`.
+  - Lưu lượt duyệt chuyển tiếp mà `approvalProgress` trả về (`carried`) thành bản ghi duyệt do hệ thống tạo, có ghi bước gốc, và ghi nhật ký riêng. Không gửi thông báo cần duyệt cho bước đã tự qua.
   - Khi chuyển sang `Đã duyệt` → ghi `SyncOutbox` **trong cùng transaction**.
   - Thông báo cho người tạo (in-app; Mattermost nếu bật).
   - **Xong khi**: không thể nhảy trạng thái sai kể cả gọi API trực tiếp; test cho mọi cạnh của state machine; bỏ quyền `sales.order.approve` của ASM ở `/quan-tri/vai-tro` → nút Duyệt biến mất, gọi Server Action trực tiếp bị `FORBIDDEN`, API di động trả 403 (tiêu chí chuyển từ A3).

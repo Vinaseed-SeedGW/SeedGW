@@ -42,19 +42,19 @@ Trang đúng thương hiệu, đủ nhãn, đủ trạng thái và đi đúng th
 
 ## Có thể cải thiện
 
-8. **Trang chi tiết rất dài trên điện thoại.** Mỗi bước khoảng 10 ô nhập, 3 bước đã dài hơn 4 màn hình, và nút Lưu nằm tận cuối. _Gợi ý: thu bước đã điền thành dòng tóm tắt bấm vào để mở, hoặc giữ thanh nút Lưu cố định ở đáy màn hình._
-9. **Bấm "Thêm bước" không đưa con trỏ tới bước mới.** Người dùng bàn phím phải tự tìm. _Gợi ý: chuyển con trỏ vào ô Tên bước của bước vừa thêm._
+8. **Trang chi tiết rất dài trên điện thoại.** Mỗi bước khoảng 10 ô nhập, 3 bước đã dài hơn 4 màn hình, và nút Lưu nằm tận cuối. _Gợi ý: thu bước đã điền thành dòng tóm tắt bấm vào để mở, hoặc giữ thanh nút Lưu cố định ở đáy màn hình._ _Đã sửa 11/11/2026 khi chuyển sang kéo thả: các bước thu thành dòng tóm tắt, chỉ mở chi tiết một bước._
+9. **Bấm "Thêm bước" không đưa con trỏ tới bước mới.** Người dùng bàn phím phải tự tìm. _Gợi ý: chuyển con trỏ vào ô Tên bước của bước vừa thêm._ _Đã sửa 11/11/2026._
 10. **Ô số tiền hiện 5000000, không có dấu chấm phân cách.** Dòng gợi ý "Bằng 5.000.000 đ" đã bù lại. _Gợi ý: sau này định dạng ngay trong ô._
 
 ## Vấn đề chung của cả hệ thống, cần duyệt trước khi sửa
 
 - **Viền ô nhập quá nhạt.** Màu `#d1d3d4` trên nền trắng chỉ đạt 1,5:1, dưới mức 3:1 (WCAG 1.4.11 AA). Lỗi có ở mọi form, không riêng trang này. Muốn sửa phải thêm một màu xám trung gian vào token, việc này cần duyệt màu. _Đã sửa 11/11/2026: `--input` dùng xám `#808285` của Guideline, đạt 3,85:1._
-- **Chưa có link "Bỏ qua tới nội dung chính"** trong khung chung AppShell (WCAG 2.4.1 A).
+- **Chưa có link "Bỏ qua tới nội dung chính"** trong khung chung AppShell (WCAG 2.4.1 A). _Đã sửa 11/11/2026: có ở khung bộ phận, Hub và Tổng quan điều hành._
 - **Chưa có quy tắc `prefers-reduced-motion`.** Trang gần như không có hiệu ứng chuyển động nên rủi ro thấp.
 
 ## Câu hỏi nghiệp vụ phát hiện khi rà soát
 
-Một người có thể phải duyệt hai bước liên tiếp trong cùng một đơn. Ví dụ: Kế toán duyệt bước 1, đồng thời nhận uỷ quyền của ASM ở bước 2 (xem `review-xem-truoc-ket-qua-mobile-375.jpg`). Cần quyết: duyệt hai lần, hay bước sau tự cho qua khi người đó đã duyệt bước trước.
+Một người có thể phải duyệt hai bước liên tiếp trong cùng một đơn. Ví dụ: Kế toán duyệt bước 1, đồng thời nhận uỷ quyền của ASM ở bước 2 (xem `review-xem-truoc-ket-qua-mobile-375.jpg`). Cần quyết: duyệt hai lần, hay bước sau tự cho qua khi người đó đã duyệt bước trước. _Đã chốt 11/11/2026: bước sau tự qua, chỉ khi hai bước liền nhau (DESIGN_BRIEF §9 mục 17)._
 
 ## Điểm làm tốt
 
