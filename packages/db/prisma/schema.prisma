@@ -27,6 +27,7 @@ model OrgUnit {
   manager   User?     @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
   users     User[]    @relation("org_unit_members")
   approvalWorkflows ApprovalWorkflow[]
+  shiftAssignments  OrgUnitShift[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -77,6 +78,9 @@ model User {
   delegationsGiven       Delegation[]           @relation("delegation_delegator")
   delegationsReceived    Delegation[]           @relation("delegation_delegate")
   delegationsCreated     Delegation[]           @relation("delegation_creator")
+  shiftAssignments       UserShift[]            @relation("user_shift_user")
+  userShiftsCreated      UserShift[]            @relation("user_shift_creator")
+  orgUnitShiftsCreated   OrgUnitShift[]         @relation("org_unit_shift_creator")
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
 
@@ -303,4 +307,83 @@ model UserRole {
 
   @@id([userId, roleId])
   @@map("user_roles")
+}
+
+enum Weekday {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum HolidayKind {
+  HOLIDAY
+  MAKEUP_WORKDAY
+}
+
+// Gio luu bang so phut tinh tu 0 gio. Gio ra nho hon gio vao la ca qua dem.
+model Shift {
+  id                String         @id @default(uuid()) @db.Uuid
+  code              String         @unique
+  name              String
+  startMinute       Int            @map("start_minute")
+  endMinute         Int            @map("end_minute")
+  breakStartMinute  Int?           @map("break_start_minute")
+  breakEndMinute    Int?           @map("break_end_minute")
+  lateGraceMinutes  Int            @map("late_grace_minutes")
+  earlyGraceMinutes Int            @map("early_grace_minutes")
+  workUnits         Decimal        @map("work_units") @db.Decimal(4, 2)
+  workWeekdays      Weekday[]      @map("work_weekdays")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  orgUnitShifts     OrgUnitShift[]
+  userShifts        UserShift[]
+
+  @@map("shifts")
+}
+
+// Moi lan gan co hieu luc tu ngay ap dung toi lan gan sau. shiftId null la theo don vi cap tren.
+model OrgUnitShift {
+  id            String   @id @default(uuid()) @db.Uuid
+  orgUnitId     String   @map("org_unit_id") @db.Uuid
+  orgUnit       OrgUnit  @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  shiftId       String?  @map("shift_id") @db.Uuid
+  shift         Shift?   @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  createdById   String   @map("created_by_id") @db.Uuid
+  createdBy     User     @relation("org_unit_shift_creator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([orgUnitId, effectiveFrom])
+  @@index([shiftId])
+  @@map("org_unit_shifts")
+}
+
+model UserShift {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  user          User     @relation("user_shift_user", fields: [userId], references: [id], onDelete: Cascade)
+  shiftId       String?  @map("shift_id") @db.Uuid
+  shift         Shift?   @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  createdById   String   @map("created_by_id") @db.Uuid
+  createdBy     User     @relation("user_shift_creator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, effectiveFrom])
+  @@index([shiftId])
+  @@map("user_shifts")
+}
+
+model Holiday {
+  id        String      @id @default(uuid()) @db.Uuid
+  date      DateTime    @unique @db.Date
+  name      String
+  kind      HolidayKind
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@map("holidays")
 }

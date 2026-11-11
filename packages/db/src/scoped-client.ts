@@ -7,6 +7,9 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   MobileDevice: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   AuditLog: { ownerField: 'actorId', orgUnitField: 'actor.orgUnitId' },
   Delegation: { ownerField: 'delegatorId', orgUnitField: 'delegator.orgUnitId' },
+  UserShift: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
+  // Lan gan cho don vi khong co chu so huu, nguoi pham vi ca nhan chi thay lan gan minh tao.
+  OrgUnitShift: { ownerField: 'createdById', orgUnitField: 'orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([
