@@ -45,6 +45,13 @@ export const AUDIT_ACTION_LABEL = {
   'workflow.inherit': 'Chuyển quy trình về kế thừa',
   'delegation.create': 'Tạo uỷ quyền',
   'delegation.revoke': 'Thu hồi uỷ quyền',
+  'shift.create': 'Tạo ca làm việc',
+  'shift.update': 'Sửa ca làm việc',
+  'shift.delete': 'Xoá ca làm việc',
+  'shift-assignment.create': 'Gán ca',
+  'shift-assignment.delete': 'Xoá lần gán ca',
+  'holiday.create': 'Thêm ngày nghỉ lễ hoặc làm bù',
+  'holiday.delete': 'Xoá ngày nghỉ lễ hoặc làm bù',
 } as const;
 export type AuditAction = keyof typeof AUDIT_ACTION_LABEL;
 
@@ -56,6 +63,9 @@ export const AUDIT_ENTITY_LABEL = {
   CodeSequence: 'Dải mã',
   ApprovalWorkflow: 'Quy trình duyệt',
   Delegation: 'Uỷ quyền',
+  Shift: 'Ca làm việc',
+  ShiftAssignment: 'Gán ca',
+  Holiday: 'Lịch nghỉ',
 } as const;
 export type AuditEntityType = keyof typeof AUDIT_ENTITY_LABEL;
 
@@ -98,6 +108,16 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   period: 'Thời gian',
   reason: 'Lý do',
   status: 'Trạng thái',
+  hours: 'Giờ làm',
+  breakTime: 'Nghỉ giữa ca',
+  lateGraceMinutes: 'Cho phép đi muộn (phút)',
+  earlyGraceMinutes: 'Cho phép về sớm (phút)',
+  workUnits: 'Số công',
+  workWeekdays: 'Ngày làm trong tuần',
+  shift: 'Ca',
+  effectiveFrom: 'Áp dụng từ ngày',
+  date: 'Ngày',
+  kind: 'Loại',
   ...SETTING_LABEL,
 };
 

@@ -44,6 +44,7 @@ export const PERMISSIONS = [
   { code: 'admin.workflow.read', name: 'Xem Quy trình duyệt' },
   { code: 'admin.workflow.manage', name: 'Sửa Quy trình duyệt' },
   { code: 'admin.shift.read', name: 'Xem Ca làm việc' },
+  { code: 'admin.shift.manage', name: 'Sửa Ca làm việc' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
