@@ -58,7 +58,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
     - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham`
-    - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm: danh sách, km giữa các điểm, xuất Excel, bản đồ theo ngày, cờ nghi vấn)
+    - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem: danh sách, ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, bản đồ hành trình theo ngày, cờ nghi vấn)
   - Đối soát
     - Đồng bộ FAST `/kinh-doanh/dong-bo-fast` (tab: Đơn hàng · Đại lý · Yêu cầu cập nhật · Danh mục)
     - Báo cáo `/kinh-doanh/bao-cao`
@@ -98,10 +98,10 @@ Trang có dấu `*` là bổ sung so với plan trước.
 ### Site Map app điện thoại
 
 - Đăng nhập / Đăng ký thiết bị
-- Tab **Hôm nay**: nút Check-in · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
+- Tab **Hôm nay**: nút Check-in (mở máy ảnh trong app) · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
 - Tab **Tuyến**: đại lý hôm nay / gần tôi → Check-in · Thêm đại lý
 - Tab **Đơn hàng**: đơn của tôi · Tạo đơn nhanh (M8) · **Cần duyệt** (chỉ hiện với người có quyền duyệt)
-- Tab **Lịch sử**: check-in của tôi theo ngày, nội dung làm việc, km từ điểm trước, tổng km trong ngày
+- Tab **Lịch sử**: check-in của tôi theo ngày, ảnh, ghi chú, km từng chặng, tổng km trong ngày, nút Kết thúc ngày
 - Tab **Tôi**: hồ sơ, thiết bị, thông báo, đăng xuất
 
 ### Quy tắc "một hồ sơ, nhiều lối vào"
@@ -222,7 +222,7 @@ Quy tắc tính:
 
 ### Báo cáo ghé thăm (Check-in)
 1. Bộ lọc: khoảng ngày, nhân viên, đơn vị, loại điểm. Nút Xuất Excel
-2. Bảng check-in: giờ, nhân viên, điểm, nội dung làm việc, km từ điểm trước, cờ nghi vấn
+2. Bảng check-in theo cột của mẫu Excel cự ly di chuyển, thêm Tên đại lý và Ghi chú; cờ nghi vấn; ảnh khi chọn dòng
 3. Tổng số lượt và tổng km theo bộ lọc
 4. Bản đồ các điểm của một nhân viên trong một ngày, nối theo thứ tự giờ
 
@@ -280,10 +280,11 @@ Quy tắc tính:
    - Mã đã tồn tại trên FAST hoặc lỗi → báo lỗi để xử lý tay, không ghi đè.
 
 ### Check-in và báo cáo ghé thăm
-1. App: bấm Check-in → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
-2. App tự ghi vị trí và giờ; nhân viên nhập Nội dung làm việc nếu muốn → lưu trên máy → gửi khi có mạng.
+1. App: bấm Check-in → máy ảnh trong app mở, khung ngắm hiện giờ và vị trí → chụp → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
+   - Từ lượt check-in đầu ngày, app ghi hành trình 5 giây một lần cho tới khi bấm Kết thúc ngày hoặc tới giờ tự dừng.
+2. Nhân viên nhập Ghi chú (bắt buộc nếu không tại đại lý) → lưu trên máy → gửi khi có mạng.
    - Đại lý, khách hàng ngoài bán kính → bắt nhập lý do, gắn cờ, vẫn ghi nhận.
-3. Máy chủ tính km từ điểm check-in trước trong cùng ngày.
+3. Máy chủ lấy địa chỉ và tính km từ điểm check-in trước trong cùng ngày, theo đường đi thực tế và theo GPS.
 4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
 5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.
 
@@ -315,8 +316,9 @@ Quy tắc tính:
 | Giao dịch bán | **Đơn hàng** | Không viết tắt là "đơn" trong nhãn |
 | Ghi nhận có mặt tại một điểm | **Check-in** | Điểm là Đại lý, Khách hàng hoặc Điểm khác |
 | Nơi check-in không phải đại lý hay khách hàng | **Điểm khác** | Nhân viên tự đặt tên điểm |
-| Việc đã làm tại điểm | **Nội dung làm việc** | Không bắt buộc |
-| Quãng đường từ điểm check-in trước | **Km từ điểm trước** | Tính trong cùng ngày |
+| Việc đã làm hoặc lý do tại điểm | **Ghi chú** | Bắt buộc nếu không check-in tại đại lý |
+| Quãng đường từ điểm check-in trước theo đường thật | **Khoảng cách (km)** | Theo mẫu Excel cự ly di chuyển |
+| Độ dài vết GPS từ điểm trước | **Khoảng cách theo GPS (km)** | |
 | Trang check-in trên web | **Báo cáo ghé thăm** | Đường dẫn vẫn là `/kinh-doanh/check-in` |
 | Yêu cầu của khách cần xử lý | **Phiếu** | Thay "ticket" |
 | Chuỗi tin với một khách | **Hội thoại** | |

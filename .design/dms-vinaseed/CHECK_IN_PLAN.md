@@ -1,0 +1,158 @@
+# Kế hoạch phần Check-in và Báo cáo ghé thăm
+
+Ngày: 11/11/2026. Căn cứ: yêu cầu người dùng ngày 11/11/2026, DESIGN_BRIEF §9 mục 20 và 21, mẫu `Bao-cao-cu-ly-di-chuyen.xlsx`.
+
+## 1. Yêu cầu đã chốt
+
+1. Check-in chỉ có trên app điện thoại. Web chỉ có Báo cáo ghé thăm và quãng đường di chuyển.
+2. Mỗi check-in ghi: điểm (đại lý, khách hàng hoặc điểm khác), thời gian, địa chỉ, ghi chú, ảnh, km từ điểm trước.
+3. **Ảnh bắt buộc**, chụp bằng máy ảnh mở ngay trong app khi bấm Check-in. Khung ngắm luôn hiện vị trí và thời gian, và hai thông tin này được in lên ảnh.
+4. **Km theo đường đi thực tế**. App lấy vị trí khoảng 5 giây một lần trong lúc nhân viên đi thị trường.
+5. Báo cáo xuất Excel theo mẫu đính kèm, thêm 2 cột **Tên đại lý** và **Ghi chú**.
+6. Nhân viên thấy dữ liệu của mình. Quản lý thấy nhân viên mình quản lý.
+
+## 2. Số liệu để tính quy mô
+
+Mẫu Excel ngày 11/11/2026 có 547 lượt check-in của 86 nhân viên, trung bình 5,4 lượt mỗi người mỗi ngày, nhiều nhất 19 lượt. Ước tính khi chạy hết: **300 nhân viên thị trường, 26 ngày làm mỗi tháng**.
+
+| Đại lượng | Ước tính |
+|---|---|
+| Lượt check-in mỗi tháng | 300 x 5,4 x 26 = khoảng **42.000** |
+| Ảnh mỗi tháng (khoảng 300 KB mỗi ảnh sau nén) | khoảng **12,6 GB** |
+| Điểm GPS mỗi người mỗi ngày (5 giây một điểm, khoảng 3 giờ di chuyển, đứng yên không ghi) | khoảng 2.200 |
+| Điểm GPS mỗi tháng | khoảng **17 triệu** dòng, khoảng 2 GB |
+
+## 3. Cách tính đường đi hiệu quả
+
+### 3.1 Không gọi API bản đồ 5 giây một lần
+
+Gọi API bản đồ mỗi 5 giây từ điện thoại vừa tốn tiền, vừa tốn pin và 3G, vừa hỏng khi mất sóng. Cách làm đề xuất tách ba việc:
+
+1. **App chỉ ghi vị trí**: 5 giây lấy một điểm, chỉ giữ khi đã đi được ít nhất 10 m (đứng yên trong đại lý không sinh điểm). Điểm lưu vào SQLite trên máy.
+2. **App gửi theo lô**: khoảng 60 giây gửi một lần mọi điểm đang chờ (khi có mạng). Mất mạng thì giữ lại, có mạng gửi bù. Máy chủ nhận khoảng 5 lượt mỗi giây thay vì 60 lượt nếu gửi 5 giây một lần.
+3. **Máy chủ tính km một lần cho mỗi chặng**: khi nhận check-in mới, máy chủ lấy vết GPS từ check-in trước tới check-in này, lọc điểm sai, rồi tính:
+   - **Khoảng cách theo GPS (km)**: cộng độ dài các đoạn giữa các điểm GPS đã lọc. Không tốn phí.
+   - **Khoảng cách (km)**: đưa vết GPS vào dịch vụ khớp đường (map matching) để bám vào đường thật, rồi lấy độ dài đường đã khớp. Đây là số km dùng chính thức.
+
+### 3.2 So sánh nơi tính khớp đường
+
+Mỗi tháng khoảng 17 triệu điểm, mỗi lần gọi khớp đường nhận tối đa khoảng 100 điểm, nên cần khoảng **170.000 lượt gọi mỗi tháng**.
+
+| Phương án | Chi phí ước tính mỗi tháng | Ưu | Nhược |
+|---|---|---|---|
+| **Máy chủ tìm đường tự dựng** (OSRM hoặc Valhalla, bản đồ OpenStreetMap Việt Nam), đặt trên máy chủ nội bộ | 0 đ theo lượt. Chỉ tốn máy chủ, ước tính 4 đến 8 GB RAM, cần đo ở R4 | Không giới hạn lượt, không lộ dữ liệu vị trí nhân viên ra ngoài | Đường làng nhỏ có thể thiếu trên OpenStreetMap, phải tự cập nhật bản đồ hàng tháng |
+| Google Roads API (Snap to Roads) | 5.000 lượt đầu miễn phí, sau đó 10 USD mỗi 1.000 lượt, từ 100.000 lượt là 8 USD: khoảng **1.500 USD** | Dữ liệu đường tốt | Đắt nhất, dữ liệu vị trí gửi ra nước ngoài |
+| Vietmap (có API khớp đường) | Chưa công bố giá khớp đường, phải hỏi Vietmap. Giá chung 50 đ mỗi lượt cho tới 500.000 lượt | Bản đồ Việt Nam, cập nhật địa giới mới | Chưa rõ giá, phụ thuộc bên ngoài |
+
+**Đề xuất: tự dựng máy chủ tìm đường**, có sẵn đường lui sang Vietmap. Code tách riêng một lớp tính khoảng cách đường (`RoadDistanceProvider`), nên đổi nhà cung cấp không phải sửa báo cáo. R4 sẽ đo độ lệch trên vết thật trước khi chốt.
+
+### 3.3 Khi vết GPS bị thiếu
+
+Vết có thể đứt khi nhân viên tắt định vị, máy hết pin, hoặc iPhone chỉ cho phép định vị "Khi dùng app". Quy tắc:
+
+- Đoạn đứt trên 5 phút hoặc trên 2 km: nối đoạn đó bằng đường ngắn nhất giữa hai đầu đoạn (máy chủ tìm đường, không tốn phí).
+- Cả chặng không có vết: tính đường ngắn nhất giữa hai điểm check-in.
+- Báo cáo đánh dấu dòng có phần ước tính để quản lý biết.
+
+### 3.4 Lọc điểm sai trước khi tính
+
+- Bỏ điểm có độ chính xác kém hơn 50 m.
+- Bỏ điểm tạo tốc độ phi lý so với điểm trước (trên 150 km/h).
+- Bỏ điểm nhảy qua lại quanh một chỗ khi đứng yên.
+- Điểm do ứng dụng giả lập vị trí (Android báo được) vẫn lưu nhưng gắn cờ nghi vấn, không chặn.
+
+### 3.5 Bắt đầu và dừng ghi hành trình
+
+- **Bắt đầu**: tự động ở lượt check-in đầu tiên trong ngày. Lượt đầu ngày có km bằng 0, giống mẫu Excel hiện tại.
+- **Dừng**: nhân viên bấm "Kết thúc ngày" trên app, hoặc tự dừng ở giờ cấu hình trong Tham số (mặc định 20:00). Vết sau lượt check-in cuối ngày không dùng để tính km.
+- Trong lúc ghi, Android hiện thông báo cố định "DMS đang ghi hành trình" (Android bắt buộc). Lần đầu dùng, app hiện màn đồng ý cho ghi vị trí trong giờ làm việc, vì vị trí là dữ liệu cá nhân (Nghị định 13/2023).
+
+### 3.6 Địa chỉ của điểm check-in
+
+Cột **Địa chỉ** cần đổi toạ độ ra địa chỉ (reverse geocoding), khoảng 42.000 lượt mỗi tháng. Bản đồ OpenStreetMap thiếu nhiều địa chỉ ở Việt Nam và chưa cập nhật tên tỉnh, xã sau sáp nhập, nên **dùng nhà cung cấp Việt Nam**:
+
+| Nhà cung cấp | Giá | Chi phí ước tính mỗi tháng |
+|---|---|---|
+| Vietmap | 50 đ mỗi lượt cho tới 500.000 lượt | khoảng **2,1 triệu đ** |
+| Goong | 1,5 USD mỗi 1.000 lượt dưới 100.000 lượt | khoảng **63 USD** |
+| Google | 5 USD mỗi 1.000 lượt, 10.000 lượt đầu miễn phí | khoảng 160 USD |
+
+Máy chủ gọi một lần cho mỗi check-in và lưu lại. Khoá API nằm trên máy chủ, không nằm trong app. Gọi lỗi thì thử lại qua worker, báo cáo vẫn có toạ độ.
+
+## 4. Máy ảnh trong app
+
+- Bấm **Check-in** là mở ngay máy ảnh của app (`expo-camera`), không mở ứng dụng máy ảnh của điện thoại, không cho chọn ảnh có sẵn.
+- Khung ngắm luôn hiện một dải thông tin ở dưới: **giờ phút giây, ngày** (theo giờ máy chủ đã đồng bộ, không theo giờ máy), **toạ độ và sai số**, **địa chỉ** (khi có mạng), tên nhân viên. Sai số trên 50 m thì dải chuyển màu cảnh báo và ghi "Đang chờ định vị chính xác".
+- Bấm chụp: app ghép ảnh với dải thông tin thành một ảnh JPEG duy nhất, thông tin được in hẳn lên ảnh. Ảnh được thu về cạnh dài 1600 px, chất lượng 70%, khoảng 300 KB.
+- Mất mạng: dải hiện toạ độ và giờ, chưa có địa chỉ. Ảnh vẫn chụp và lưu được.
+- **Thư viện cần thêm vào app** (cần bạn duyệt): `expo-camera`, `expo-location`, `expo-task-manager`, `expo-image-manipulator` (đều của Expo, đã có trong định hướng công nghệ), và `react-native-view-shot` (nhỏ, dùng để ghép ảnh với dải thông tin).
+
+## 5. Luồng trên app
+
+1. Bấm **Check-in** → máy ảnh mở → chụp.
+2. Chọn điểm:
+   - **Đại lý**: app gợi ý đại lý gần nhất, tìm được theo tên hoặc mã.
+   - **Khách hàng**: tìm theo tên hoặc số điện thoại.
+   - **Điểm khác**: tự đặt tên điểm.
+3. Nhập **Ghi chú**: bắt buộc nếu không check-in tại đại lý (lý do, việc đã làm), không bắt buộc nếu tại đại lý.
+4. Bấm Lưu → lưu trên máy → gửi khi có mạng. Đại lý hoặc khách hàng ở xa toạ độ đã lưu thì vẫn ghi nhận, có cờ.
+5. Tab Lịch sử: các lượt trong ngày, ghi chú, km từng chặng, tổng km.
+
+## 6. Báo cáo ghé thăm trên web
+
+Trang `/kinh-doanh/check-in`, có bảng, bộ lọc, xem ảnh, bản đồ hành trình một ngày của một nhân viên, và nút **Xuất Excel**.
+
+**File Excel theo mẫu**: tiêu đề "BÁO CÁO CỰ LY DI CHUYỂN" gộp ô ở dòng 3, dòng 5 là tiêu đề cột, chữ Times New Roman 11, có viền, cột km định dạng 3 chữ số thập phân.
+
+| Cột | Nội dung |
+|---|---|
+| STT | |
+| Tên đơn vị | Đơn vị của nhân viên tại thời điểm check-in |
+| Mã nhân viên | |
+| Tên nhân viên | |
+| Ngày | Ngày theo giờ Việt Nam, định dạng d/mm/yyyy |
+| Thời gian checkin | Giờ:phút theo giờ Việt Nam |
+| Địa chỉ | Từ mục 3.6 |
+| Khách hàng | Tên khách hàng khi check-in tại khách hàng |
+| **Tên đại lý** (mới) | Tên đại lý khi check-in tại đại lý |
+| **Ghi chú** (mới) | Ghi chú nhân viên nhập. Với lượt không tại đại lý, đây là lý do bắt buộc |
+| Khoảng cách (km) | Theo đường đi thực tế (mục 3.1, 3.3) |
+| Khoảng cách theo GPS (km) | Độ dài vết GPS đã lọc |
+
+Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mới nhất ở trên. Trong mẫu cũ, cột Thời gian checkin đang lệch giờ (ghi giờ quốc tế như giờ Việt Nam). File mới dùng giờ Việt Nam.
+
+## 7. Dữ liệu
+
+| Bảng | Nội dung chính |
+|---|---|
+| `CheckIn` | `clientId` (chống trùng), nhân viên, đơn vị lúc check-in, loại điểm, đại lý hoặc khách hàng hoặc tên điểm khác, toạ độ, sai số, giờ trên máy, giờ máy chủ nhận, địa chỉ, ghi chú, ảnh, cờ nghi vấn, `roadDistanceKm`, `gpsDistanceKm`, `isDistanceEstimated` |
+| `TrackPoint` | nhân viên, giờ trên máy, toạ độ, sai số, tốc độ, cờ giả lập. Chia bảng theo tháng, giữ 6 tháng (cần chốt) rồi xoá, vì km đã lưu trên `CheckIn` |
+| `TrackSession` | một ngày đi thị trường: bắt đầu, kết thúc, lý do dừng |
+
+## 8. Rủi ro và cách kiểm soát
+
+| Rủi ro | Cách kiểm soát |
+|---|---|
+| Ghi vị trí liên tục làm hao pin | Chỉ ghi khi đã di chuyển 10 m, không dùng chế độ chính xác cao nhất, đo pin thật ở R3 |
+| iPhone chỉ cho định vị "Khi dùng app", vết bị đứt | Hướng dẫn chọn "Luôn luôn" và kiểm tra quyền mỗi lần mở app. Đoạn đứt nối theo mục 3.3 và đánh dấu |
+| Apple và Google xét duyệt quyền vị trí chạy nền | Viết lý do rõ ràng bằng tiếng Việt, quay video minh hoạ cho bản xét duyệt. Bắt đầu sớm ở R3 |
+| Đường làng thiếu trên OpenStreetMap | R4 so km tính ra với đồng hồ xe trên vài tuyến thật; lệch nhiều thì chuyển sang Vietmap |
+| Nhiều dữ liệu điểm GPS | Gửi theo lô, chia bảng theo tháng, xoá điểm cũ, chỉ giữ km đã tính |
+
+## 9. Việc cần bạn quyết hoặc cung cấp
+
+1. Duyệt các thư viện ở mục 4.
+2. Chọn nhà cung cấp địa chỉ: Vietmap hay Goong. Đăng ký tài khoản đứng tên Vinaseed và gửi khoá API cho tôi qua file `.env` trên máy chủ, không gửi trong chat.
+3. Máy chủ nội bộ cho dịch vụ tìm đường: khoảng 4 CPU, 8 GB RAM, 50 GB ổ đĩa (số chính xác đo ở R4). Làm cùng IT Vinaseed trong F7.
+4. Giữ điểm GPS thô bao lâu (đề xuất 6 tháng) và ảnh check-in bao lâu (DESIGN_BRIEF §11 câu 8).
+5. Giờ tự dừng ghi hành trình (đề xuất 20:00).
+6. Một nhân viên thử nghiệm có xe máy để đo km thật trong R3, R4.
+
+## 10. Nguồn giá
+
+- Google Maps Platform pricing: https://developers.google.com/maps/billing-and-pricing/pricing
+- Goong pricing: https://goong.io/pricing-plans/
+- Vietmap Maps API: https://maps.vietmap.vn và https://maps.vietmap.vn/docs/map-api/console/request-to-transaction/
+- Expo Location (chạy nền): https://docs.expo.dev/versions/latest/sdk/location/
+
+Giá tra ngày 11/11/2026, cần kiểm tra lại khi ký hợp đồng.

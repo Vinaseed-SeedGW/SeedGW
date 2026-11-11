@@ -91,11 +91,15 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Ghi lại các giới hạn gửi tin của OA (khung thời gian sau tương tác, loại tin, hạn mức) để thiết kế C4.
   - **Xong khi**: nhắn vào OA từ điện thoại → thấy bản ghi trong DB < 3s; gọi lệnh gửi → điện thoại nhận được.
 
-- [ ] **R3. Spike app check-in — GPS + camera + phát hiện giả lập vị trí**: _New. Cỡ M._
+- [ ] **R3. Spike app check-in — máy ảnh có dấu vị trí, ghi hành trình chạy nền, pin**: _New. Cỡ L (tăng 11/11/2026)._
   - Expo dev build trên 1 máy Android + 1 iPhone (**bắt buộc cả iOS**). Đồng thời khởi động thủ tục **tài khoản Apple Developer đứng tên Vinaseed** (cần số D-U-N-S, mất 1–3 tuần) và tài khoản Google Play Console.
-  - Lấy toạ độ độ chính xác cao, chụp ảnh bằng camera (không cho chọn từ thư viện), đọc cờ mock location trên Android.
+  - Máy ảnh trong app có dải giờ, toạ độ trên khung ngắm và in lên ảnh (`expo-camera` + `react-native-view-shot`); không cho chọn ảnh có sẵn.
+  - Ghi vị trí chạy nền 5 giây một lần trong 8 giờ (`expo-location` + `expo-task-manager`), màn hình tắt, app ở nền; đọc cờ mock location trên Android.
   - Thử lưu SQLite khi tắt mạng rồi gửi lại khi có mạng.
-  - **Xong khi**: báo cáo ngắn: độ chính xác GPS thực tế trong nhà/ngoài trời, thời gian lấy vị trí, mock location có bị phát hiện không.
+  - **Xong khi**: báo cáo ngắn: độ chính xác GPS trong nhà và ngoài trời, mức hao pin sau 8 giờ, vết có bị đứt khi app ở nền không, ảnh có đọc rõ dải thông tin ngoài nắng không, mock location có bị phát hiện không, nội dung giải trình quyền vị trí cho Apple và Google.
+
+- [ ] **R4. Spike máy chủ tìm đường và địa chỉ** (CHECK_IN_PLAN §3): dựng OSRM hoặc Valhalla với bản đồ OpenStreetMap Việt Nam bằng Docker, thử API khớp vết (`match`) và đường ngắn nhất (`route`); đo RAM, ổ đĩa, thời gian xử lý. Thử reverse geocoding của Vietmap và Goong trên 50 toạ độ check-in thật để chọn bên. _Dùng lại: R3 (vết thật). Cỡ M. Làm cùng IT Vinaseed (F7)._
+  - **Xong khi**: trên 3 tuyến thật đi bằng xe máy (có đường làng), km tính ra lệch với đồng hồ xe không quá 5%; có số cấu hình máy chủ cần xin; chốt được nhà cung cấp địa chỉ. Lệch quá 5% thì hỏi giá API khớp đường của Vietmap.
 
 ---
 
@@ -233,28 +237,31 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Nhận diện theo `BRAND.md`: nạp 4 font bằng `expo-font`, component `<Text>` chung chọn `fontFamily` theo kiểu chữ; icon app và màn khởi động xanh với logo ngang màu trắng cỡ L, không xếp chồng; thanh tiêu đề logo cỡ M; cuối tab Tôi có logo cỡ S, bản quyền và liên hệ Phòng ĐMST&CĐS.
   - **Xong khi**: khoá tài khoản trên web → app bị đăng xuất; đăng nhập trên máy thứ 2 bị chặn kèm hướng dẫn.
 
-- [ ] **M2. Check-in tại một điểm** (viết lại 11/11/2026): nút **Check-in** lớn trên tab Hôm nay. Chọn điểm: **Đại lý** hoặc **Khách hàng** (gợi ý điểm gần vị trí hiện tại nhất, tìm theo tên hoặc số điện thoại), hoặc **Điểm khác** (nhập tên điểm, ví dụ "Ruộng trình diễn xã A"). App tự ghi toạ độ, độ chính xác, giờ trên máy; máy chủ ghi thêm giờ nhận. Ô **Nội dung làm việc** không bắt buộc. Ảnh: chờ chốt (DESIGN_BRIEF §11). Không còn Vào ca, Ra ca. _Dùng lại: R3, M1, A7, S1. Cỡ M._
-  - **Xong khi**: check-in đủ 3 loại điểm, khi có mạng hiện trên báo cáo web (V2) trong 5 giây.
+- [ ] **M2. Check-in có ảnh bắt buộc** (viết lại 11/11/2026, CHECK_IN_PLAN §4, §5): bấm **Check-in** là mở ngay máy ảnh trong app (`expo-camera`), không mở máy ảnh của điện thoại, không chọn ảnh có sẵn. Khung ngắm luôn hiện dải thông tin: giờ phút giây và ngày theo giờ máy chủ đã đồng bộ, toạ độ và sai số, địa chỉ khi có mạng (V3), tên nhân viên; sai số trên 50 m thì báo "Đang chờ định vị chính xác". Chụp xong, dải thông tin được in hẳn lên ảnh, ảnh thu về 1600 px, khoảng 300 KB. Sau đó chọn điểm (**Đại lý** gợi ý gần nhất, **Khách hàng**, hoặc **Điểm khác** tự đặt tên) và nhập **Ghi chú** (bắt buộc nếu không tại đại lý). Chỉ có trên app, không có trên web. _Dùng lại: R3, M1, A7, S1. Cần duyệt thư viện `react-native-view-shot`. Cỡ L._
+  - **Xong khi**: ảnh chụp ở 3 loại điểm đều có giờ, toạ độ in trên ảnh, đọc rõ ngoài nắng; không lưu được nếu chưa chụp ảnh hoặc thiếu ghi chú khi không tại đại lý; khi có mạng hiện trên báo cáo web trong 5 giây.
 
-- [ ] **M3. Hàng đợi offline — "check-in lúc nào cũng được ghi nhận"**: mọi check-in ghi SQLite trước với `clientId` UUID, trạng thái `pending/synced/failed`; đồng bộ khi có mạng, khi mở app và chạy nền (expo-background-fetch); API `POST /api/mobile/check-ins` idempotent theo `clientId`; ảnh upload riêng, có resume. _Dùng lại: M2. Cỡ L._
+- [ ] **M3. Hàng đợi offline — "check-in lúc nào cũng được ghi nhận"**: mọi check-in và điểm GPS ghi SQLite trước, check-in có `clientId` UUID, trạng thái `pending/synced/failed`; đồng bộ khi có mạng, khi mở app và chạy nền; API `POST /api/mobile/check-ins` idempotent theo `clientId`; ảnh upload riêng, có resume. _Dùng lại: M2. Cỡ L._
   - Hiện số check-in chờ gửi; không cho đăng xuất khi còn bản ghi chưa đồng bộ.
   - **Xong khi**: bật chế độ máy bay, check-in 5 lần, tắt máy bay → đủ 5 bản ghi trên server, không trùng, giờ thiết bị được giữ nguyên.
+
+- [ ] **M12. Ghi hành trình chạy nền** (CHECK_IN_PLAN §3.1, §3.5): từ lượt check-in đầu tiên trong ngày, app lấy vị trí 5 giây một lần, chỉ giữ điểm khi đã đi thêm 10 m, lưu SQLite, gửi theo lô khoảng 60 giây một lần qua `POST /api/mobile/track-points` (chống trùng theo nhân viên và giờ). Dừng khi bấm "Kết thúc ngày" hoặc tới giờ trong Tham số (mặc định 20:00). Android chạy dịch vụ nền có thông báo cố định; iOS cần quyền "Luôn luôn", thiếu quyền thì nhắc mỗi lần mở app. Lần đầu dùng có màn đồng ý cho ghi vị trí trong giờ làm việc. Khoảng thời gian, khoảng cách lọc và giờ dừng nằm ở Tham số (A9). _Dùng lại: M1, M3, R3, A9. Cỡ L._
+  - **Xong khi**: chạy thử 8 giờ trên 1 Android và 1 iPhone với app ở nền và màn hình tắt: vết không đứt quá 5 phút khi đang di chuyển, mức hao pin ghi vào báo cáo; tắt mạng 1 giờ rồi bật lại thì đủ điểm.
 
 - [ ] **M4. Kiểm tra vị trí khi check-in đại lý, khách hàng (geofence)**: tính khoảng cách từ vị trí hiện tại tới toạ độ đã lưu của điểm được chọn; ngoài bán kính (A9) vẫn ghi nhận nhưng **bắt nhập lý do** và gắn cờ. Điểm khác không kiểm tra bán kính. _Dùng lại: M2, M3, S8, A7. Cỡ M._
   - Cho phép cập nhật toạ độ đại lý lần đầu (đại lý chưa có toạ độ) — cần ASM duyệt.
   - **Xong khi**: check-in cách đại lý 50m → hợp lệ; cách 2km → có cờ + lý do; web thấy cả hai.
 
-- [ ] **M5. Chống gian lận check-in**: cờ nghi vấn khi: mock location (Android), độ chính xác GPS kém (> 100m), chênh giờ thiết bị/server > 5 phút, ảnh từ thư viện, thiết bị root/jailbreak, tốc độ di chuyển giữa 2 điểm phi lý. _Dùng lại: M3, M4. Cỡ M._
+- [ ] **M5. Chống gian lận check-in**: cờ nghi vấn khi: mock location (Android), độ chính xác GPS kém (> 100m), chênh giờ thiết bị/server > 5 phút, thiết bị root/jailbreak, tốc độ di chuyển giữa 2 điểm phi lý. Ảnh chỉ chụp được trong app nên không còn trường hợp ảnh từ thư viện. _Dùng lại: M3, M4, M12. Cỡ M._
   - Không chặn cứng (để luôn ghi nhận) — gắn cờ và lý do cho quản lý xem ở báo cáo ghé thăm (V2).
 
-- [ ] **M6. Lịch sử & lịch tuyến của tôi**: xem check-in của mình theo ngày/tháng kèm nội dung làm việc, km từ điểm trước và tổng km trong ngày (V1), trạng thái đồng bộ, kế hoạch viếng thăm hôm nay/tuần (S8), bản đồ điểm cần đến. _Dùng lại: M3, S8, V1. Cỡ M._
+- [ ] **M6. Lịch sử & lịch tuyến của tôi**: xem check-in của mình theo ngày/tháng kèm ảnh, ghi chú, km từng chặng và tổng km trong ngày (V1), trạng thái đồng bộ, kế hoạch viếng thăm hôm nay/tuần (S8), bản đồ điểm cần đến. _Dùng lại: M3, S8, V1. Cỡ M._
 
 - [ ] **M7. Thông báo đẩy**: expo-notifications; đơn được duyệt/từ chối, kế hoạch mới. _Dùng lại: M1, S4. Cỡ S._
 
 - [ ] **M8. Tạo đơn nhanh trên mobile (tuỳ chọn — Giai đoạn 2)**: tạo đơn ngay tại đại lý sau check-in, dùng `resolvePrice` chung, lưu nháp offline, gửi duyệt khi có mạng. _Dùng lại: S2 (logic), M3 (offline). Cỡ L._
 
 - [ ] **M9. Phát hành app Android + iOS cho 300–400 NV**: EAS Build & EAS Submit. _Cỡ L (tăng do iOS)._
-  - **iOS**: tài khoản Apple Developer Organization đứng tên Vinaseed (khởi động từ R3); phát hành dạng **Unlisted App** trên App Store (chỉ ai có link mới cài được) hoặc **Custom App** qua Apple Business Manager; TestFlight cho nhóm thử. Chuẩn bị cho Apple review: tài khoản demo, giải thích lý do dùng vị trí & camera (chuỗi `NSLocationWhenInUseUsageDescription`, `NSCameraUsageDescription` tiếng Việt), chính sách quyền riêng tư công khai.
+  - **iOS**: tài khoản Apple Developer Organization đứng tên Vinaseed (khởi động từ R3); phát hành dạng **Unlisted App** trên App Store (chỉ ai có link mới cài được) hoặc **Custom App** qua Apple Business Manager; TestFlight cho nhóm thử. Chuẩn bị cho Apple review: tài khoản demo, giải thích lý do dùng vị trí chạy nền & camera (chuỗi `NSLocationWhenInUseUsageDescription`, `NSLocationAlwaysAndWhenInUseUsageDescription`, `NSCameraUsageDescription` tiếng Việt, video minh hoạ ghi hành trình; Google Play cần khai báo quyền vị trí nền và dịch vụ nền), chính sách quyền riêng tư công khai.
   - **Android**: Google Play phát hành private/closed testing cho tài khoản công ty, hoặc APK ký số phát qua link nội bộ (kèm hướng dẫn bật cài đặt từ nguồn ngoài).
   - OTA update (expo-updates) để sửa lỗi JS không cần duyệt lại store; chính sách bắt buộc cập nhật khi API đổi phiên bản.
   - Trang hướng dẫn cài đặt có QR code cho từng nền tảng.
@@ -272,18 +279,22 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 ## Giai đoạn 2c — Báo cáo ghé thăm (tuần 12–14)
 
 > **Quyết định 11/11/2026 (DESIGN_BRIEF §9 mục 20):** DMS không tính công. Check-in chỉ ghi lại nhân viên đã ở đâu, lúc nào, làm gì và đi bao nhiêu km. Kế toán đơn vị dùng file Excel để tính công. Các task T1 đến T5 (tổng hợp ngày công, bảng công, giải trình và đơn từ, chốt kỳ công, tích hợp HRM) đã bỏ.
+>
+> **Kế hoạch chi tiết phần check-in:** [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md) (máy ảnh có dấu vị trí, ghi hành trình 5 giây, tính km theo đường đi thực tế, địa chỉ, mẫu Excel). Thứ tự làm: R3, R4 → M1, M2, M3, M12 → V3, V1 → V2.
 
-- [ ] **V1. Quãng đường giữa các điểm check-in**: khi nhận check-in, máy chủ tính số km từ điểm check-in liền trước **trong cùng ngày** của nhân viên đó; điểm đầu tiên trong ngày ghi 0 km. Thứ tự theo giờ trên máy của nhân viên, nên check-in gửi trễ do mất mạng vẫn chen đúng chỗ và các dòng sau nó được tính lại. Lưu `distanceFromPreviousKm` trên `CheckIn` để báo cáo không phải tính lại. _Dùng lại: M2, M3. Cỡ M._
-  - Cách tính km chờ chốt (DESIGN_BRIEF §11): **đường thẳng** giữa hai toạ độ (tính ngay, miễn phí) hoặc **đường đi thực tế** theo bản đồ (cần máy chủ tìm đường). Code tách riêng hàm tính để đổi cách mà không sửa báo cáo.
-  - **Xong khi**: 5 check-in làm lúc mất mạng, gửi lên lệch thứ tự → km từng dòng và tổng km trong ngày giống như khi gửi đúng thứ tự; test cho điểm đầu ngày, qua nửa đêm, hai điểm trùng toạ độ.
+- [ ] **V3. Địa chỉ của điểm check-in**: worker đổi toạ độ ra địa chỉ (reverse geocoding) qua nhà cung cấp Việt Nam (Vietmap hoặc Goong, chờ chốt), một lần cho mỗi check-in, lưu lại; lỗi thì thử lại, báo cáo vẫn có toạ độ. API `GET /api/mobile/address?lat=&lng=` cho dải thông tin trên máy ảnh, có cache theo ô khoảng 50 m để giảm số lượt gọi. Khoá API chỉ nằm trên máy chủ. _Dùng lại: F3 (worker), M2. Cỡ S._
+  - **Xong khi**: 20 check-in thật ra địa chỉ đúng tên xã, tỉnh mới; tắt mạng nhà cung cấp thì check-in vẫn lưu và địa chỉ được bù khi có lại.
 
-- [ ] **V2. Báo cáo ghé thăm (`/kinh-doanh/check-in`)**: một bảng check-in có phân trang phía máy chủ. _Dùng lại: F4, M2–M5, V1, A1. New: `CheckInMap` (`next/dynamic`). Cỡ L._
-  - Cột: Ngày, Giờ, Nhân viên, Đơn vị, Loại điểm (Đại lý, Khách hàng, Điểm khác), Tên điểm, Địa chỉ hoặc toạ độ (bấm mở bản đồ), Nội dung làm việc, Km từ điểm trước, Cờ nghi vấn (M5, chỉ để xem, không chặn).
+- [ ] **V1. Quãng đường giữa các điểm check-in** (theo CHECK_IN_PLAN §3): khi nhận check-in, worker lấy vết GPS từ check-in liền trước trong cùng ngày, lọc điểm sai, tính **Khoảng cách theo GPS** (cộng các đoạn) và **Khoảng cách** theo đường đi thực tế (khớp vết vào đường qua máy chủ tìm đường R4). Đoạn vết đứt trên 5 phút hoặc trên 2 km nối bằng đường ngắn nhất và đánh dấu "ước tính". Lượt đầu ngày ghi 0 km. Check-in hoặc điểm GPS gửi trễ thì tính lại các chặng bị ảnh hưởng. Lưu `roadDistanceKm`, `gpsDistanceKm`, `isDistanceEstimated` trên `CheckIn`. Tính khoảng cách đường qua lớp `RoadDistanceProvider` để đổi nhà cung cấp được. _Dùng lại: M2, M3, M12, R4, F3. Cỡ L._
+  - **Xong khi**: test cho lọc điểm sai, vết đứt, lượt đầu ngày, qua nửa đêm, dữ liệu gửi lệch thứ tự; trên 3 tuyến thật của R4, km lệch với đồng hồ xe không quá 5%.
+
+- [ ] **V2. Báo cáo ghé thăm (`/kinh-doanh/check-in`)**: bảng check-in phân trang phía máy chủ, xem ảnh khi chọn một dòng, bản đồ hành trình một ngày của một nhân viên (vết GPS và các điểm check-in, tải bằng `next/dynamic`). _Dùng lại: F4, M2 đến M5, V1, V3, A1. New: `CheckInMap`. Cỡ L._
+  - Cột trên web và trong Excel giống mẫu `Bao-cao-cu-ly-di-chuyen.xlsx`, thêm 2 cột: STT, Tên đơn vị, Mã nhân viên, Tên nhân viên, Ngày, Thời gian checkin, Địa chỉ, Khách hàng, **Tên đại lý**, **Ghi chú**, Khoảng cách (km), Khoảng cách theo GPS (km). Tên đại lý chỉ có khi check-in tại đại lý; Ghi chú là nội dung nhân viên nhập, bắt buộc với lượt không tại đại lý. Dòng có km ước tính được đánh dấu.
   - Lọc: khoảng ngày (mặc định hôm nay), nhân viên, đơn vị, loại điểm, chỉ dòng có cờ. Dưới bảng có tổng số lượt và tổng km theo bộ lọc.
-  - **Xuất Excel** đúng bộ lọc đang chọn, thêm một sheet tổng hợp theo nhân viên theo ngày (số điểm, tổng km). Giới hạn `MAX_EXPORT_ROWS`.
-  - Chọn một nhân viên và một ngày → xem các điểm trên bản đồ nối theo thứ tự thời gian.
-  - **Phạm vi**: nhân viên chỉ thấy check-in của mình; quản lý thấy nhân viên trong đơn vị mình quản lý theo phạm vi dữ liệu của vai trò (`own`, `orgUnit`, `orgUnitTree`, `all`). Áp ở cả trang, xuất Excel và API.
-  - **Xong khi**: nhân viên A chỉ thấy và xuất được dòng của A; quản lý vùng 1 thấy nhân viên vùng 1, không thấy vùng 2, kể cả gọi thẳng action; file Excel mở ra đúng cột, tổng km khớp với trang.
+  - **Xuất Excel** đúng bộ lọc, đúng định dạng mẫu (CHECK_IN_PLAN §6): tiêu đề gộp ô dòng 3, tiêu đề cột dòng 5, Times New Roman 11, viền, km 3 chữ số thập phân, ngày và giờ theo giờ Việt Nam, sắp theo đơn vị, nhân viên, giờ mới nhất ở trên. Giới hạn `MAX_EXPORT_ROWS`.
+  - **Phạm vi**: nhân viên chỉ thấy check-in của mình; quản lý thấy nhân viên trong đơn vị mình quản lý theo phạm vi dữ liệu của vai trò. Áp ở trang, Excel và API.
+  - Không có nút check-in trên web.
+  - **Xong khi**: nhân viên A chỉ thấy và xuất được dòng của A; quản lý vùng 1 không thấy vùng 2, kể cả gọi thẳng action; file Excel mở ra giống mẫu, có thêm 2 cột, tổng km khớp với trang.
 
 ---
 
@@ -416,7 +427,8 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
 | Khối Marketing & PTSP | Tạo app Zalo for Developers, cấp quyền OA, bàn giao App ID/Secret | Tuần 3 |
 | IT Vinaseed | Server, DMZ, domain/HTTPS, quyền bot Mattermost | Tuần 2 |
 | Pháp chế / Hành chính | Hồ sơ D-U-N-S, tài khoản Apple Developer & Google Play đứng tên Vinaseed | Tuần 1–4 |
-| Kế toán đơn vị | Mẫu Excel đang dùng để tính công từ check-in (để báo cáo ghé thăm xuất đúng cột) | Tuần 10 |
+| Kế toán đơn vị | Mẫu Excel báo cáo cự ly di chuyển: đã nhận 11/11/2026 | Xong |
+| IT, Mua sắm | Tài khoản Vietmap hoặc Goong cho địa chỉ check-in; máy chủ cho dịch vụ tìm đường (CHECK_IN_PLAN §9) | Tuần 5 |
 | Kinh doanh các vùng | Quy trình duyệt đơn của từng đơn vị | Tuần 6 |
 | Lãnh đạo Kinh doanh | Lịch vụ, cách giao chỉ tiêu, mẫu chỉ tiêu đang dùng | Tuần 14 |
 | Kế toán | Số liệu bán các năm trước để so cùng kỳ | Tuần 20 |
