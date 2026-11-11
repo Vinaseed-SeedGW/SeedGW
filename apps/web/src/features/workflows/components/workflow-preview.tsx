@@ -219,15 +219,18 @@ export function WorkflowPreviewPanel({
           {errorMessage}
         </p>
       ) : null}
-      {result ? (
-        result.preview ? (
-          <PreviewResult preview={result.preview} />
-        ) : (
-          <p className="mt-4 rounded-md bg-warning-soft px-3 py-2">
-            Chưa có quy trình nào áp dụng cho đơn vị này.
-          </p>
-        )
-      ) : null}
+      {/* Vung nay luon co san de trinh doc man hinh doc len khi ket qua xuat hien. */}
+      <div aria-live="polite">
+        {result ? (
+          result.preview ? (
+            <PreviewResult preview={result.preview} />
+          ) : (
+            <p className="mt-4 rounded-md bg-warning-soft px-3 py-2">
+              Chưa có quy trình nào áp dụng cho đơn vị này.
+            </p>
+          )
+        ) : null}
+      </div>
     </section>
   );
 }

@@ -8,14 +8,27 @@ import { TreeView } from '@dms/ui/tree-view';
 
 type UnitNode = OrgTreeNode<WorkflowUnitRow>;
 
-function sourceText(node: UnitNode): string {
+const BADGE_CLASS = 'rounded-full px-2 py-0.5 text-xs font-bold';
+
+function SourceLabel({ node }: { node: UnitNode }) {
   switch (node.source) {
     case 'OWN':
-      return `Quy trình riêng, phiên bản ${node.version}, ${node.stepCount} bước`;
+      return (
+        <>
+          <span className={`${BADGE_CLASS} bg-brand text-primary-foreground`}>Quy trình riêng</span>
+          <span className="text-sm text-text-muted">
+            Phiên bản {node.version}, {node.stepCount} bước
+          </span>
+        </>
+      );
     case 'INHERITED':
-      return `Kế thừa từ ${node.sourceUnitName}, ${node.stepCount} bước`;
+      return (
+        <span className="text-sm text-text-muted">
+          Kế thừa từ {node.sourceUnitName}, {node.stepCount} bước
+        </span>
+      );
     case 'NONE':
-      return 'Chưa có quy trình';
+      return <span className={`${BADGE_CLASS} bg-warning-soft text-text`}>Chưa có quy trình</span>;
   }
 }
 
@@ -35,11 +48,7 @@ function UnitItem({ node }: { node: UnitNode }) {
         <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs font-bold text-brand">
           {orgLevelLabel(node.depth)}
         </span>
-        <span
-          className={node.source === 'NONE' ? 'text-sm text-warning' : 'text-sm text-text-muted'}
-        >
-          {sourceText(node)}
-        </span>
+        <SourceLabel node={node} />
       </TreeView.Row>
       {node.children.length > 0 ? (
         <TreeView.Group>

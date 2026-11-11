@@ -22,46 +22,72 @@ const DelegationSheet = dynamic(
 );
 
 const STATUS_CLASS: Record<DelegationStatus, string> = {
-  SCHEDULED: 'bg-warning-soft text-warning',
+  SCHEDULED: 'bg-warning-soft text-text',
   ACTIVE: 'bg-brand-soft text-brand',
   EXPIRED: 'bg-surface-subtle text-text-muted',
   REVOKED: 'bg-danger-soft text-danger',
 };
 
+// Man hinh hep chi giu mot cot tom tat va cot thao tac de khong phai vuot ngang.
+const WIDE_ONLY = 'max-md:hidden';
+
+function StatusBadge({ status }: { status: DelegationStatus }) {
+  return (
+    <span className={cn('rounded-full px-2 py-0.5 text-xs font-bold', STATUS_CLASS[status])}>
+      {DELEGATION_STATUS_LABEL[status]}
+    </span>
+  );
+}
+
 const BASE_COLUMNS: ColumnDef<DelegationRow>[] = [
-  { accessorKey: 'delegatorName', header: 'Người vắng', meta: { label: 'Người vắng' } },
-  { accessorKey: 'delegateName', header: 'Người nhận', meta: { label: 'Người nhận' } },
+  {
+    id: 'summary',
+    header: 'Uỷ quyền',
+    meta: { label: 'Uỷ quyền', className: 'whitespace-normal! md:hidden' },
+    cell: ({ row }) => (
+      <>
+        <b>{row.original.delegatorName}</b> cho <b>{row.original.delegateName}</b>
+        <span className="block text-sm text-text-muted">
+          {formatDateOnly(row.original.startDate)} đến {formatDateOnly(row.original.endDate)}
+        </span>
+        <span className="mt-1 block">
+          <StatusBadge status={row.original.status} />
+        </span>
+      </>
+    ),
+  },
+  {
+    accessorKey: 'delegatorName',
+    header: 'Người vắng',
+    meta: { label: 'Người vắng', className: WIDE_ONLY },
+  },
+  {
+    accessorKey: 'delegateName',
+    header: 'Người nhận',
+    meta: { label: 'Người nhận', className: WIDE_ONLY },
+  },
   {
     accessorKey: 'startDate',
     header: 'Từ ngày',
     cell: ({ row }) => formatDateOnly(row.original.startDate),
-    meta: { label: 'Từ ngày' },
+    meta: { label: 'Từ ngày', className: WIDE_ONLY },
   },
   {
     accessorKey: 'endDate',
     header: 'Đến ngày',
     cell: ({ row }) => formatDateOnly(row.original.endDate),
-    meta: { label: 'Đến ngày' },
+    meta: { label: 'Đến ngày', className: WIDE_ONLY },
   },
   {
     accessorKey: 'reason',
     header: 'Lý do',
-    meta: { label: 'Lý do', className: 'min-w-48 whitespace-normal! max-md:hidden' },
+    meta: { label: 'Lý do', className: `min-w-48 whitespace-normal! ${WIDE_ONLY}` },
   },
   {
     accessorKey: 'status',
     header: 'Trạng thái',
-    cell: ({ row }) => (
-      <span
-        className={cn(
-          'rounded-full px-2 py-0.5 text-xs font-bold',
-          STATUS_CLASS[row.original.status],
-        )}
-      >
-        {DELEGATION_STATUS_LABEL[row.original.status]}
-      </span>
-    ),
-    meta: { label: 'Trạng thái' },
+    cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    meta: { label: 'Trạng thái', className: WIDE_ONLY },
   },
 ];
 
@@ -117,7 +143,8 @@ export function DelegationsTableManaged({ data, userOptions }: ManagedProps) {
           isRevocable(row.original.status) ? (
             <button
               type="button"
-              className="text-sm text-brand"
+              className="min-h-11 text-sm text-brand md:min-h-0"
+              aria-label={`Thu hồi uỷ quyền của ${row.original.delegatorName}`}
               onClick={() => setRevoking(row.original)}
             >
               Thu hồi

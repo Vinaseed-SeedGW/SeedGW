@@ -53,7 +53,7 @@ function useEditor(): EditorContextValue {
 }
 
 const ICON_BUTTON_CLASS =
-  'inline-flex size-8 items-center justify-center rounded-md border border-border text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex size-11 flex-none items-center justify-center rounded-md border border-border text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-40 sm:size-8';
 const ADD_BUTTON_CLASS =
   'inline-flex h-9 items-center gap-1.5 rounded-md border border-brand bg-surface px-3 font-bold text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -375,6 +375,7 @@ function Steps() {
 
   return (
     <>
+      <h2 className="mb-2 font-bold text-brand">Các bước duyệt</h2>
       <ol className="grid gap-3">
         {fields.map((field, index) => (
           <Step
