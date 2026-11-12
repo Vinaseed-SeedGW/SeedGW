@@ -146,6 +146,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 19 | Ca làm việc (2026-11-11) | **Bỏ ca làm việc, gán ca và lịch nghỉ khỏi DMS** | CBKD đi nhiều địa điểm, giờ làm khác nhau. Nhân viên dùng dữ liệu check-in để tính công với kế toán đơn vị. Phân hệ Chấm công (T1 đến T5) cần xác định lại phạm vi. |
 | 20 | Check-in và chấm công (2026-11-11) | **DMS chỉ ghi lại check-in và xuất báo cáo ghé thăm, không tính công** | Mỗi check-in ghi: điểm (đại lý, khách hàng hoặc điểm khác), thời gian, nội dung làm việc (không bắt buộc), km từ điểm check-in trước trong ngày. Nhân viên xem của mình, quản lý xem nhân viên mình quản lý, xuất Excel cho kế toán đơn vị tính công. Bỏ Vào ca, Ra ca, bảng công, đơn từ, chốt kỳ công, tích hợp HRM (task T1 đến T5). |
 | 21 | Ảnh và km khi check-in (2026-11-11) | **Ảnh bắt buộc, chụp bằng máy ảnh trong app có in giờ và vị trí; km theo đường đi thực tế từ vết GPS 5 giây; check-in chỉ trên app, web chỉ có báo cáo** | App ghi vị trí và gửi theo lô, máy chủ khớp vết vào đường bằng máy chủ tìm đường tự dựng, địa chỉ lấy từ nhà cung cấp Việt Nam. Excel theo mẫu cự ly di chuyển, thêm cột Tên đại lý và Ghi chú. Chi tiết ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md). |
+| 22 | Thời gian lưu dữ liệu check-in (2026-11-12) | **Dòng check-in giữ 18 tháng, ảnh giữ 45 ngày** | Điểm GPS thô giữ 45 ngày cùng ảnh, km đã tính giữ theo dòng check-in. Job worker xoá dữ liệu quá hạn mỗi đêm. Chi tiết ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md) §7. |
 
 ## 10. Chiến lược mã khách hàng (đề xuất — chờ duyệt)
 
@@ -186,8 +187,8 @@ Mã FAST chỉ áp cho đối tượng **mua hàng và xuất hoá đơn** từ 
 1. FBO: có API tích hợp không (nhận đơn bán/chứng từ, tạo KH với mã truyền vào, trả tồn kho, công nợ, **hoá đơn bán và hàng trả lại**)? Chi phí mở API? Đầu mối kỹ thuật FAST?
 2. Định dạng mã KH hiện tại trên FAST (tiền tố, độ dài) để chốt dải mã cho DMS.
 3. Tồn kho cảnh báo theo kho nào: kho của chi nhánh phụ trách vùng hay tổng các kho?
-4. Check-in: đã chốt 11/11/2026 (§9 mục 21). Còn mở ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md) §9: nhà cung cấp địa chỉ, máy chủ tìm đường, thời gian giữ điểm GPS, giờ tự dừng ghi hành trình.
+4. Check-in: đã chốt 11/11/2026 (§9 mục 21). Còn mở ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md) §9: nhà cung cấp địa chỉ, máy chủ tìm đường, giờ tự dừng ghi hành trình.
 5. Mattermost: phiên bản và URL nội bộ; có cho DMS tạo bot account không.
 6. Khách mới có bắt buộc qua Sales Admin duyệt trước khi sang FAST không? (Khuyến nghị: bật.)
 7. Dashboard: danh sách vụ và thời gian từng vụ; số ngày N để coi là "đại lý không đặt hàng"; ai được giao chỉ tiêu; số liệu lịch sử cần nạp từ bao nhiêu năm để so cùng kỳ.
-8. Ảnh check-in lưu bao lâu?
+8. ~~Ảnh check-in lưu bao lâu?~~ Đã chốt 12/11/2026: ảnh 45 ngày, dòng check-in 18 tháng (§9 mục 22).

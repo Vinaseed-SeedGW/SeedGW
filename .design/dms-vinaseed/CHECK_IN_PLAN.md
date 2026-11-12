@@ -79,6 +79,18 @@ Cột **Địa chỉ** cần đổi toạ độ ra địa chỉ (reverse geocodi
 
 Máy chủ gọi một lần cho mỗi check-in và lưu lại. Khoá API nằm trên máy chủ, không nằm trong app. Gọi lỗi thì thử lại qua worker, báo cáo vẫn có toạ độ.
 
+### 3.7 Giai đoạn thử, chưa tốn phí (bổ sung 12/11/2026)
+
+Trong R3, R4 và lúc chạy thử với vài nhân viên, dùng các nguồn miễn phí sau. Khi chạy thật mới chuyển sang tài khoản trả phí, chỉ đổi cấu hình trong `.env`, không sửa code.
+
+| Việc | Nguồn miễn phí để thử | Giới hạn |
+|---|---|---|
+| Khớp vết vào đường, đường ngắn nhất | OSRM tự chạy bằng Docker trên máy phát triển, bản đồ OpenStreetMap Việt Nam | Không giới hạn lượt, máy phát triển cần còn trống khoảng 4 GB RAM |
+| Địa chỉ, và so sánh km với khớp đường | Vietmap: đăng ký là có **60.000 lượt miễn phí**, không cần thẻ | Đủ cho R4 (50 toạ độ) và vài tuần chạy thử với 5 đến 10 người |
+| Địa chỉ (để so với Vietmap) | Goong: tặng **100 USD** một lần khi đăng ký | Tối đa 30.000 lượt mỗi tháng, 5 lượt mỗi giây |
+
+Không dùng máy chủ OSRM công cộng (`router.project-osrm.org`) và Nominatim công cộng: chỉ dành cho demo, cấm dùng nhiều và dùng cho mục đích thương mại, có thể bị chặn bất cứ lúc nào.
+
 ## 4. Máy ảnh trong app
 
 - Bấm **Check-in** là mở ngay máy ảnh của app (`expo-camera`), không mở ứng dụng máy ảnh của điện thoại, không cho chọn ảnh có sẵn.
@@ -126,8 +138,18 @@ Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mớ
 | Bảng | Nội dung chính |
 |---|---|
 | `CheckIn` | `clientId` (chống trùng), nhân viên, đơn vị lúc check-in, loại điểm, đại lý hoặc khách hàng hoặc tên điểm khác, toạ độ, sai số, giờ trên máy, giờ máy chủ nhận, địa chỉ, ghi chú, ảnh, cờ nghi vấn, `roadDistanceKm`, `gpsDistanceKm`, `isDistanceEstimated` |
-| `TrackPoint` | nhân viên, giờ trên máy, toạ độ, sai số, tốc độ, cờ giả lập. Chia bảng theo tháng, giữ 6 tháng (cần chốt) rồi xoá, vì km đã lưu trên `CheckIn` |
+| `TrackPoint` | nhân viên, giờ trên máy, toạ độ, sai số, tốc độ, cờ giả lập. Chia bảng theo tháng, xoá sau 45 ngày, vì km đã lưu trên `CheckIn` |
 | `TrackSession` | một ngày đi thị trường: bắt đầu, kết thúc, lý do dừng |
+
+### Thời gian lưu (chốt 12/11/2026)
+
+| Dữ liệu | Giữ | Sau thời hạn |
+|---|---|---|
+| Dòng check-in (mọi cột trong file Excel, kể cả km) | **18 tháng** | Xoá dòng. File Excel xuất được trong 18 tháng gần nhất |
+| Ảnh check-in | **45 ngày** | Xoá ảnh trên MinIO bằng quy tắc tự hết hạn. Báo cáo vẫn còn dòng, chỗ ảnh ghi "Ảnh đã hết thời gian lưu" |
+| Điểm GPS thô (vết hành trình) | **45 ngày**, cùng thời hạn với ảnh (Claude đề xuất, đổi được) | Xoá bảng tháng cũ. Bản đồ hành trình chỉ xem được trong 45 ngày, km đã tính vẫn giữ 18 tháng |
+
+Ảnh giữ 45 ngày nên kho ảnh chỉ cần khoảng 19 GB, thay vì tăng thêm 12,6 GB mỗi tháng. Quản lý cần xem ảnh hoặc tranh chấp km trong vòng 45 ngày. Một job worker chạy mỗi đêm xoá dữ liệu quá hạn và ghi số dòng đã xoá vào log.
 
 ## 8. Rủi ro và cách kiểm soát
 
@@ -144,7 +166,7 @@ Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mớ
 1. Duyệt các thư viện ở mục 4.
 2. Chọn nhà cung cấp địa chỉ: Vietmap hay Goong. Đăng ký tài khoản đứng tên Vinaseed và gửi khoá API cho tôi qua file `.env` trên máy chủ, không gửi trong chat.
 3. Máy chủ nội bộ cho dịch vụ tìm đường: khoảng 4 CPU, 8 GB RAM, 50 GB ổ đĩa (số chính xác đo ở R4). Làm cùng IT Vinaseed trong F7.
-4. Giữ điểm GPS thô bao lâu (đề xuất 6 tháng) và ảnh check-in bao lâu (DESIGN_BRIEF §11 câu 8).
+4. ~~Thời gian lưu~~: đã chốt 12/11/2026, dòng check-in 18 tháng, ảnh 45 ngày, điểm GPS 45 ngày (mục 7).
 5. Giờ tự dừng ghi hành trình (đề xuất 20:00).
 6. Một nhân viên thử nghiệm có xe máy để đo km thật trong R3, R4.
 
@@ -152,7 +174,8 @@ Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mớ
 
 - Google Maps Platform pricing: https://developers.google.com/maps/billing-and-pricing/pricing
 - Goong pricing: https://goong.io/pricing-plans/
-- Vietmap Maps API: https://maps.vietmap.vn và https://maps.vietmap.vn/docs/map-api/console/request-to-transaction/
+- Vietmap Maps API: https://maps.vietmap.vn, https://maps.vietmap.vn/docs/map-api/overview/ (60.000 lượt miễn phí) và https://maps.vietmap.vn/docs/map-api/console/request-to-transaction/
+- Chính sách máy chủ OSRM demo: https://github.com/Project-OSRM/osrm-backend/wiki/API%20Usage%20Policy
 - Expo Location (chạy nền): https://docs.expo.dev/versions/latest/sdk/location/
 
 Giá tra ngày 11/11/2026, cần kiểm tra lại khi ký hợp đồng.

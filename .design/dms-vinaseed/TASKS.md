@@ -98,7 +98,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Thử lưu SQLite khi tắt mạng rồi gửi lại khi có mạng.
   - **Xong khi**: báo cáo ngắn: độ chính xác GPS trong nhà và ngoài trời, mức hao pin sau 8 giờ, vết có bị đứt khi app ở nền không, ảnh có đọc rõ dải thông tin ngoài nắng không, mock location có bị phát hiện không, nội dung giải trình quyền vị trí cho Apple và Google.
 
-- [ ] **R4. Spike máy chủ tìm đường và địa chỉ** (CHECK_IN_PLAN §3): dựng OSRM hoặc Valhalla với bản đồ OpenStreetMap Việt Nam bằng Docker, thử API khớp vết (`match`) và đường ngắn nhất (`route`); đo RAM, ổ đĩa, thời gian xử lý. Thử reverse geocoding của Vietmap và Goong trên 50 toạ độ check-in thật để chọn bên. _Dùng lại: R3 (vết thật). Cỡ M. Làm cùng IT Vinaseed (F7)._
+- [ ] **R4. Spike máy chủ tìm đường và địa chỉ** (CHECK_IN_PLAN §3): dựng OSRM hoặc Valhalla với bản đồ OpenStreetMap Việt Nam bằng Docker, thử API khớp vết (`match`) và đường ngắn nhất (`route`); đo RAM, ổ đĩa, thời gian xử lý. Thử reverse geocoding của Vietmap và Goong trên 50 toạ độ check-in thật để chọn bên. Chỉ dùng nguồn miễn phí (CHECK_IN_PLAN §3.7): OSRM chạy trên máy phát triển, 60.000 lượt miễn phí của Vietmap, 100 USD tặng của Goong. _Dùng lại: R3 (vết thật). Cỡ M. Làm cùng IT Vinaseed (F7)._
   - **Xong khi**: trên 3 tuyến thật đi bằng xe máy (có đường làng), km tính ra lệch với đồng hồ xe không quá 5%; có số cấu hình máy chủ cần xin; chốt được nhà cung cấp địa chỉ. Lệch quá 5% thì hỏi giá API khớp đường của Vietmap.
 
 ---
@@ -294,6 +294,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - **Xuất Excel** đúng bộ lọc, đúng định dạng mẫu (CHECK_IN_PLAN §6): tiêu đề gộp ô dòng 3, tiêu đề cột dòng 5, Times New Roman 11, viền, km 3 chữ số thập phân, ngày và giờ theo giờ Việt Nam, sắp theo đơn vị, nhân viên, giờ mới nhất ở trên. Giới hạn `MAX_EXPORT_ROWS`.
   - **Phạm vi**: nhân viên chỉ thấy check-in của mình; quản lý thấy nhân viên trong đơn vị mình quản lý theo phạm vi dữ liệu của vai trò. Áp ở trang, Excel và API.
   - Không có nút check-in trên web.
+  - **Thời gian lưu** (CHECK_IN_PLAN §7): job worker mỗi đêm xoá dòng check-in quá 18 tháng, điểm GPS quá 45 ngày; ảnh trên MinIO tự hết hạn sau 45 ngày. Dòng còn mà ảnh đã xoá thì ghi "Ảnh đã hết thời gian lưu"; bộ lọc ngày chỉ cho chọn trong 18 tháng gần nhất.
   - **Xong khi**: nhân viên A chỉ thấy và xuất được dòng của A; quản lý vùng 1 không thấy vùng 2, kể cả gọi thẳng action; file Excel mở ra giống mẫu, có thêm 2 cột, tổng km khớp với trang.
 
 ---
