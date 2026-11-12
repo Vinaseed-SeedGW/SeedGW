@@ -91,7 +91,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - Ghi lại các giới hạn gửi tin của OA (khung thời gian sau tương tác, loại tin, hạn mức) để thiết kế C4.
   - **Xong khi**: nhắn vào OA từ điện thoại → thấy bản ghi trong DB < 3s; gọi lệnh gửi → điện thoại nhận được.
 
-- [ ] **R3. Spike app check-in — máy ảnh có dấu vị trí, ghi hành trình chạy nền, pin**: _New. Cỡ L (tăng 11/11/2026)._
+- [ ] **R3. Spike app check-in — máy ảnh có dấu vị trí, ghi hành trình chạy nền, pin**: _New. Cỡ L (tăng 11/11/2026)._ **Đang làm (12/11/2026): code app thử xong, chờ cài lên máy thật. Hướng dẫn và bảng kết quả ở [R3_THU_NGHIEM.md](R3_THU_NGHIEM.md).**
   - Expo dev build trên 1 máy Android + 1 iPhone (**bắt buộc cả iOS**). Đồng thời khởi động thủ tục **tài khoản Apple Developer đứng tên Vinaseed** (cần số D-U-N-S, mất 1–3 tuần) và tài khoản Google Play Console.
   - Máy ảnh trong app có dải giờ, toạ độ trên khung ngắm và in lên ảnh (`expo-camera` + `react-native-view-shot`); không cho chọn ảnh có sẵn.
   - Ghi vị trí chạy nền 5 giây một lần trong 8 giờ (`expo-location` + `expo-task-manager`), màn hình tắt, app ở nền; đọc cờ mock location trên Android.
