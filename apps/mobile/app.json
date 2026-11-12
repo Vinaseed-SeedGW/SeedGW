@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "DMS Vinaseed",
-    "slug": "dms-vinaseed",
+    "slug": "check-in-app",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -34,6 +34,12 @@
           "isAndroidForegroundServiceEnabled": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "777ad09e-0669-4b2d-a77d-b97ef8cea83a"
+      }
+    },
+    "owner": "vinaseed"
   }
 }
