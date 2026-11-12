@@ -4,6 +4,36 @@
     "slug": "dms-vinaseed",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light"
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "vn.vinaseed.dms",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "vn.vinaseed.dms",
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "DMS Vinaseed dùng máy ảnh để chụp ảnh check-in tại đại lý, khách hàng hoặc điểm làm việc. Ảnh có in giờ và vị trí.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "DMS Vinaseed dùng vị trí để ghi điểm check-in và in toạ độ lên ảnh check-in.",
+          "locationAlwaysAndWhenInUsePermission": "DMS Vinaseed ghi vị trí trong giờ làm việc, từ lượt check-in đầu tiên tới khi bạn bấm Kết thúc ngày, để tính km giữa các điểm check-in. Chọn Luôn luôn để hành trình không bị đứt khi tắt màn hình.",
+          "locationAlwaysPermission": "DMS Vinaseed ghi vị trí trong giờ làm việc để tính km giữa các điểm check-in.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ]
   }
 }

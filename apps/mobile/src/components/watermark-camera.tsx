@@ -1,0 +1,308 @@
+import { useEffect, useRef, useState } from 'react';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type HostInstance,
+} from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import * as Location from 'expo-location';
+import { captureRef } from 'react-native-view-shot';
+import { FILTER, insertPhoto } from '../sync/track-db';
+import { COLORS, SPACE } from '../theme';
+import { Button } from './button';
+import { WatermarkStrip, type StripLocation } from './watermark-strip';
+
+const LONG_EDGE_PX = 1600;
+const JPEG_QUALITY = 0.7;
+
+type Shot = {
+  uri: string;
+  width: number;
+  height: number;
+  at: number;
+  location: StripLocation;
+  mocked: boolean;
+};
+
+type Props = {
+  onClose: () => void;
+  /** Gọi sau khi ảnh đã in thông tin và lưu vào máy. */
+  onSaved: (sizeBytes: number) => void;
+};
+
+export function WatermarkCamera({ onClose, onSaved }: Props) {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [shot, setShot] = useState<Shot | null>(null);
+
+  if (!permission) return <View style={styles.fill} />;
+  if (!permission.granted) {
+    return (
+      <View style={[styles.fill, styles.center]}>
+        <Text style={styles.message}>DMS cần quyền dùng máy ảnh để chụp ảnh check-in.</Text>
+        <Button label="Cho phép dùng máy ảnh" onPress={requestPermission} />
+        <Button label="Quay lại" onPress={onClose} variant="ghost" />
+      </View>
+    );
+  }
+  if (shot) {
+    return (
+      <Review shot={shot} onRetake={() => setShot(null)} onClose={onClose} onSaved={onSaved} />
+    );
+  }
+  return <Viewfinder onShot={setShot} onClose={onClose} />;
+}
+
+function useLiveLocation() {
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [denied, setDenied] = useState(false);
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
+    let cancelled = false;
+    void (async () => {
+      const result = await Location.requestForegroundPermissionsAsync();
+      if (!result.granted) {
+        setDenied(true);
+        return;
+      }
+      const sub = await Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.High, timeInterval: 1_000, distanceInterval: 0 },
+        setLocation,
+      );
+      if (cancelled) sub.remove();
+      else subscription = sub;
+    })();
+    return () => {
+      cancelled = true;
+      subscription?.remove();
+    };
+  }, []);
+  return { location, denied };
+}
+
+function useClock() {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(timer);
+  }, []);
+  return now;
+}
+
+function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose: () => void }) {
+  const camera = useRef<CameraView>(null);
+  const { width } = useWindowDimensions();
+  const { location, denied } = useLiveLocation();
+  const now = useClock();
+  const [ready, setReady] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const stripLocation: StripLocation | null = location
+    ? {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+        accuracy: location.coords.accuracy,
+      }
+    : null;
+  const imprecise = (location?.coords.accuracy ?? Infinity) > FILTER.maxAccuracyM;
+
+  async function capture() {
+    if (!camera.current || !location || !stripLocation) return;
+    setBusy(true);
+    setError(null);
+    // Chốt giờ và vị trí đúng lúc bấm chụp, không lấy lúc xử lý xong.
+    const at = Date.now();
+    const frozen = { ...stripLocation };
+    const mocked = location.mocked === true;
+    try {
+      const picture = await camera.current.takePictureAsync({ quality: 1 });
+      const portrait = picture.height >= picture.width;
+      const context = ImageManipulator.manipulate(picture.uri, {
+        maxWidth: LONG_EDGE_PX,
+        maxHeight: LONG_EDGE_PX,
+      });
+      context.resize(portrait ? { height: LONG_EDGE_PX } : { width: LONG_EDGE_PX });
+      const image = await context.renderAsync();
+      const saved = await image.saveAsync({ compress: 0.9, format: SaveFormat.JPEG });
+      onShot({
+        uri: saved.uri,
+        width: saved.width,
+        height: saved.height,
+        at,
+        location: frozen,
+        mocked,
+      });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không chụp được ảnh, thử lại.');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.fill}>
+      <CameraView
+        ref={camera}
+        style={styles.fill}
+        facing="back"
+        onCameraReady={() => setReady(true)}
+      />
+      <View style={styles.bottom}>
+        {denied ? (
+          <Banner
+            tone="danger"
+            text="Chưa có quyền vị trí. Mở Cài đặt và cho phép DMS dùng vị trí."
+          />
+        ) : null}
+        {!denied && imprecise ? (
+          <Banner
+            tone="warning"
+            text={
+              location
+                ? `Đang chờ định vị chính xác, sai số ${Math.round(location.coords.accuracy ?? 0)} m`
+                : 'Đang lấy vị trí'
+            }
+          />
+        ) : null}
+        {error ? <Banner tone="danger" text={error} /> : null}
+        <WatermarkStrip at={now} location={stripLocation} width={width} />
+        <View style={styles.controls}>
+          <Button label="Đóng" onPress={onClose} variant="ghost" />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Chụp ảnh check-in"
+            disabled={!ready || !location || busy}
+            onPress={capture}
+            style={({ pressed }) => [
+              styles.shutter,
+              (!ready || !location || busy) && styles.disabled,
+              pressed && styles.pressed,
+            ]}
+          />
+          <View style={styles.controlSpacer} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Review({
+  shot,
+  onRetake,
+  onClose,
+  onSaved,
+}: {
+  shot: Shot;
+  onRetake: () => void;
+  onClose: () => void;
+  onSaved: (sizeBytes: number) => void;
+}) {
+  const composite = useRef<HostInstance>(null);
+  const { width } = useWindowDimensions();
+  const height = Math.round((width * shot.height) / shot.width);
+  const [state, setState] = useState<'composing' | 'saved' | 'failed'>('composing');
+  const [sizeBytes, setSizeBytes] = useState(0);
+  const started = useRef(false);
+
+  async function compose() {
+    // Ảnh có thể báo tải xong nhiều lần, chỉ in và lưu một lần.
+    if (started.current) return;
+    started.current = true;
+    try {
+      // Chụp lại khung ảnh kèm dải thông tin thành một JPEG duy nhất.
+      const dataUri = await captureRef(composite, {
+        format: 'jpg',
+        quality: JPEG_QUALITY,
+        result: 'data-uri',
+      });
+      insertPhoto({ takenAt: shot.at, ...shot.location, mocked: shot.mocked, dataUri });
+      const bytes = Math.round(((dataUri.length - dataUri.indexOf(',') - 1) * 3) / 4);
+      setSizeBytes(bytes);
+      setState('saved');
+      onSaved(bytes);
+    } catch {
+      setState('failed');
+    }
+  }
+
+  return (
+    <View style={[styles.fill, styles.reviewBackground]}>
+      <View ref={composite} collapsable={false} style={{ width, height }}>
+        <Image
+          source={{ uri: shot.uri }}
+          style={{ width, height }}
+          onLoad={() => void compose()}
+          accessibilityIgnoresInvertColors
+        />
+        <View style={styles.compositeStrip}>
+          <WatermarkStrip at={shot.at} location={shot.location} width={width} />
+        </View>
+      </View>
+      <View style={styles.reviewInfo}>
+        <Text style={styles.reviewText}>
+          {state === 'composing' ? 'Đang in thông tin lên ảnh' : null}
+          {state === 'saved' ? `Đã lưu ảnh trên máy, ${Math.round(sizeBytes / 1024)} KB` : null}
+          {state === 'failed' ? 'Không in được thông tin lên ảnh. Chụp lại.' : null}
+        </Text>
+        {shot.mocked ? (
+          <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
+        ) : null}
+        <View style={styles.controls}>
+          <Button label="Chụp ảnh khác" onPress={onRetake} variant="ghost" />
+          <Button label="Xong" onPress={onClose} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Banner({ tone, text }: { tone: 'warning' | 'danger'; text: string }) {
+  return (
+    <View style={[styles.banner, tone === 'warning' ? styles.bannerWarning : styles.bannerDanger]}>
+      <Text style={styles.bannerText}>{text}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  center: { alignItems: 'center', justifyContent: 'center', padding: SPACE.xl, gap: SPACE.md },
+  message: { fontSize: 16, textAlign: 'center', color: COLORS.text },
+  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  controls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACE.lg,
+    backgroundColor: COLORS.surface,
+    gap: SPACE.md,
+  },
+  controlSpacer: { width: 88 },
+  shutter: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: COLORS.brand,
+    borderWidth: 4,
+    borderColor: COLORS.brandSoft,
+  },
+  disabled: { opacity: 0.4 },
+  pressed: { opacity: 0.7 },
+  banner: { paddingHorizontal: SPACE.lg, paddingVertical: SPACE.sm },
+  bannerWarning: { backgroundColor: COLORS.warningSoft },
+  bannerDanger: { backgroundColor: COLORS.dangerSoft },
+  bannerText: { color: COLORS.text, fontSize: 14 },
+  reviewBackground: { backgroundColor: COLORS.surface },
+  compositeStrip: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  reviewInfo: { flex: 1, justifyContent: 'flex-end' },
+  reviewText: {
+    fontSize: 15,
+    color: COLORS.text,
+    paddingHorizontal: SPACE.lg,
+    paddingTop: SPACE.md,
+  },
+});

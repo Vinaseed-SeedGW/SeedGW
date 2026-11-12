@@ -1,0 +1,115 @@
+import { AppState } from 'react-native';
+import * as Location from 'expo-location';
+import * as TaskManager from 'expo-task-manager';
+import { COLORS } from '../theme';
+import { vnHour } from './geo';
+import {
+  closeSession,
+  getConsentAt,
+  insertTrackPoints,
+  openSession,
+  recordTaskError,
+  type SessionEndReason,
+} from './track-db';
+
+export const TRACKING_TASK = 'dms-ghi-hanh-trinh';
+
+// Số liệu theo CHECK_IN_PLAN §3.1, §3.5. Bản chính thức đọc từ Tham số (A9).
+export const TRACKING_CONFIG = {
+  timeIntervalMs: 5_000,
+  distanceIntervalM: 10,
+  batchIntervalMs: 30_000,
+  autoStopHourVn: 20,
+} as const;
+
+type TaskData = { locations?: Location.LocationObject[] };
+
+// Phải đăng ký ở phạm vi module, trước khi app render, để hệ điều hành gọi lại được khi app ở nền.
+TaskManager.defineTask<TaskData>(TRACKING_TASK, async ({ data, error }) => {
+  if (error) {
+    recordTaskError(`${error.code}: ${error.message}`);
+    return;
+  }
+  const locations = data.locations ?? [];
+  try {
+    const beforeCutoff = locations.filter(
+      (l) => vnHour(l.timestamp) < TRACKING_CONFIG.autoStopHourVn,
+    );
+    insertTrackPoints(beforeCutoff, AppState.currentState ?? null);
+    if (
+      beforeCutoff.length < locations.length ||
+      vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn
+    ) {
+      await stopTracking('AUTO_CUTOFF');
+    }
+  } catch (cause) {
+    recordTaskError(cause instanceof Error ? cause.message : String(cause));
+  }
+});
+
+export type StartResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason:
+        'NO_CONSENT' | 'SERVICES_OFF' | 'FOREGROUND_DENIED' | 'BACKGROUND_DENIED' | 'AFTER_CUTOFF';
+    };
+
+export async function isTracking(): Promise<boolean> {
+  return Location.hasStartedLocationUpdatesAsync(TRACKING_TASK);
+}
+
+export async function startTracking(): Promise<StartResult> {
+  if (getConsentAt() === null) return { ok: false, reason: 'NO_CONSENT' };
+  if (vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn)
+    return { ok: false, reason: 'AFTER_CUTOFF' };
+  if (!(await Location.hasServicesEnabledAsync())) return { ok: false, reason: 'SERVICES_OFF' };
+
+  const foreground = await Location.requestForegroundPermissionsAsync();
+  if (!foreground.granted) return { ok: false, reason: 'FOREGROUND_DENIED' };
+  const background = await Location.requestBackgroundPermissionsAsync();
+  if (!background.granted) return { ok: false, reason: 'BACKGROUND_DENIED' };
+
+  if (!(await isTracking())) {
+    await Location.startLocationUpdatesAsync(TRACKING_TASK, {
+      // Không dùng mức chính xác cao nhất để đỡ hao pin (CHECK_IN_PLAN §8).
+      accuracy: Location.Accuracy.High,
+      timeInterval: TRACKING_CONFIG.timeIntervalMs,
+      distanceInterval: TRACKING_CONFIG.distanceIntervalM,
+      deferredUpdatesInterval: TRACKING_CONFIG.batchIntervalMs,
+      pausesUpdatesAutomatically: false,
+      activityType: Location.ActivityType.AutomotiveNavigation,
+      showsBackgroundLocationIndicator: true,
+      foregroundService: {
+        notificationTitle: 'DMS đang ghi hành trình',
+        notificationBody: 'Ghi vị trí trong giờ làm việc để tính km giữa các điểm check-in.',
+        notificationColor: COLORS.brand,
+        killServiceOnDestroy: false,
+      },
+    });
+  }
+  openSession(Date.now());
+  return { ok: true };
+}
+
+export async function stopTracking(reason: SessionEndReason): Promise<void> {
+  if (await isTracking()) await Location.stopLocationUpdatesAsync(TRACKING_TASK);
+  closeSession(Date.now(), reason);
+}
+
+/** Gọi mỗi lần mở app: đứng yên sau giờ dừng thì không có điểm mới để task tự dừng. */
+export async function enforceAutoStop(): Promise<void> {
+  if (vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn && (await isTracking())) {
+    await stopTracking('AUTO_CUTOFF');
+  }
+}
+
+export async function describeLocationPermission(): Promise<'ALWAYS' | 'WHEN_IN_USE' | 'DENIED'> {
+  const [foreground, background] = await Promise.all([
+    Location.getForegroundPermissionsAsync(),
+    Location.getBackgroundPermissionsAsync(),
+  ]);
+  if (background.granted) return 'ALWAYS';
+  if (foreground.granted) return 'WHEN_IN_USE';
+  return 'DENIED';
+}
