@@ -99,7 +99,7 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - **Xong khi**: báo cáo ngắn: độ chính xác GPS trong nhà và ngoài trời, mức hao pin sau 8 giờ, vết có bị đứt khi app ở nền không, ảnh có đọc rõ dải thông tin ngoài nắng không, mock location có bị phát hiện không, nội dung giải trình quyền vị trí cho Apple và Google.
 
 - [ ] **R4. Spike máy chủ tìm đường và địa chỉ** (CHECK_IN_PLAN §3): dựng OSRM hoặc Valhalla với bản đồ OpenStreetMap Việt Nam bằng Docker, thử API khớp vết (`match`) và đường ngắn nhất (`route`); đo RAM, ổ đĩa, thời gian xử lý. Thử reverse geocoding của Vietmap và Goong trên 50 toạ độ check-in thật để chọn bên. Chỉ dùng nguồn miễn phí (CHECK_IN_PLAN §3.7): OSRM chạy trên máy phát triển, 60.000 lượt miễn phí của Vietmap, 100 USD tặng của Goong. _Dùng lại: R3 (vết thật). Cỡ M. Làm cùng IT Vinaseed (F7)._
-  - **Xong khi**: trên 3 tuyến thật đi bằng xe máy (có đường làng), km tính ra lệch với đồng hồ xe không quá 5%; có số cấu hình máy chủ cần xin; chốt được nhà cung cấp địa chỉ. Lệch quá 5% thì hỏi giá API khớp đường của Vietmap.
+  - **Xong khi**: trên 3 tuyến nội thành Hà Nội đi bằng xe máy (đường lớn, phố cổ, ngõ nhỏ; CHECK_IN_PLAN §11), km tính ra lệch với đồng hồ xe không quá 5%; có số cấu hình máy chủ cần xin; chốt được nhà cung cấp địa chỉ. Lệch quá 5% thì hỏi giá API khớp đường của Vietmap.
 
 ---
 

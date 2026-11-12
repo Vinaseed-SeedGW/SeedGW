@@ -179,3 +179,24 @@ Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mớ
 - Expo Location (chạy nền): https://docs.expo.dev/versions/latest/sdk/location/
 
 Giá tra ngày 11/11/2026, cần kiểm tra lại khi ký hợp đồng.
+
+## 11. Tuyến đo km thử ở nội thành Hà Nội (bổ sung 12/11/2026)
+
+Người đo: người dùng tự đi bằng xe máy, dùng bản app thử của R3. Mỗi tuyến dài 5 đến 10 km để sai số 0,1 km của đồng hồ xe không đáng kể (5% của 5 km là 0,25 km). Mỗi tuyến có 2 đến 3 lần dừng để check-in, như đang ghé đại lý.
+
+| Tuyến | Đi qua | Kiểm tra điều gì |
+|---|---|---|
+| 1. Đường lớn | Xuất phát và về tại trụ sở, ghé Hồ Gươm và Quảng trường Ba Đình | Trường hợp dễ: đường rộng, ít nhà cao. Km phải lệch rất ít |
+| 2. Phố cổ | Vòng quanh khu phố cổ: Hồ Gươm, Hàng Đào, chợ Đồng Xuân, về Hồ Gươm | Phố một chiều, phố hẹp, nhà sát nhau làm GPS nhảy, đi chậm và dừng nhiều |
+| 3. Ngõ nhỏ | Ngõ trong khu Kim Liên, Phương Mai, Khương Thượng | Ngõ ngách thay cho đường làng: đường có thể thiếu trên bản đồ, nhiều chỗ rẽ |
+| 4. Dưới cầu cạn (nếu có thời gian) | Đường Khuất Duy Tiến hoặc Nguyễn Xiển, dưới Vành đai 3 trên cao | Xe máy đi đường dưới, hệ thống không được khớp nhầm lên đường trên cao |
+
+Cách đo:
+
+1. Trước khi đi, đưa đồng hồ hành trình (trip) của xe về 0. Xe không có trip thì dùng số tổng.
+2. Mở app, bấm Bắt đầu ghi, rồi để app chạy nền và tắt màn hình. Điện thoại để trong túi hoặc trên giá đều được, ghi lại cách để.
+3. Mỗi lần dừng: dùng máy ảnh trong app chụp **mặt đồng hồ xe**. Ảnh có sẵn giờ và toạ độ, nên không phải ghi tay số km từng chặng.
+4. Về tới nơi: chụp đồng hồ lần cuối, bấm Kết thúc ngày, bấm Xuất vết GPS và gửi file cho Claude.
+5. Claude tính km từng chặng bằng máy chủ tìm đường, so với số trên ảnh đồng hồ và ghi kết quả vào báo cáo R4.
+
+Giới hạn: nội thành Hà Nội không có đường làng, là chỗ bản đồ OpenStreetMap dễ thiếu nhất. Khi có dịp, nên đo thêm một tuyến ở vùng có đại lý ngoài nội thành, ví dụ Gia Lâm hoặc Đông Anh, trước khi chốt bản đồ miễn phí.
