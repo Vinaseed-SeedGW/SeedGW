@@ -1,0 +1,31 @@
+# File nay thay .gitignore khi EAS dong goi ma nguon de build app.
+# Giu dong bo voi .gitignore, them nhung thu khong gui len may chu build.
+
+node_modules/
+.pnpm-store/
+.turbo/
+.next/
+.expo/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Du lieu cuc bo cua Docker
+.docker-data/
+
+# Ghi chu rieng va tai lieu thiet ke, khong can de build app
+docs/VIEC_CAN_LAM.md
+.design/
