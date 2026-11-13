@@ -2,17 +2,17 @@ export const DEPARTMENTS = [
   {
     slug: 'kinh-doanh',
     name: 'Kinh doanh',
-    description: 'Đơn hàng, đại lý, tuyến, chấm công',
+    description: 'Check-in, đại lý, khách hàng, tuyến, báo cáo',
   },
   {
-    slug: 'cskh',
-    name: 'CSKH',
-    description: 'Hộp thư Zalo, phiếu tiếp nhận',
+    slug: 'trao-doi',
+    name: 'Trao đổi',
+    description: 'Tin nhắn nội bộ, báo lỗi hệ thống',
   },
   {
     slug: 'quan-tri',
     name: 'Quản trị',
-    description: 'Tài khoản, danh mục, quy trình',
+    description: 'Tài khoản, cơ cấu tổ chức, danh mục, tham số',
   },
 ] as const;
 

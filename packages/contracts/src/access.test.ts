@@ -27,9 +27,8 @@ const PAGE_PROBES = [
   '/kinh-doanh/dai-ly',
   '/kinh-doanh/check-in',
   '/kinh-doanh/bao-cao',
-  '/cskh/hop-thu',
-  '/cskh/phieu',
-  '/cskh/dashboard',
+  '/trao-doi/tin-nhan',
+  '/trao-doi/bao-loi',
   '/quan-tri/tai-khoan',
   '/quan-tri/dai-ly/nhap-excel',
   '/quan-tri/ket-noi',
@@ -38,34 +37,28 @@ const PAGE_PROBES = [
 // Ma tran mong doi viet tay de phat hien khi quyen cua vai tro bi doi ngoai y muon.
 const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>> = {
   admin: PAGE_PROBES,
-  operations: ['/quan-tri/tai-khoan'],
-  sales: ['/kinh-doanh/dashboard', '/kinh-doanh/dai-ly', '/kinh-doanh/check-in'],
-  asm: [
+  operations: [
     '/kinh-doanh/dashboard',
     '/kinh-doanh/dai-ly',
     '/kinh-doanh/check-in',
     '/kinh-doanh/bao-cao',
+    '/trao-doi/tin-nhan',
+    '/trao-doi/bao-loi',
+    '/quan-tri/tai-khoan',
   ],
-  'sales-admin': [
+  staff: [
     '/kinh-doanh/dashboard',
     '/kinh-doanh/dai-ly',
     '/kinh-doanh/check-in',
-    '/kinh-doanh/bao-cao',
+    '/trao-doi/tin-nhan',
+    '/trao-doi/bao-loi',
   ],
-  'customer-care': ['/cskh/hop-thu', '/cskh/phieu'],
-  'customer-care-lead': ['/cskh/hop-thu', '/cskh/phieu', '/cskh/dashboard'],
-  executive: ['/tong-quan', '/kinh-doanh/dashboard', '/cskh/dashboard'],
 };
 
 const EXPECTED_DEPARTMENTS: Record<string, readonly string[]> = {
-  admin: ['kinh-doanh', 'cskh', 'quan-tri'],
-  operations: ['quan-tri'],
-  sales: ['kinh-doanh'],
-  asm: ['kinh-doanh'],
-  'sales-admin': ['kinh-doanh'],
-  'customer-care': ['cskh'],
-  'customer-care-lead': ['cskh'],
-  executive: ['kinh-doanh', 'cskh'],
+  admin: ['kinh-doanh', 'trao-doi', 'quan-tri'],
+  operations: ['kinh-doanh', 'trao-doi', 'quan-tri'],
+  staff: ['kinh-doanh', 'trao-doi'],
 };
 
 describe('ma tran vai tro va trang', () => {
@@ -81,7 +74,7 @@ describe('ma tran vai tro va trang', () => {
       });
     }
 
-    for (const slug of ['kinh-doanh', 'cskh', 'quan-tri'] as const) {
+    for (const slug of ['kinh-doanh', 'trao-doi', 'quan-tri'] as const) {
       const allowed = EXPECTED_DEPARTMENTS[role.code]?.includes(slug) ?? false;
       it(`${role.code} ${allowed ? 'thay' : 'khong thay'} bo phan ${slug}`, () => {
         expect(canAccessDepartment(permissionsOf(role.code), slug)).toBe(allowed);
@@ -132,14 +125,11 @@ describe('roleExceedsActor', () => {
   }
 
   it('Quan tri don vi gan duoc vai tro nghiep vu trong pham vi cua minh', () => {
-    expect(roleExceedsActor(unitAdmin, presetAuthority('sales'))).toBe(false);
-    expect(roleExceedsActor(unitAdmin, presetAuthority('asm'))).toBe(false);
+    expect(roleExceedsActor(unitAdmin, presetAuthority('staff'))).toBe(false);
     expect(roleExceedsActor(unitAdmin, presetAuthority('operations'))).toBe(false);
   });
 
   it('Quan tri don vi khong gan duoc vai tro co pham vi toan cong ty', () => {
-    expect(roleExceedsActor(unitAdmin, presetAuthority('sales-admin'))).toBe(true);
-    expect(roleExceedsActor(unitAdmin, presetAuthority('executive'))).toBe(true);
     expect(roleExceedsActor(unitAdmin, presetAuthority('admin'))).toBe(true);
   });
 
@@ -175,25 +165,24 @@ describe('permissionForPath', () => {
 
 describe('departmentLanding', () => {
   it('theo vai tro', () => {
-    expect(departmentLanding('kinh-doanh', ['sales'], permissionsOf('sales'))).toBe(
+    expect(departmentLanding('kinh-doanh', ['staff'], permissionsOf('staff'))).toBe(
       '/kinh-doanh/dashboard',
     );
-    expect(departmentLanding('kinh-doanh', ['asm'], permissionsOf('asm'))).toBe(
+    expect(departmentLanding('kinh-doanh', ['operations'], permissionsOf('operations'))).toBe(
       '/kinh-doanh/check-in',
     );
-    expect(departmentLanding('kinh-doanh', ['sales-admin'], permissionsOf('sales-admin'))).toBe(
-      '/kinh-doanh/dai-ly',
+    expect(departmentLanding('trao-doi', ['staff'], permissionsOf('staff'))).toBe(
+      '/trao-doi/tin-nhan',
     );
-    expect(
-      departmentLanding('cskh', ['customer-care-lead'], permissionsOf('customer-care-lead')),
-    ).toBe('/cskh/phieu');
-    expect(departmentLanding('cskh', ['executive'], permissionsOf('executive'))).toBe(
-      '/cskh/dashboard',
+    expect(departmentLanding('trao-doi', ['operations'], permissionsOf('operations'))).toBe(
+      '/trao-doi/bao-loi',
     );
   });
 
   it('chon trang dau tien co quyen khi trang mac dinh bi cam', () => {
-    expect(departmentLanding('cskh', ['x'], new Set(['cs.ticket.read']))).toBe('/cskh/phieu');
+    expect(departmentLanding('trao-doi', ['x'], new Set(['chat.issue.create']))).toBe(
+      '/trao-doi/bao-loi',
+    );
   });
 
   it('ve 403 khi khong co quyen nao', () => {

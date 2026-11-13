@@ -15,13 +15,9 @@ export const PERMISSIONS = [
   { code: 'sales.check-in.create', name: 'Check-in trên app' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
 
-  { code: 'cs.inbox.read', name: 'Xem Hộp thư' },
-  { code: 'cs.ticket.read', name: 'Xem Phiếu tiếp nhận' },
-  { code: 'cs.ticket.create', name: 'Tạo Phiếu' },
-  { code: 'cs.ticket.assign', name: 'Phân công Phiếu' },
-  { code: 'cs.customer.read', name: 'Xem Khách hàng CSKH' },
-  { code: 'cs.reply-template.read', name: 'Xem Mẫu trả lời' },
-  { code: 'cs.dashboard.read', name: 'Xem Dashboard CSKH' },
+  { code: 'chat.message.use', name: 'Dùng Tin nhắn nội bộ' },
+  { code: 'chat.issue.create', name: 'Gửi Báo lỗi hệ thống' },
+  { code: 'chat.issue.manage', name: 'Xử lý Báo lỗi hệ thống' },
 
   { code: 'admin.user.read', name: 'Xem Tài khoản' },
   { code: 'admin.user.manage', name: 'Quản lý Tài khoản' },
@@ -78,12 +74,8 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/kinh-doanh/check-in', permission: 'sales.check-in.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/bao-cao', permission: 'sales.report.read', department: 'kinh-doanh' },
 
-  { path: '/cskh/hop-thu', permission: 'cs.inbox.read', department: 'cskh' },
-  { path: '/cskh/phieu', permission: 'cs.ticket.read', department: 'cskh' },
-  { path: '/cskh/phieu/tao-moi', permission: 'cs.ticket.create', department: 'cskh' },
-  { path: '/cskh/khach-hang', permission: 'cs.customer.read', department: 'cskh' },
-  { path: '/cskh/mau-tra-loi', permission: 'cs.reply-template.read', department: 'cskh' },
-  { path: '/cskh/dashboard', permission: 'cs.dashboard.read', department: 'cskh' },
+  { path: '/trao-doi/tin-nhan', permission: 'chat.message.use', department: 'trao-doi' },
+  { path: '/trao-doi/bao-loi', permission: 'chat.issue.create', department: 'trao-doi' },
 
   { path: '/quan-tri/tai-khoan', permission: 'admin.user.read', department: 'quan-tri' },
   {
@@ -142,11 +134,11 @@ const DEPARTMENT_LANDING: Record<
 > = {
   'kinh-doanh': {
     fallback: '/kinh-doanh/dashboard',
-    byRole: { asm: '/kinh-doanh/check-in', 'sales-admin': '/kinh-doanh/dai-ly' },
+    byRole: { operations: '/kinh-doanh/check-in' },
   },
-  cskh: {
-    fallback: '/cskh/hop-thu',
-    byRole: { 'customer-care-lead': '/cskh/phieu', executive: '/cskh/dashboard' },
+  'trao-doi': {
+    fallback: '/trao-doi/tin-nhan',
+    byRole: { operations: '/trao-doi/bao-loi' },
   },
   'quan-tri': {
     fallback: '/quan-tri/tai-khoan',
@@ -251,7 +243,8 @@ function codesInModule(moduleName: string): PermissionCode[] {
   return ALL_CODES.filter((code) => code.startsWith(`${moduleName}.`));
 }
 
-// Vai tro khoi tao theo DESIGN_BRIEF muc 2. Task A3 cho phep chinh tren giao dien.
+// Ba vai tro theo quyet dinh 28 (13/11/2026). Chuc danh ghi o ho so tai khoan, khong tach vai tro.
+// Task A3 van cho tao them vai tro tren giao dien neu can.
 export const ROLE_PRESETS: readonly RolePreset[] = [
   { code: 'admin', name: 'Quản trị hệ thống', dataScope: 'ALL', permissions: ALL_CODES },
   {
@@ -259,15 +252,19 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     name: 'Quản trị đơn vị',
     dataScope: 'ORG_UNIT_TREE',
     permissions: [
+      ...codesInModule('sales'),
+      ...codesInModule('chat'),
       'admin.user.read',
       'admin.user.manage',
+      'admin.user.export',
       'admin.org-unit.read',
       'admin.org-unit.assign',
+      'admin.dealer.read',
     ],
   },
   {
-    code: 'sales',
-    name: 'Nhân viên kinh doanh',
+    code: 'staff',
+    name: 'Cán bộ nhân viên',
     dataScope: 'OWN',
     permissions: [
       'sales.dashboard.read',
@@ -279,42 +276,8 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.route.read',
       'sales.check-in.read',
       'sales.check-in.create',
+      'chat.message.use',
+      'chat.issue.create',
     ],
-  },
-  {
-    code: 'asm',
-    name: 'Quản lý vùng',
-    dataScope: 'ORG_UNIT_TREE',
-    permissions: codesInModule('sales'),
-  },
-  {
-    code: 'sales-admin',
-    name: 'Sales Admin',
-    dataScope: 'ALL',
-    permissions: codesInModule('sales'),
-  },
-  {
-    code: 'customer-care',
-    name: 'Nhân viên CSKH',
-    dataScope: 'ORG_UNIT',
-    permissions: [
-      'cs.inbox.read',
-      'cs.ticket.read',
-      'cs.ticket.create',
-      'cs.customer.read',
-      'cs.reply-template.read',
-    ],
-  },
-  {
-    code: 'customer-care-lead',
-    name: 'Trưởng nhóm CSKH',
-    dataScope: 'ORG_UNIT_TREE',
-    permissions: codesInModule('cs'),
-  },
-  {
-    code: 'executive',
-    name: 'Lãnh đạo',
-    dataScope: 'ALL',
-    permissions: ['executive.overview.read', 'sales.dashboard.read', 'cs.dashboard.read'],
   },
 ];

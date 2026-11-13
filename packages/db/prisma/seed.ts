@@ -4,8 +4,8 @@ import { PERMISSIONS, ROLE_PRESETS } from '@dms/contracts/access';
 
 const SEED_USERS = [
   { employeeCode: 'ADMIN', fullName: 'Quản trị viên', roleCode: 'admin' },
-  { employeeCode: 'KD001', fullName: 'Nhân viên Kinh doanh', roleCode: 'sales' },
-  { employeeCode: 'CS001', fullName: 'Nhân viên CSKH', roleCode: 'customer-care' },
+  { employeeCode: 'KD001', fullName: 'Nhân viên Kinh doanh', roleCode: 'staff' },
+  { employeeCode: 'CS001', fullName: 'Nhân viên CSKH', roleCode: 'staff' },
   { employeeCode: 'QT001', fullName: 'Nhân viên Quản trị', roleCode: 'operations' },
 ];
 

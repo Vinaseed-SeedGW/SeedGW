@@ -27,64 +27,33 @@ const SALES_SETTINGS = [
     hint: 'Tính trên hạn mức của đại lý lấy từ FAST. Đại lý vượt ngưỡng hiện ở mục Cần chú ý.',
   },
   {
-    key: 'dealerInactiveDays',
-    label: 'Số ngày coi là đại lý lâu chưa ghé thăm',
+    key: 'dealerUnvisitedDaysLevel1',
+    label: 'Đại lý cấp 1 lâu chưa ghé thăm sau (ngày)',
+    min: 1,
+    max: 365,
+    defaultValue: 14,
+    hint: 'Đếm từ lần check-in gần nhất của bất kỳ nhân viên nào tại đại lý; chưa từng ghé thì đếm từ ngày vào danh mục. Bỏ qua đại lý ngừng hoạt động.',
+  },
+  {
+    key: 'dealerUnvisitedDaysLevel2',
+    label: 'Đại lý cấp 2 lâu chưa ghé thăm sau (ngày)',
     min: 1,
     max: 365,
     defaultValue: 30,
-    hint: 'Tính từ lần check-in gần nhất tại đại lý.',
-  },
-] as const satisfies readonly SettingDefinition[];
-
-const TICKET_SLA_SETTINGS = [
-  {
-    key: 'slaHighFirstResponseMinutes',
-    label: 'Mức Cao: phản hồi đầu (phút)',
-    min: 1,
-    max: 10080,
-    defaultValue: 30,
   },
   {
-    key: 'slaHighResolveHours',
-    label: 'Mức Cao: giải quyết (giờ)',
+    key: 'dealerUnvisitedDaysLevel3',
+    label: 'Đại lý cấp 3 lâu chưa ghé thăm sau (ngày)',
     min: 1,
-    max: 720,
-    defaultValue: 8,
-  },
-  {
-    key: 'slaMediumFirstResponseMinutes',
-    label: 'Mức Trung bình: phản hồi đầu (phút)',
-    min: 1,
-    max: 10080,
-    defaultValue: 120,
-  },
-  {
-    key: 'slaMediumResolveHours',
-    label: 'Mức Trung bình: giải quyết (giờ)',
-    min: 1,
-    max: 720,
-    defaultValue: 24,
-  },
-  {
-    key: 'slaLowFirstResponseMinutes',
-    label: 'Mức Thấp: phản hồi đầu (phút)',
-    min: 1,
-    max: 10080,
-    defaultValue: 480,
-  },
-  {
-    key: 'slaLowResolveHours',
-    label: 'Mức Thấp: giải quyết (giờ)',
-    min: 1,
-    max: 720,
-    defaultValue: 72,
+    max: 365,
+    defaultValue: 45,
   },
 ] as const satisfies readonly SettingDefinition[];
 
 const FAST_SYNC_SETTINGS = [
   {
     key: 'fastCatalogSyncMinutes',
-    label: 'Danh mục đại lý (phút)',
+    label: 'Danh mục đại lý hai chiều (phút)',
     min: 15,
     max: 1440,
     defaultValue: 60,
@@ -107,11 +76,10 @@ const FAST_SYNC_SETTINGS = [
 
 export const SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
-  { title: 'SLA CSKH theo mức ưu tiên', settings: TICKET_SLA_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
-const ALL_SETTINGS = [...SALES_SETTINGS, ...TICKET_SLA_SETTINGS, ...FAST_SYNC_SETTINGS];
+const ALL_SETTINGS = [...SALES_SETTINGS, ...FAST_SYNC_SETTINGS];
 
 export type SettingKey = (typeof ALL_SETTINGS)[number]['key'];
 export type SystemSettings = Record<SettingKey, number>;
@@ -134,25 +102,10 @@ const SETTING_FIELDS = Object.fromEntries(
   ALL_SETTINGS.map(({ key, min, max }) => [key, integerInRange(min, max)]),
 ) as Record<SettingKey, ReturnType<typeof integerInRange>>;
 
-const SLA_PAIRS = [
-  ['slaHighFirstResponseMinutes', 'slaHighResolveHours'],
-  ['slaMediumFirstResponseMinutes', 'slaMediumResolveHours'],
-  ['slaLowFirstResponseMinutes', 'slaLowResolveHours'],
-] as const satisfies ReadonlyArray<readonly [SettingKey, SettingKey]>;
-
-export const saveSystemSettingsInput = z
-  .object({ expectedUpdatedAt: z.iso.datetime(), ...SETTING_FIELDS })
-  .superRefine((values, context) => {
-    for (const [firstResponse, resolve] of SLA_PAIRS) {
-      if (values[firstResponse] > values[resolve] * 60) {
-        context.addIssue({
-          code: 'custom',
-          path: [firstResponse],
-          message: 'Phản hồi đầu không được lâu hơn thời gian giải quyết',
-        });
-      }
-    }
-  });
+export const saveSystemSettingsInput = z.object({
+  expectedUpdatedAt: z.iso.datetime(),
+  ...SETTING_FIELDS,
+});
 export type SaveSystemSettingsInput = z.infer<typeof saveSystemSettingsInput>;
 
 // Gia tri da luu bi thieu hoac sai thi dung mac dinh, de them tham so moi khong can sua du lieu.

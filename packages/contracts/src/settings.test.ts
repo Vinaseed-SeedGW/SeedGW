@@ -36,9 +36,12 @@ describe('resolveSystemSettings', () => {
   });
 
   it('dung mac dinh khi gia tri ngoai khoang hoac sai kieu', () => {
-    const resolved = resolveSystemSettings({ checkInRadiusM: 1, dealerInactiveDays: 'abc' });
+    const resolved = resolveSystemSettings({
+      checkInRadiusM: 1,
+      dealerUnvisitedDaysLevel1: 'abc',
+    });
     expect(resolved.checkInRadiusM).toBe(DEFAULTS.checkInRadiusM);
-    expect(resolved.dealerInactiveDays).toBe(DEFAULTS.dealerInactiveDays);
+    expect(resolved.dealerUnvisitedDaysLevel1).toBe(14);
   });
 
   it('chiu duoc du lieu khong phai doi tuong', () => {
@@ -61,14 +64,10 @@ describe('saveSystemSettingsInput', () => {
     );
   });
 
-  it('tu choi phan hoi dau lau hon thoi gian giai quyet', () => {
-    const result = saveSystemSettingsInput.safeParse({
-      ...valid,
-      slaHighFirstResponseMinutes: 61,
-      slaHighResolveHours: 1,
-    });
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path).toEqual(['slaHighFirstResponseMinutes']);
+  it('moc lau chua ghe tham co mac dinh theo cap dai ly', () => {
+    expect(DEFAULTS.dealerUnvisitedDaysLevel1).toBe(14);
+    expect(DEFAULTS.dealerUnvisitedDaysLevel2).toBe(30);
+    expect(DEFAULTS.dealerUnvisitedDaysLevel3).toBe(45);
   });
 });
 

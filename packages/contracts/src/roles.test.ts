@@ -23,11 +23,11 @@ describe('roleLockReason', () => {
   });
 
   it('khoa vai tro nguoi dung dang giu', () => {
-    expect(roleLockReason('asm', true)).toBe('Bạn đang giữ vai trò này nên không sửa được');
+    expect(roleLockReason('staff', true)).toBe('Bạn đang giữ vai trò này nên không sửa được');
   });
 
   it('cho sua vai tro con lai', () => {
-    expect(roleLockReason('asm', false)).toBeNull();
+    expect(roleLockReason('staff', false)).toBeNull();
   });
 });
 
@@ -39,7 +39,8 @@ describe('quyen danh rieng va vai tro mac dinh', () => {
   });
 
   it('nhan dung vai tro mac dinh', () => {
-    expect(isPresetRole('asm')).toBe(true);
+    expect(isPresetRole('staff')).toBe(true);
+    expect(isPresetRole('asm')).toBe(false);
     expect(isPresetRole('giam-doc-mien')).toBe(false);
   });
 });

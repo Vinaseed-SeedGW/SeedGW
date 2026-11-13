@@ -1,8 +1,7 @@
 import {
+  Bug,
   CalendarDays,
-  ChartColumn,
   FileChartColumn,
-  Inbox,
   LayoutDashboard,
   MapPin,
   MessageSquareText,
@@ -14,7 +13,6 @@ import {
   SlidersHorizontal,
   Store,
   Target,
-  Ticket,
   UserCog,
   Users,
   type LucideIcon,
@@ -50,14 +48,11 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       items: [{ label: 'Báo cáo', href: '/kinh-doanh/bao-cao', icon: FileChartColumn }],
     },
   ],
-  cskh: [
+  'trao-doi': [
     {
       items: [
-        { label: 'Hộp thư', href: '/cskh/hop-thu', icon: Inbox },
-        { label: 'Phiếu tiếp nhận', href: '/cskh/phieu', icon: Ticket },
-        { label: 'Khách hàng', href: '/cskh/khach-hang', icon: Users },
-        { label: 'Mẫu trả lời', href: '/cskh/mau-tra-loi', icon: MessageSquareText },
-        { label: 'Dashboard', href: '/cskh/dashboard', icon: ChartColumn },
+        { label: 'Tin nhắn', href: '/trao-doi/tin-nhan', icon: MessageSquareText },
+        { label: 'Báo lỗi', href: '/trao-doi/bao-loi', icon: Bug },
       ],
     },
   ],
