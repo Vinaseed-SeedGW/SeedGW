@@ -1,0 +1,206 @@
+import 'server-only';
+import { auditChanges } from '@dms/contracts/audit';
+import type { MobileLoginInput, MobileProfile, MobileSession } from '@dms/contracts/check-ins';
+import { db } from '@dms/db/client';
+import {
+  hashRefreshToken,
+  MobileAuthError,
+  type MobileUser,
+  newRefreshToken,
+  signAccessToken,
+} from '@/server/auth/mobile';
+import { writeAudit } from '@/server/services/audit';
+import { checkCredentials } from '@/server/services/credentials';
+
+const REFRESH_TOKEN_TTL_DAYS = 30;
+
+async function issueSession(
+  user: { id: string; employeeCode: string; fullName: string; sessionVersion: number },
+  deviceId: string,
+): Promise<MobileSession> {
+  const access = signAccessToken({ sub: user.id, did: deviceId, sv: user.sessionVersion });
+  const refresh = newRefreshToken();
+  const now = new Date();
+  const [, orgUnit] = await Promise.all([
+    db.mobileRefreshToken.create({
+      data: {
+        userId: user.id,
+        deviceId,
+        tokenHash: refresh.hash,
+        sessionVersion: user.sessionVersion,
+        expiresAt: new Date(now.getTime() + REFRESH_TOKEN_TTL_DAYS * 86_400_000),
+      },
+    }),
+    db.user.findUnique({ where: { id: user.id }, select: { orgUnit: { select: { name: true } } } }),
+    db.mobileDevice.update({ where: { id: deviceId }, data: { lastSeenAt: now } }),
+  ]);
+  return {
+    accessToken: access.token,
+    accessExpiresAt: access.expiresAt.toISOString(),
+    refreshToken: refresh.token,
+    user: {
+      id: user.id,
+      employeeCode: user.employeeCode,
+      fullName: user.fullName,
+      orgUnitName: orgUnit?.orgUnit?.name ?? null,
+    },
+  };
+}
+
+type DeviceOutcome = { deviceId: string; status: 'ACTIVE' | 'PENDING'; registered: boolean };
+
+/**
+ * Máy đầu tiên của nhân viên dùng được ngay. Máy khác phải chờ quản trị duyệt ở trang Tài khoản,
+ * duyệt máy mới thì máy cũ tự bị thu hồi (quyết định 13/11/2026).
+ */
+async function resolveDevice(
+  userId: string,
+  device: MobileLoginInput['device'],
+): Promise<DeviceOutcome> {
+  return db.$transaction(async (tx) => {
+    // Khoá dòng nhân viên để hai lần đăng nhập cùng lúc không cùng thành máy đầu tiên.
+    await tx.$queryRaw`SELECT 1 FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
+    const existing = await tx.mobileDevice.findUnique({
+      where: { userId_deviceKey: { userId, deviceKey: device.key } },
+      select: { id: true, status: true },
+    });
+    if (existing?.status === 'ACTIVE') {
+      return { deviceId: existing.id, status: 'ACTIVE', registered: false };
+    }
+    const hasActive = (await tx.mobileDevice.count({ where: { userId, status: 'ACTIVE' } })) > 0;
+    const now = new Date();
+    const data = hasActive
+      ? { status: 'PENDING' as const, revokedAt: null }
+      : { status: 'ACTIVE' as const, approvedAt: now, revokedAt: null };
+    const saved = existing
+      ? await tx.mobileDevice.update({
+          where: { id: existing.id },
+          data: { ...data, name: device.name, platform: device.platform },
+          select: { id: true, status: true },
+        })
+      : await tx.mobileDevice.create({
+          data: {
+            userId,
+            deviceKey: device.key,
+            name: device.name,
+            platform: device.platform,
+            ...data,
+          },
+          select: { id: true, status: true },
+        });
+    return {
+      deviceId: saved.id,
+      status: saved.status === 'ACTIVE' ? 'ACTIVE' : 'PENDING',
+      registered: !existing || existing.status !== saved.status,
+    };
+  });
+}
+
+export async function loginMobile(
+  input: MobileLoginInput,
+  ip: string | null,
+): Promise<MobileSession> {
+  const result = await checkCredentials(input.employeeCode, input.password);
+  if (result.status === 'locked') {
+    throw new MobileAuthError('LOCKED', 'Tài khoản tạm khoá do nhập sai nhiều lần, thử lại sau');
+  }
+  if (result.status === 'invalid') {
+    throw new MobileAuthError('INVALID_CREDENTIALS', 'Mã nhân viên hoặc mật khẩu không đúng');
+  }
+  const flags = await db.user.findUnique({
+    where: { id: result.user.id },
+    select: { mustChangePassword: true },
+  });
+  if (flags?.mustChangePassword) {
+    throw new MobileAuthError(
+      'MUST_CHANGE_PASSWORD',
+      'Cần đổi mật khẩu trên web trước khi đăng nhập app',
+    );
+  }
+
+  const device = await resolveDevice(result.user.id, input.device);
+  if (device.registered) {
+    await writeAudit({
+      actor: { id: result.user.id, impersonator: null },
+      action: 'user.device-register',
+      entityType: 'User',
+      entityId: result.user.id,
+      entityLabel: result.user.employeeCode,
+      changes: auditChanges(
+        {},
+        {
+          device: `${input.device.name}: ${device.status === 'ACTIVE' ? 'dùng ngay (máy đầu tiên)' : 'chờ duyệt'}`,
+        },
+      ),
+      ip,
+    });
+  }
+  if (device.status === 'PENDING') {
+    throw new MobileAuthError(
+      'DEVICE_PENDING',
+      'Tài khoản đang dùng trên một máy khác. Nhờ quản trị duyệt máy này ở mục Tài khoản trên web, máy cũ sẽ tự bị thu hồi.',
+    );
+  }
+  return issueSession(result.user, device.deviceId);
+}
+
+/** Đổi refresh token cũ lấy cặp khoá mới. Token cũ bị thu hồi ngay để không dùng lại được. */
+export async function refreshMobile(refreshToken: string): Promise<MobileSession> {
+  const now = new Date();
+  const row = await db.mobileRefreshToken.findUnique({
+    where: { tokenHash: hashRefreshToken(refreshToken) },
+    select: {
+      id: true,
+      revokedAt: true,
+      expiresAt: true,
+      sessionVersion: true,
+      device: { select: { id: true, status: true } },
+      user: {
+        select: {
+          id: true,
+          employeeCode: true,
+          fullName: true,
+          isActive: true,
+          sessionVersion: true,
+        },
+      },
+    },
+  });
+  if (!row || row.revokedAt || row.expiresAt <= now) {
+    throw new MobileAuthError('SESSION_EXPIRED', 'Phiên đăng nhập đã hết hạn, đăng nhập lại');
+  }
+  const revoked = await db.mobileRefreshToken.updateMany({
+    where: { id: row.id, revokedAt: null },
+    data: { revokedAt: now },
+  });
+  // Hai yêu cầu làm mới cùng lúc: chỉ một yêu cầu được cấp khoá mới.
+  if (revoked.count === 0) {
+    throw new MobileAuthError('SESSION_EXPIRED', 'Phiên đăng nhập đã hết hạn, đăng nhập lại');
+  }
+  if (!row.user.isActive || row.user.sessionVersion !== row.sessionVersion) {
+    throw new MobileAuthError('SESSION_EXPIRED', 'Phiên đăng nhập đã hết hạn, đăng nhập lại');
+  }
+  if (row.device.status !== 'ACTIVE') {
+    throw new MobileAuthError('DEVICE_REVOKED', 'Thiết bị này đã bị thu hồi');
+  }
+  return issueSession(row.user, row.device.id);
+}
+
+export async function logoutMobile(refreshToken: string): Promise<void> {
+  await db.mobileRefreshToken.updateMany({
+    where: { tokenHash: hashRefreshToken(refreshToken), revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}
+
+export async function getMobileProfile(user: MobileUser): Promise<MobileProfile> {
+  const orgUnit = user.orgUnitId
+    ? await db.orgUnit.findUnique({ where: { id: user.orgUnitId }, select: { name: true } })
+    : null;
+  return {
+    id: user.id,
+    employeeCode: user.employeeCode,
+    fullName: user.fullName,
+    orgUnitName: orgUnit?.name ?? null,
+  };
+}

@@ -1,6 +1,20 @@
-import { distanceMeters } from './geo';
+const EARTH_RADIUS_M = 6_371_000;
 
-/** Ngưỡng lọc theo CHECK_IN_PLAN §3.4, để số km trên app gần với số máy chủ sẽ tính. */
+export type GeoPoint = { lat: number; lng: number };
+
+export function distanceMeters(a: GeoPoint, b: GeoPoint): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(h));
+}
+
+// Dùng chung cho app và máy chủ để km trên app và trên báo cáo tính cùng một cách.
+
+/** Ngưỡng lọc theo CHECK_IN_PLAN §3.4. */
 export const FILTER = {
   maxAccuracyM: 50,
   maxSpeedKmh: 150,

@@ -16,6 +16,7 @@ export const PERMISSIONS = [
   { code: 'sales.customer.read', name: 'Xem Khách hàng' },
   { code: 'sales.route.read', name: 'Xem Tuyến viếng thăm' },
   { code: 'sales.check-in.read', name: 'Xem Check-in' },
+  { code: 'sales.check-in.create', name: 'Check-in trên app' },
   { code: 'sales.fast-sync.read', name: 'Xem Đồng bộ FAST' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
 
@@ -307,6 +308,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.customer.read',
       'sales.route.read',
       'sales.check-in.read',
+      'sales.check-in.create',
     ],
   },
   {

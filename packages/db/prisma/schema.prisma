@@ -27,6 +27,7 @@ model OrgUnit {
   manager   User?     @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
   users     User[]    @relation("org_unit_members")
   approvalWorkflows ApprovalWorkflow[]
+  checkIns  CheckIn[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -77,6 +78,10 @@ model User {
   delegationsGiven       Delegation[]           @relation("delegation_delegator")
   delegationsReceived    Delegation[]           @relation("delegation_delegate")
   delegationsCreated     Delegation[]           @relation("delegation_creator")
+  mobileRefreshTokens    MobileRefreshToken[]
+  checkIns               CheckIn[]
+  trackPoints            TrackPoint[]
+  trackSessions          TrackSession[]
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
 
@@ -96,6 +101,8 @@ model MobileDevice {
   approvedAt DateTime?          @map("approved_at")
   revokedAt  DateTime?          @map("revoked_at")
   lastSeenAt DateTime?          @map("last_seen_at")
+  refreshTokens MobileRefreshToken[]
+  checkIns   CheckIn[]
   createdAt  DateTime           @default(now()) @map("created_at")
   updatedAt  DateTime           @updatedAt @map("updated_at")
 
@@ -303,4 +310,108 @@ model UserRole {
 
   @@id([userId, roleId])
   @@map("user_roles")
+}
+
+// Phien dang nhap app: luu bam cua refresh token, doi token moi lan lam moi.
+model MobileRefreshToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String       @map("device_id") @db.Uuid
+  device    MobileDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  tokenHash String       @unique @map("token_hash")
+  // Doi mat khau, khoa tai khoan lam tang sessionVersion cua User, token cu khong dung duoc nua.
+  sessionVersion Int     @map("session_version")
+  expiresAt DateTime     @map("expires_at")
+  revokedAt DateTime?    @map("revoked_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("mobile_refresh_tokens")
+}
+
+enum CheckInPlaceKind {
+  DEALER
+  CUSTOMER
+  OTHER
+
+  @@map("check_in_place_kind")
+}
+
+model CheckIn {
+  id                  String           @id @default(uuid()) @db.Uuid
+  // Ma app tao truoc khi gui, goi lai cung ma khong tao them dong.
+  clientId            String           @unique @map("client_id") @db.Uuid
+  userId              String           @map("user_id") @db.Uuid
+  user                User             @relation(fields: [userId], references: [id])
+  // Don vi cua nhan vien tai thoi diem check-in, doi don vi sau nay khong lam doi bao cao cu.
+  orgUnitId           String?          @map("org_unit_id") @db.Uuid
+  orgUnit             OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  deviceId            String?          @map("device_id") @db.Uuid
+  device              MobileDevice?    @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  capturedAt          DateTime         @map("captured_at")
+  receivedAt          DateTime         @default(now()) @map("received_at")
+  lat                 Float
+  lng                 Float
+  accuracyM           Float?           @map("accuracy_m")
+  isMocked            Boolean          @map("is_mocked")
+  placeKind           CheckInPlaceKind @map("place_kind")
+  placeName           String           @map("place_name")
+  note                String           @default("")
+  address             String?
+  addressOnPhoto      String?          @map("address_on_photo")
+  addressAttempts     Int              @default(0) @map("address_attempts")
+  photoKey            String?          @map("photo_key")
+  photoBytes          Int?             @map("photo_bytes")
+  gpsDistanceKm       Float?           @map("gps_distance_km")
+  roadDistanceKm      Float?           @map("road_distance_km")
+  isDistanceEstimated Boolean          @default(false) @map("is_distance_estimated")
+  flags               String[]         @default([])
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, capturedAt(sort: Desc)])
+  @@index([orgUnitId, capturedAt(sort: Desc)])
+  @@index([capturedAt(sort: Desc)])
+  @@map("check_ins")
+}
+
+model TrackPoint {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recordedAt   DateTime @map("recorded_at")
+  lat          Float
+  lng          Float
+  accuracyM    Float?   @map("accuracy_m")
+  speedMps     Float?   @map("speed_mps")
+  isMocked     Boolean  @map("is_mocked")
+  isBackground Boolean  @map("is_background")
+  receivedAt   DateTime @default(now()) @map("received_at")
+
+  @@unique([userId, recordedAt])
+  @@map("track_points")
+}
+
+enum TrackSessionEndReason {
+  USER
+  AUTO_CUTOFF
+
+  @@map("track_session_end_reason")
+}
+
+// Khoang thoi gian app dang ghi hanh trinh. Khong cong km noi giua hai phien.
+model TrackSession {
+  id        String                 @id @default(uuid()) @db.Uuid
+  clientId  String                 @unique @map("client_id") @db.Uuid
+  userId    String                 @map("user_id") @db.Uuid
+  user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedAt DateTime               @map("started_at")
+  endedAt   DateTime?              @map("ended_at")
+  endReason TrackSessionEndReason? @map("end_reason")
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime               @updatedAt @map("updated_at")
+
+  @@index([userId, startedAt])
+  @@map("track_sessions")
 }
