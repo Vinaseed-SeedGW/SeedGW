@@ -141,7 +141,13 @@ export function ensureBucket(): Promise<void> {
 
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
   await ensureBucket();
-  const response = await s3Request('PUT', objectPath(key), { body, contentType });
+  let response = await s3Request('PUT', objectPath(key), { body, contentType });
+  // Bucket bị xoá trong lúc web đang chạy (ví dụ sau khi khôi phục sao lưu): tạo lại rồi gửi lại một lần.
+  if (response.status === 404) {
+    bucketReady = null;
+    await ensureBucket();
+    response = await s3Request('PUT', objectPath(key), { body, contentType });
+  }
   if (!response.ok) throw new Error(`Không lưu được ảnh (${response.status})`);
 }
 
@@ -170,4 +176,15 @@ export function presignGetUrl(key: string, expiresSeconds = 15 * 60, now = new D
   const stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, sha256Hex(canonicalRequest)].join('\n');
   const signature = createHmac('sha256', signingKey(dateStamp)).update(stringToSign).digest('hex');
   return `${url.origin}${url.pathname}?${query}&X-Amz-Signature=${signature}`;
+}
+
+/** Kiểm tra kho ảnh còn trả lời, dùng cho trang kiểm tra sức khoẻ. */
+export async function pingStorage(): Promise<boolean> {
+  try {
+    const response = await s3Request('HEAD', objectPath());
+    // 404 là bucket chưa tạo (tạo khi có ảnh đầu tiên), MinIO vẫn đang chạy.
+    return response.ok || response.status === 404;
+  } catch {
+    return false;
+  }
 }
