@@ -56,13 +56,13 @@ Stack: Combo 4 — Next.js 15 / React 19 / TypeScript · Expo (mobile) · Postgr
   - `AuditLog` ghi trong `after()` sau mỗi Server Action: ai, lúc nào, thực thể, trước/sau (JSON diff), IP.
   - **Xong khi**: sửa 1 bản ghi bất kỳ → thấy dòng log có diff; lỗi validate hiện đúng dưới từng ô.
 
-- [ ] **F6. Môi trường staging + CI/CD**: _New. Cỡ M._
+- [ ] **F6. Môi trường staging + CI/CD**: _New. Cỡ M._ **Đang làm (13/11/2026): đã có Dockerfile, file chạy staging có Caddy tự lấy HTTPS, `/api/health`, GitHub Actions kiểm tra mọi PR và tự triển khai qua runner đặt trong máy chủ thử, script sao lưu và khôi phục. Đã chạy thử toàn bộ bằng Docker trên máy phát triển: migration từ database trắng, đăng nhập app, check-in kèm ảnh qua HTTPS, sao lưu rồi khôi phục trong 14 giây. Hướng dẫn cho IT ở [deploy/README.md](../../deploy/README.md). Sentry để sau (người dùng chọn 13/11). Còn chờ máy chủ và tên miền từ IT.**
   - GitHub Actions/GitLab CI: lint, typecheck, test, build image Docker; deploy staging tự động khi merge `main`.
   - Staging có domain HTTPS công khai (bắt buộc cho webhook Zalo ở R2).
   - Sentry cho web + worker; healthcheck `/api/health`; backup Postgres hằng đêm.
   - **Xong khi**: merge 1 PR → 10 phút sau staging cập nhật; lỗi cố ý xuất hiện trên Sentry.
 
-- [ ] **F7. Hạ tầng server nội bộ + domain công khai**: chuẩn bị máy chủ staging & production tại Vinaseed. _New. Cỡ M. Làm cùng IT Vinaseed._
+- [ ] **F7. Hạ tầng server nội bộ + domain công khai**: chuẩn bị máy chủ staging & production tại Vinaseed. _New. Cỡ M. Làm cùng IT Vinaseed._ **Chờ IT (13/11/2026): một máy Ubuntu 24.04 4 vCPU, 8 GB RAM, 100 GB SSD, tên miền con trỏ về DMZ, mở cổng 80 và 443, thư mục sao lưu ở ổ khác. Danh sách đầy đủ ở deploy/README.md mục 1.**
   - Cấu hình gợi ý (300–400 user): 8 vCPU, 16–32 GB RAM, SSD 1 TB; tách volume ảnh check-in (MinIO) khỏi DB.
   - Nginx ở DMZ, TLS; chỉ mở ra Internet: trang web, `/api/mobile/*`, `/api/v1/*` (giới hạn IP của FBO nếu FAST cung cấp), `/api/webhooks/zalo`. Mattermost & DB chỉ trong mạng nội bộ.
   - Rate limit, chặn dò mật khẩu (fail2ban), giám sát dung lượng đĩa.
