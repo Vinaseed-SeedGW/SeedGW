@@ -28,6 +28,7 @@ model OrgUnit {
   users     User[]    @relation("org_unit_members")
   approvalWorkflows ApprovalWorkflow[]
   checkIns  CheckIn[]
+  dealers   Dealer[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -82,6 +83,7 @@ model User {
   checkIns               CheckIn[]
   trackPoints            TrackPoint[]
   trackSessions          TrackSession[]
+  assignedDealers        Dealer[]               @relation("dealer_assignee")
   createdAt              DateTime               @default(now()) @map("created_at")
   updatedAt              DateTime               @updatedAt @map("updated_at")
 
@@ -349,6 +351,9 @@ model CheckIn {
   orgUnit             OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   deviceId            String?          @map("device_id") @db.Uuid
   device              MobileDevice?    @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  // Có khi check-in tại đại lý chọn từ danh mục (A7). placeName vẫn giữ tên lúc check-in.
+  dealerId            String?          @map("dealer_id") @db.Uuid
+  dealer              Dealer?          @relation(fields: [dealerId], references: [id], onDelete: SetNull)
   capturedAt          DateTime         @map("captured_at")
   receivedAt          DateTime         @default(now()) @map("received_at")
   lat                 Float
@@ -373,6 +378,7 @@ model CheckIn {
   @@index([userId, capturedAt(sort: Desc)])
   @@index([orgUnitId, capturedAt(sort: Desc)])
   @@index([capturedAt(sort: Desc)])
+  @@index([dealerId, capturedAt(sort: Desc)])
   @@map("check_ins")
 }
 
@@ -414,4 +420,55 @@ model TrackSession {
 
   @@index([userId, startedAt])
   @@map("track_sessions")
+}
+
+enum DealerStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("dealer_status")
+}
+
+// Danh muc dai ly (A7). code la ma khach hang tren FAST, legacyCode la ma DMS cu.
+model Dealer {
+  id                 String       @id @default(uuid()) @db.Uuid
+  code               String?      @unique
+  legacyCode         String?      @unique @map("legacy_code")
+  name               String
+  level              Int
+  parentId           String?      @map("parent_id") @db.Uuid
+  parent             Dealer?      @relation("dealer_tree", fields: [parentId], references: [id], onDelete: SetNull)
+  children           Dealer[]     @relation("dealer_tree")
+  taxCode            String?      @map("tax_code")
+  status             DealerStatus @default(ACTIVE)
+  phone              String?
+  // So dien thoai goc khi khong dung dinh dang, de nguoi dung sua lai.
+  phoneRaw           String?      @map("phone_raw")
+  ownerName          String?      @map("owner_name")
+  ownerPhone         String?      @map("owner_phone")
+  address            String
+  provinceName       String?      @map("province_name")
+  // Tinh, huyen, xa cu (truoc 01/07/2025) dung nguyen van tu DMS cu de tham khao.
+  legacyAdminArea    String?      @map("legacy_admin_area")
+  lat                Float?
+  lng                Float?
+  locatedAt          DateTime?    @map("located_at")
+  orgUnitId          String?      @map("org_unit_id") @db.Uuid
+  orgUnit            OrgUnit?     @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  assignedUserId     String?      @map("assigned_user_id") @db.Uuid
+  assignedUser       User?        @relation("dealer_assignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  // Ten don vi va nguoi phu trach ghi tren DMS cu, de ghep lai khi doi co cau hoac nhap them tai khoan.
+  legacyOrgUnitName  String?      @map("legacy_org_unit_name")
+  legacyAssigneeName String?      @map("legacy_assignee_name")
+  // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
+  searchText         String?      @default(dbgenerated()) @map("search_text")
+  checkIns           CheckIn[]
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "dealers_search_text_trgm_idx")
+  @@index([orgUnitId])
+  @@index([assignedUserId])
+  @@index([parentId])
+  @@map("dealers")
 }

@@ -11,6 +11,8 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   CheckIn: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
   TrackPoint: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   TrackSession: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
+  // Nhan vien thay dai ly duoc giao, quan ly thay theo don vi phu trach cua dai ly.
+  Dealer: { ownerField: 'assignedUserId', orgUnitField: 'orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([
