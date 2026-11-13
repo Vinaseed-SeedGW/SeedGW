@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.resolve(process.cwd(), '../..'),
   transpilePackages: ['@dms/config', '@dms/contracts', '@dms/db', '@dms/ui'],
+  // File đại lý xuất từ DMS cũ nặng khoảng 3 MB, giới hạn mặc định của Server Action là 1 MB.
+  experimental: { serverActions: { bodySizeLimit: '15mb' } },
   serverExternalPackages: ['@prisma/client', 'argon2', 'exceljs'],
 };
 
