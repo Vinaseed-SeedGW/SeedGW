@@ -1,0 +1,61 @@
+# Kiểm tra mọi PR và mọi lần đẩy lên main. Merge vào main thì tự triển khai lên máy chủ thử (F6).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Kiểm tra (pnpm check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Bật pnpm đúng phiên bản trong package.json
+        run: corepack enable
+      - name: Cài thư viện
+        run: pnpm install --frozen-lockfile
+      - name: Format, ký tự cấm, lint, kiểu dữ liệu, test
+        run: pnpm check
+
+  docker:
+    name: Build image Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image web
+        run: docker build -f deploy/docker/Dockerfile --target web --build-arg APP_VERSION=${{ github.sha }} .
+
+  deploy-staging:
+    name: Triển khai máy chủ thử
+    # Chạy trên runner cài sẵn trong máy chủ thử (mạng nội bộ), GitHub không cần vào được máy chủ.
+    runs-on: [self-hosted, dms-staging]
+    timeout-minutes: 30
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: staging
+    env:
+      DMS_ENV_FILE: /opt/dms/staging.env
+      APP_VERSION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build và khởi động lại
+        run: docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build --remove-orphans
+      - name: Chờ trang kiểm tra sức khoẻ trả về ok
+        run: deploy/staging/wait-healthy.sh
+      - name: Dọn image cũ
+        run: docker image prune -f
