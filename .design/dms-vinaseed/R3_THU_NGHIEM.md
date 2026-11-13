@@ -95,6 +95,18 @@ Ngưỡng đạt: hao pin không quá 25% trong 8 giờ ghi; không có đoạn 
 
 Kết luận: ghi nền trên iPhone ổn định, hình dạng vết khớp đường phố, km sau khi gộp chỗ dừng đạt ngưỡng lệch 5%. Lần đo R4 nên dùng đồng hồ hành trình (trip) có số lẻ 0,1 km và chụp đồng hồ ở từng chặng để so chính xác hơn.
 
+### Thay đổi cho bản build tiếp theo (13/11/2026, chưa build)
+
+| Thay đổi | Cách kiểm tra khi có bản mới |
+|---|---|
+| Km theo GPS gộp chỗ đứng yên từ 1 phút trong bán kính 40 m. Chạy lại trên dữ liệu 12/11 ra 36,965 km, khớp số đã phân tích | Đứng yên 10 phút ở một chỗ, km không tăng. Màn hành trình có dòng "Chỗ đứng yên đã gộp" |
+| Ảnh in địa chỉ (số nhà, đường, phường hoặc xã, tỉnh hoặc thành phố) thay cho toạ độ; toạ độ và sai số in nhỏ ở dòng dưới | Chụp ở vài chỗ quen, so địa chỉ trên ảnh với địa chỉ thật. Bật chế độ máy bay rồi chụp, ảnh phải ghi "Địa chỉ chưa lấy được" |
+| Sau khi chụp, chọn Đại lý, Khách hàng hoặc Điểm khác, gõ tên và ghi chú | Tên và ghi chú hiện đúng cột trong file Excel |
+| Nút xuất báo cáo Excel theo từng ngày (7 ngày gần nhất có dữ liệu), thay cho nút xuất chữ bị cắt 10.000 ký tự | Mở file trên iPhone (Tệp, Numbers hoặc Excel) và trên máy tính. Trang 1 theo mẫu Báo cáo cự ly di chuyển, có ảnh và link bản đồ; trang Tổng hợp; trang Điểm GPS đủ mọi điểm |
+| Ô nhập Tên, Mã nhân viên, Tên đơn vị (bản thử chưa có đăng nhập) | Ba cột nhân viên trong file Excel có giá trị |
+
+File mẫu dựng từ dữ liệu 12/11 đã mở được bằng Excel trên máy tính, không báo lỗi. Chưa thử trên iPhone vì chưa build.
+
 ## 5. Nội dung giải trình quyền vị trí chạy nền
 
 Google Play và Apple đều duyệt kỹ quyền vị trí chạy nền. Google yêu cầu nộp video ngắn quay màn hình đồng ý và lúc app đang ghi.

@@ -79,6 +79,8 @@ Cột **Địa chỉ** cần đổi toạ độ ra địa chỉ (reverse geocodi
 
 Máy chủ gọi một lần cho mỗi check-in và lưu lại. Khoá API nằm trên máy chủ, không nằm trong app. Gọi lỗi thì thử lại qua worker, báo cáo vẫn có toạ độ.
 
+Ngoại lệ cho bản thử R3 (chốt 13/11/2026): app gọi thẳng Vietmap để in địa chỉ lên ảnh lúc chụp, chỉ hỏi lại khi đã đi quá 25 m. Mất mạng thì ảnh in "Địa chỉ chưa lấy được" và lúc xuất Excel app hỏi lại. Địa chỉ dạng "33 Hàng Đào, Phường Hoàn Kiếm, Thành phố Hà Nội", theo đơn vị hành chính 2 cấp mới; số nhà khớp được xa chỗ chụp hơn 100 m thì ghi chữ "Gần" phía trước.
+
 ### 3.7 Giai đoạn thử, chưa tốn phí (bổ sung 12/11/2026)
 
 Trong R3, R4 và lúc chạy thử với vài nhân viên, dùng các nguồn miễn phí sau. Khi chạy thật mới chuyển sang tài khoản trả phí, chỉ đổi cấu hình trong `.env`, không sửa code.
