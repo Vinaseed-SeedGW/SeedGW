@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
   type HostInstance,
@@ -12,8 +16,16 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as Location from 'expo-location';
 import { captureRef } from 'react-native-view-shot';
-import { FILTER, insertPhoto } from '../sync/track-db';
-import { COLORS, SPACE } from '../theme';
+import {
+  GEOCODE_FAILURE_TEXT,
+  hasGeocodeKey,
+  reverseGeocode,
+  type GeocodeResult,
+} from '../api/reverse-geocode';
+import { distanceMeters, type GeoPoint } from '../sync/geo';
+import { insertPhoto, updatePhotoPlace, type PlaceKind } from '../sync/track-db';
+import { FILTER } from '../sync/track-filter';
+import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
 
@@ -27,7 +39,49 @@ type Shot = {
   at: number;
   location: StripLocation;
   mocked: boolean;
+  address: string | null;
+  addressLine: string;
 };
+
+const ADDRESS_REFRESH_M = 25;
+
+function addressLine(result: GeocodeResult): string {
+  return result.ok ? result.address : `Địa chỉ ${GEOCODE_FAILURE_TEXT[result.reason]}`;
+}
+
+/** Địa chỉ hiện trên khung ngắm, chỉ hỏi lại khi đã đi quá 25 m để đỡ tốn lượt gọi bản đồ. */
+function useLiveAddress(point: GeoPoint | null, precise: boolean): string {
+  const [line, setLine] = useState(() =>
+    hasGeocodeKey() ? 'Đang tìm địa chỉ' : addressLine({ ok: false, reason: 'NO_KEY' }),
+  );
+  const lastAsked = useRef<GeoPoint | null>(null);
+  const inFlight = useRef(false);
+  const mounted = useRef(true);
+  const lat = point?.lat;
+  const lng = point?.lng;
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (lat === undefined || lng === undefined || !precise || inFlight.current) return;
+    const here = { lat, lng };
+    if (lastAsked.current && distanceMeters(lastAsked.current, here) < ADDRESS_REFRESH_M) return;
+    lastAsked.current = here;
+    inFlight.current = true;
+    void reverseGeocode(here).then((result) => {
+      inFlight.current = false;
+      if (!result.ok) lastAsked.current = null;
+      if (mounted.current) setLine(addressLine(result));
+    });
+  }, [lat, lng, precise]);
+
+  return line;
+}
 
 type Props = {
   onClose: () => void;
@@ -110,6 +164,7 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
       }
     : null;
   const imprecise = (location?.coords.accuracy ?? Infinity) > FILTER.maxAccuracyM;
+  const liveAddress = useLiveAddress(stripLocation, !imprecise);
 
   async function capture() {
     if (!camera.current || !location || !stripLocation) return;
@@ -119,6 +174,8 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
     const at = Date.now();
     const frozen = { ...stripLocation };
     const mocked = location.mocked === true;
+    // Hỏi địa chỉ song song lúc xử lý ảnh; đứng yên thì lấy lại kết quả vừa hiện trên khung ngắm.
+    const geocoding = reverseGeocode(frozen);
     try {
       const picture = await camera.current.takePictureAsync({ quality: 1 });
       const portrait = picture.height >= picture.width;
@@ -129,6 +186,7 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
       context.resize(portrait ? { height: LONG_EDGE_PX } : { width: LONG_EDGE_PX });
       const image = await context.renderAsync();
       const saved = await image.saveAsync({ compress: 0.9, format: SaveFormat.JPEG });
+      const geocoded = await geocoding;
       onShot({
         uri: saved.uri,
         width: saved.width,
@@ -136,6 +194,8 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
         at,
         location: frozen,
         mocked,
+        address: geocoded.ok ? geocoded.address : null,
+        addressLine: addressLine(geocoded),
       });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không chụp được ảnh, thử lại.');
@@ -169,7 +229,7 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
           />
         ) : null}
         {error ? <Banner tone="danger" text={error} /> : null}
-        <WatermarkStrip at={now} location={stripLocation} width={width} />
+        <WatermarkStrip at={now} location={stripLocation} address={liveAddress} width={width} />
         <View style={styles.controls}>
           <Button label="Đóng" onPress={onClose} variant="ghost" />
           <Pressable
@@ -206,6 +266,8 @@ function Review({
   const height = Math.round((width * shot.height) / shot.width);
   const [state, setState] = useState<'composing' | 'saved' | 'failed'>('composing');
   const [sizeBytes, setSizeBytes] = useState(0);
+  const [photoId, setPhotoId] = useState<number | null>(null);
+  const [place, setPlace] = useState<PlaceDraft>({ kind: 'DEALER', name: '', note: '' });
   const started = useRef(false);
 
   async function compose() {
@@ -219,8 +281,15 @@ function Review({
         quality: JPEG_QUALITY,
         result: 'data-uri',
       });
-      insertPhoto({ takenAt: shot.at, ...shot.location, mocked: shot.mocked, dataUri });
+      const id = insertPhoto({
+        takenAt: shot.at,
+        ...shot.location,
+        mocked: shot.mocked,
+        dataUri,
+        address: shot.address,
+      });
       const bytes = Math.round(((dataUri.length - dataUri.indexOf(',') - 1) * 3) / 4);
+      setPhotoId(id);
       setSizeBytes(bytes);
       setState('saved');
       onSaved(bytes);
@@ -229,20 +298,32 @@ function Review({
     }
   }
 
+  function savePlace() {
+    if (photoId !== null) updatePhotoPlace(photoId, place);
+  }
+
   return (
-    <View style={[styles.fill, styles.reviewBackground]}>
-      <View ref={composite} collapsable={false} style={{ width, height }}>
-        <Image
-          source={{ uri: shot.uri }}
-          style={{ width, height }}
-          onLoad={() => void compose()}
-          accessibilityIgnoresInvertColors
-        />
-        <View style={styles.compositeStrip}>
-          <WatermarkStrip at={shot.at} location={shot.location} width={width} />
+    <KeyboardAvoidingView
+      style={[styles.fill, styles.reviewBackground]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView keyboardShouldPersistTaps="handled">
+        <View ref={composite} collapsable={false} style={{ width, height }}>
+          <Image
+            source={{ uri: shot.uri }}
+            style={{ width, height }}
+            onLoad={() => void compose()}
+            accessibilityIgnoresInvertColors
+          />
+          <View style={styles.compositeStrip}>
+            <WatermarkStrip
+              at={shot.at}
+              location={shot.location}
+              address={shot.addressLine}
+              width={width}
+            />
+          </View>
         </View>
-      </View>
-      <View style={styles.reviewInfo}>
         <Text style={styles.reviewText}>
           {state === 'composing' ? 'Đang in thông tin lên ảnh' : null}
           {state === 'saved' ? `Đã lưu ảnh trên máy, ${Math.round(sizeBytes / 1024)} KB` : null}
@@ -251,11 +332,84 @@ function Review({
         {shot.mocked ? (
           <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
         ) : null}
-        <View style={styles.controls}>
-          <Button label="Chụp ảnh khác" onPress={onRetake} variant="ghost" />
-          <Button label="Xong" onPress={onClose} />
-        </View>
+        {state === 'saved' ? <PlaceForm value={place} onChange={setPlace} /> : null}
+      </ScrollView>
+      <View style={styles.controls}>
+        <Button
+          label="Chụp ảnh khác"
+          onPress={() => {
+            savePlace();
+            onRetake();
+          }}
+          variant="ghost"
+        />
+        <Button
+          label="Lưu và xong"
+          onPress={() => {
+            savePlace();
+            onClose();
+          }}
+        />
       </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+type PlaceDraft = { kind: PlaceKind; name: string; note: string };
+
+const PLACE_KINDS: { kind: PlaceKind; label: string; nameLabel: string }[] = [
+  { kind: 'DEALER', label: 'Đại lý', nameLabel: 'Tên đại lý' },
+  { kind: 'CUSTOMER', label: 'Khách hàng', nameLabel: 'Tên khách hàng' },
+  { kind: 'OTHER', label: 'Điểm khác', nameLabel: 'Tên điểm' },
+];
+
+/** Bản thử chưa có danh sách đại lý (M3), nên gõ tên tay để file Excel ghi rõ đã ghé ai. */
+function PlaceForm({
+  value,
+  onChange,
+}: {
+  value: PlaceDraft;
+  onChange: (next: PlaceDraft) => void;
+}) {
+  const current = PLACE_KINDS.find((item) => item.kind === value.kind) ?? PLACE_KINDS[0];
+  return (
+    <View style={styles.form}>
+      <Text style={styles.formLabel}>Nơi check-in</Text>
+      <View style={styles.chips} accessibilityRole="radiogroup">
+        {PLACE_KINDS.map((item) => {
+          const selected = item.kind === value.kind;
+          return (
+            <Pressable
+              key={item.kind}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              onPress={() => onChange({ ...value, kind: item.kind })}
+              style={[styles.chip, selected && styles.chipSelected]}
+            >
+              <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={styles.formLabel}>{current?.nameLabel}</Text>
+      <TextInput
+        value={value.name}
+        onChangeText={(name) => onChange({ ...value, name })}
+        accessibilityLabel={current?.nameLabel}
+        style={styles.input}
+        autoCapitalize="words"
+        returnKeyType="next"
+      />
+      <Text style={styles.formLabel}>Ghi chú</Text>
+      <TextInput
+        value={value.note}
+        onChangeText={(note) => onChange({ ...value, note })}
+        accessibilityLabel="Ghi chú"
+        style={[styles.input, styles.inputMultiline]}
+        multiline
+      />
     </View>
   );
 }
@@ -298,7 +452,30 @@ const styles = StyleSheet.create({
   bannerText: { color: COLORS.text, fontSize: 14 },
   reviewBackground: { backgroundColor: COLORS.surface },
   compositeStrip: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  reviewInfo: { flex: 1, justifyContent: 'flex-end' },
+  form: { padding: SPACE.lg, gap: SPACE.sm },
+  formLabel: { fontSize: 14, color: COLORS.textMuted },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
+  chip: {
+    minHeight: 44,
+    paddingHorizontal: SPACE.lg,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+  },
+  chipSelected: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+  chipText: { fontSize: 15, color: COLORS.text },
+  chipTextSelected: { color: COLORS.onBrand, fontWeight: FONT.bold },
+  input: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: SPACE.md,
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  inputMultiline: { minHeight: 80, paddingTop: SPACE.sm, textAlignVertical: 'top' },
   reviewText: {
     fontSize: 15,
     color: COLORS.text,

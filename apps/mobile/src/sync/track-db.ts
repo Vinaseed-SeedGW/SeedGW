@@ -1,19 +1,14 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import type { LocationObject } from 'expo-location';
-import { distanceMeters, formatCoord, formatVnDate, formatVnTime } from './geo';
+import { filterTrack, segmentOf, type FilteredTrack, type RawPoint } from './track-filter';
 
 // Bản thử R3: dữ liệu chỉ nằm trên máy để đo GPS, pin và vết đứt. Đồng bộ lên máy chủ làm ở M3, M12.
 const DB_NAME = 'dms-r3.db';
-
-/** Ngưỡng lọc giống CHECK_IN_PLAN §3.4, để số km theo GPS trên app gần với số máy chủ sẽ tính. */
-export const FILTER = {
-  maxAccuracyM: 50,
-  maxSpeedKmh: 150,
-  gapMinutes: 5,
-  gapMeters: 300,
-} as const;
+const DAY_MS = 86_400_000;
+const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
 
 export type SessionEndReason = 'USER' | 'AUTO_CUTOFF';
+export type PlaceKind = 'DEALER' | 'CUSTOMER' | 'OTHER';
 
 type PointRow = {
   recorded_at: number;
@@ -25,19 +20,67 @@ type PointRow = {
   app_state: string | null;
 };
 
-type SessionRow = {
+export type SessionRow = {
   id: number;
   started_at: number;
   ended_at: number | null;
   end_reason: SessionEndReason | null;
 };
 
-export type PhotoSummary = { id: number; takenAt: number; sizeBytes: number };
+type PhotoRow = {
+  id: number;
+  taken_at: number;
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  mocked: number;
+  size_bytes: number;
+  data_uri: string;
+  address: string | null;
+  place_kind: PlaceKind | null;
+  place_name: string | null;
+  note: string | null;
+};
+
+export type PhotoSummary = {
+  id: number;
+  takenAt: number;
+  sizeBytes: number;
+  address: string | null;
+  placeName: string | null;
+};
+
+export type PhotoRecord = {
+  id: number;
+  takenAt: number;
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  mocked: boolean;
+  dataUri: string;
+  address: string | null;
+  placeKind: PlaceKind | null;
+  placeName: string | null;
+  note: string | null;
+};
+
+export type TrackPoint = {
+  recordedAt: number;
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  speed: number | null;
+  mocked: boolean;
+  appState: string | null;
+};
+
+export type TesterProfile = { employeeCode: string; employeeName: string; orgUnitName: string };
 
 export type DayStats = {
   pointCount: number;
   keptCount: number;
   poorAccuracyCount: number;
+  stopCount: number;
   mockedCount: number;
   backgroundCount: number;
   gpsDistanceM: number;
@@ -87,6 +130,13 @@ function getDb(): SQLiteDatabase {
       message TEXT NOT NULL
     );
   `);
+  // Máy đã cài bản thử trước có bảng ảnh chưa có các cột này, thêm vào mà không mất ảnh cũ.
+  const photoColumns = new Set(
+    opened.getAllSync<{ name: string }>('PRAGMA table_info(photos)').map((c) => c.name),
+  );
+  for (const column of ['address', 'place_kind', 'place_name', 'note']) {
+    if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
+  }
   db = opened;
   return opened;
 }
@@ -140,15 +190,41 @@ export function countTaskErrorsSince(since: number): number {
   );
 }
 
-export function getConsentAt(): number | null {
-  const row = getDb().getFirstSync<{ value: string }>(
-    "SELECT value FROM meta WHERE key = 'consent_at'",
+function getMeta(key: string): string | null {
+  return (
+    getDb().getFirstSync<{ value: string }>('SELECT value FROM meta WHERE key = ?', key)?.value ??
+    null
   );
-  return row ? Number(row.value) : null;
+}
+
+function setMeta(key: string, value: string): void {
+  getDb().runSync('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', key, value);
+}
+
+export function getConsentAt(): number | null {
+  const value = getMeta('consent_at');
+  return value ? Number(value) : null;
 }
 
 export function saveConsent(at: number): void {
-  getDb().runSync("INSERT OR REPLACE INTO meta (key, value) VALUES ('consent_at', ?)", String(at));
+  setMeta('consent_at', String(at));
+}
+
+/** Bản thử chưa có đăng nhập, người thử tự nhập để file Excel có đủ cột nhân viên. */
+export function getTesterProfile(): TesterProfile {
+  return {
+    employeeCode: getMeta('employee_code') ?? '',
+    employeeName: getMeta('employee_name') ?? '',
+    orgUnitName: getMeta('org_unit_name') ?? '',
+  };
+}
+
+export function saveTesterProfile(profile: TesterProfile): void {
+  getDb().withTransactionSync(() => {
+    setMeta('employee_code', profile.employeeCode.trim());
+    setMeta('employee_name', profile.employeeName.trim());
+    setMeta('org_unit_name', profile.orgUnitName.trim());
+  });
 }
 
 export function getOpenSession(): SessionRow | null {
@@ -170,13 +246,6 @@ export function closeSession(at: number, reason: SessionEndReason): void {
   );
 }
 
-export function listSessionsSince(since: number): SessionRow[] {
-  return getDb().getAllSync<SessionRow>(
-    'SELECT * FROM sessions WHERE started_at >= ? ORDER BY started_at',
-    since,
-  );
-}
-
 export function insertPhoto(photo: {
   takenAt: number;
   lat: number;
@@ -184,11 +253,12 @@ export function insertPhoto(photo: {
   accuracy: number | null;
   mocked: boolean;
   dataUri: string;
-}): void {
+  address: string | null;
+}): number {
   const base64Length = photo.dataUri.length - photo.dataUri.indexOf(',') - 1;
-  getDb().runSync(
-    `INSERT INTO photos (taken_at, lat, lng, accuracy, mocked, size_bytes, data_uri)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  const result = getDb().runSync(
+    `INSERT INTO photos (taken_at, lat, lng, accuracy, mocked, size_bytes, data_uri, address)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     photo.takenAt,
     photo.lat,
     photo.lng,
@@ -196,16 +266,43 @@ export function insertPhoto(photo: {
     photo.mocked ? 1 : 0,
     Math.round((base64Length * 3) / 4),
     photo.dataUri,
+    photo.address,
+  );
+  return result.lastInsertRowId;
+}
+
+export function updatePhotoPlace(
+  id: number,
+  place: { kind: PlaceKind; name: string; note: string },
+): void {
+  getDb().runSync(
+    'UPDATE photos SET place_kind = ?, place_name = ?, note = ? WHERE id = ?',
+    place.kind,
+    place.name.trim() || null,
+    place.note.trim() || null,
+    id,
   );
 }
 
-export function listPhotosSince(since: number): PhotoSummary[] {
+export function updatePhotoAddress(id: number, address: string): void {
+  getDb().runSync('UPDATE photos SET address = ? WHERE id = ?', address, id);
+}
+
+export function listPhotosBetween(from: number, to: number): PhotoSummary[] {
   return getDb()
-    .getAllSync<{ id: number; taken_at: number; size_bytes: number }>(
-      'SELECT id, taken_at, size_bytes FROM photos WHERE taken_at >= ? ORDER BY taken_at DESC',
-      since,
+    .getAllSync<Pick<PhotoRow, 'id' | 'taken_at' | 'size_bytes' | 'address' | 'place_name'>>(
+      `SELECT id, taken_at, size_bytes, address, place_name FROM photos
+       WHERE taken_at >= ? AND taken_at < ? ORDER BY taken_at DESC`,
+      from,
+      to,
     )
-    .map((row) => ({ id: row.id, takenAt: row.taken_at, sizeBytes: row.size_bytes }));
+    .map((row) => ({
+      id: row.id,
+      takenAt: row.taken_at,
+      sizeBytes: row.size_bytes,
+      address: row.address,
+      placeName: row.place_name,
+    }));
 }
 
 export function getPhotoDataUri(id: number): string | null {
@@ -213,6 +310,28 @@ export function getPhotoDataUri(id: number): string | null {
     getDb().getFirstSync<{ data_uri: string }>('SELECT data_uri FROM photos WHERE id = ?', id)
       ?.data_uri ?? null
   );
+}
+
+export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
+  return getDb()
+    .getAllSync<PhotoRow>(
+      'SELECT * FROM photos WHERE taken_at >= ? AND taken_at < ? ORDER BY taken_at',
+      from,
+      to,
+    )
+    .map((row) => ({
+      id: row.id,
+      takenAt: row.taken_at,
+      lat: row.lat,
+      lng: row.lng,
+      accuracy: row.accuracy,
+      mocked: row.mocked === 1,
+      dataUri: row.data_uri,
+      address: row.address,
+      placeKind: row.place_kind,
+      placeName: row.place_name,
+      note: row.note,
+    }));
 }
 
 function pointsBetween(from: number, to: number): PointRow[] {
@@ -224,42 +343,51 @@ function pointsBetween(from: number, to: number): PointRow[] {
   );
 }
 
-export function computeDayStats(dayStart: number): DayStats {
-  const dayEnd = dayStart + 86_400_000;
+export function readPointsBetween(from: number, to: number): TrackPoint[] {
+  return pointsBetween(from, to).map((p) => ({
+    recordedAt: p.recorded_at,
+    lat: p.lat,
+    lng: p.lng,
+    accuracy: p.accuracy,
+    speed: p.speed,
+    mocked: p.mocked === 1,
+    appState: p.app_state,
+  }));
+}
+
+export type DayTrack = { sessions: SessionRow[]; track: FilteredTrack; points: PointRow[] };
+
+/** Đọc và lọc vết một ngày. Km không cộng đoạn nối giữa hai phiên vì lúc đó app không ghi. */
+export function readDayTrack(dayStart: number): DayTrack {
+  const dayEnd = dayStart + DAY_MS;
   const points = pointsBetween(dayStart, dayEnd);
-  let keptCount = 0;
-  let poorAccuracyCount = 0;
+  // Phiên mở từ hôm trước vẫn tính cho các điểm sáng nay.
+  const sessions = getDb().getAllSync<SessionRow>(
+    `SELECT * FROM sessions WHERE started_at < ? AND (ended_at IS NULL OR ended_at >= ?)
+     ORDER BY started_at`,
+    dayEnd,
+    dayStart,
+  );
+  const starts = sessions.map((s) => s.started_at);
+  const raw: RawPoint[] = points.map((p) => ({
+    recordedAt: p.recorded_at,
+    lat: p.lat,
+    lng: p.lng,
+    accuracy: p.accuracy,
+    segment: segmentOf(starts, p.recorded_at),
+  }));
+  return { sessions, track: filterTrack(raw), points };
+}
+
+export function computeDayStats(dayStart: number): DayStats {
+  const dayEnd = dayStart + DAY_MS;
+  const { track, points } = readDayTrack(dayStart);
   let mockedCount = 0;
   let backgroundCount = 0;
-  let gpsDistanceM = 0;
-  let gapCount = 0;
-  let longestGapMinutes = 0;
-  let previous: PointRow | null = null;
-
   for (const point of points) {
     if (point.mocked) mockedCount += 1;
     if (point.app_state && point.app_state !== 'active') backgroundCount += 1;
-    if (point.accuracy === null || point.accuracy > FILTER.maxAccuracyM) {
-      poorAccuracyCount += 1;
-      continue;
-    }
-    if (previous) {
-      const meters = distanceMeters(previous, point);
-      const seconds = (point.recorded_at - previous.recorded_at) / 1000;
-      const speedKmh = seconds > 0 ? (meters / seconds) * 3.6 : Infinity;
-      if (speedKmh > FILTER.maxSpeedKmh) continue;
-      const gapMinutes = seconds / 60;
-      // Đứng yên trong đại lý cũng không sinh điểm, nên chỉ tính là đứt khi đã đi xa mà không có điểm.
-      if (gapMinutes > FILTER.gapMinutes && meters > FILTER.gapMeters) {
-        gapCount += 1;
-        longestGapMinutes = Math.max(longestGapMinutes, gapMinutes);
-      }
-      gpsDistanceM += meters;
-    }
-    keptCount += 1;
-    previous = point;
   }
-
   const last = points.at(-1);
   const photoCount =
     getDb().getFirstSync<{ n: number }>(
@@ -270,98 +398,29 @@ export function computeDayStats(dayStart: number): DayStats {
 
   return {
     pointCount: points.length,
-    keptCount,
-    poorAccuracyCount,
+    keptCount: track.kept.length,
+    poorAccuracyCount: track.poorAccuracyCount,
+    stopCount: track.stopCount,
     mockedCount,
     backgroundCount,
-    gpsDistanceM,
-    gapCount,
-    longestGapMinutes,
+    gpsDistanceM: track.distanceM,
+    gapCount: track.gapCount,
+    longestGapMinutes: track.longestGapMinutes,
     lastPoint: last ? { recordedAt: last.recorded_at, accuracy: last.accuracy } : null,
     photoCount,
   };
 }
 
-/** Xuất CSV để gửi cho người phân tích (R4): điểm GPS và vị trí các lần chụp ảnh trong ngày. */
-export function exportDayCsv(dayStart: number): string {
-  const dayEnd = dayStart + 86_400_000;
-  const lines = ['loai,ngay,gio,epoch_ms,lat,lng,sai_so_m,toc_do_ms,gia_lap,trang_thai_app'];
-  for (const p of pointsBetween(dayStart, dayEnd)) {
-    lines.push(
-      [
-        'gps',
-        formatVnDate(p.recorded_at),
-        formatVnTime(p.recorded_at),
-        p.recorded_at,
-        formatCoord(p.lat),
-        formatCoord(p.lng),
-        p.accuracy?.toFixed(1) ?? '',
-        p.speed?.toFixed(2) ?? '',
-        p.mocked,
-        p.app_state ?? '',
-      ].join(','),
-    );
-  }
-  const photos = getDb().getAllSync<{
-    taken_at: number;
-    lat: number;
-    lng: number;
-    accuracy: number | null;
-    mocked: number;
-  }>(
-    'SELECT taken_at, lat, lng, accuracy, mocked FROM photos WHERE taken_at >= ? AND taken_at < ? ORDER BY taken_at',
-    dayStart,
-    dayEnd,
+/** Các ngày (mốc 00:00 giờ Việt Nam) có điểm GPS hoặc ảnh, mới nhất trước. */
+export function listDaysWithData(limit: number): number[] {
+  const rows = getDb().getAllSync<{ day: number }>(
+    `SELECT day FROM (
+       SELECT (recorded_at + ${VN_OFFSET_MS}) / ${DAY_MS} AS day FROM track_points
+       UNION SELECT (taken_at + ${VN_OFFSET_MS}) / ${DAY_MS} AS day FROM photos
+     ) GROUP BY day ORDER BY day DESC LIMIT ?`,
+    limit,
   );
-  for (const photo of photos) {
-    lines.push(
-      [
-        'anh',
-        formatVnDate(photo.taken_at),
-        formatVnTime(photo.taken_at),
-        photo.taken_at,
-        formatCoord(photo.lat),
-        formatCoord(photo.lng),
-        photo.accuracy?.toFixed(1) ?? '',
-        '',
-        photo.mocked,
-        '',
-      ].join(','),
-    );
-  }
-  for (const session of listSessionsSince(dayStart)) {
-    lines.push(
-      [
-        'phien',
-        formatVnDate(session.started_at),
-        formatVnTime(session.started_at),
-        session.started_at,
-        '',
-        '',
-        '',
-        '',
-        '',
-        'bat dau',
-      ].join(','),
-    );
-    if (session.ended_at !== null) {
-      lines.push(
-        [
-          'phien',
-          formatVnDate(session.ended_at),
-          formatVnTime(session.ended_at),
-          session.ended_at,
-          '',
-          '',
-          '',
-          '',
-          '',
-          session.end_reason === 'AUTO_CUTOFF' ? 'tu dung theo gio' : 'ket thuc ngay',
-        ].join(','),
-      );
-    }
-  }
-  return lines.join('\n');
+  return rows.map((row) => row.day * DAY_MS - VN_OFFSET_MS);
 }
 
 export function clearAllTestData(): void {

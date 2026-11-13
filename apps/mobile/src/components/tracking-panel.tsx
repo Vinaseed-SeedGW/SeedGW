@@ -5,30 +5,37 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
-import { formatKm, formatVnDate, formatVnTime, startOfVnDay, vnDayKey } from '../sync/geo';
+import { hasGeocodeKey } from '../api/reverse-geocode';
+import { formatKm, formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import { TRACKING_CONFIG } from '../sync/background-tracking';
+import { shareDayReport } from '../sync/day-report';
 import {
   clearAllTestData,
   computeDayStats,
   countTaskErrorsSince,
-  exportDayCsv,
-  FILTER,
   getOpenSession,
   getPhotoDataUri,
-  listPhotosSince,
+  getTesterProfile,
+  listDaysWithData,
+  listPhotosBetween,
+  saveTesterProfile,
   type DayStats,
   type PhotoSummary,
+  type TesterProfile,
 } from '../sync/track-db';
+import { FILTER } from '../sync/track-filter';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import type { TrackingControl } from './use-tracking';
 
 const REFRESH_MS = 5_000;
+const DAY_MS = 86_400_000;
+const EXPORT_DAYS = 7;
 
 const PERMISSION_LABEL = {
   ALWAYS: 'Luôn cho phép',
@@ -41,15 +48,17 @@ type Snapshot = {
   photos: PhotoSummary[];
   sessionStartedAt: number | null;
   taskErrors: number;
+  exportDays: number[];
 };
 
 function readSnapshot(): Snapshot {
   const dayStart = startOfVnDay(Date.now());
   return {
     stats: computeDayStats(dayStart),
-    photos: listPhotosSince(dayStart),
+    photos: listPhotosBetween(dayStart, dayStart + DAY_MS),
     sessionStartedAt: getOpenSession()?.started_at ?? null,
     taskErrors: countTaskErrorsSince(dayStart),
+    exportDays: listDaysWithData(EXPORT_DAYS),
   };
 }
 
@@ -59,6 +68,8 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
   const { state, actions } = control;
   const [snapshot, setSnapshot] = useState<Snapshot>(readSnapshot);
   const [viewing, setViewing] = useState<number | null>(null);
+  const [exporting, setExporting] = useState<number | null>(null);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const reload = useCallback(() => setSnapshot(readSnapshot()), []);
 
@@ -69,12 +80,22 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
 
   useEffect(reload, [state.tracking, reload]);
 
-  async function exportToday() {
-    const now = Date.now();
-    await Share.share({
-      title: `Vet GPS ${vnDayKey(now)}`,
-      message: exportDayCsv(startOfVnDay(now)),
-    });
+  async function exportDay(dayStart: number) {
+    if (exporting !== null) return;
+    setExporting(dayStart);
+    setExportMessage(null);
+    const result = await shareDayReport(dayStart);
+    setExporting(null);
+    reload();
+    if (!result.ok) {
+      setExportMessage(result.message);
+      return;
+    }
+    setExportMessage(
+      result.missingAddress > 0
+        ? `Đã tạo file ${result.fileName}. Còn ${result.missingAddress} ảnh chưa có địa chỉ, khi có mạng xuất lại để bổ sung.`
+        : `Đã tạo file ${result.fileName}, ${result.checkIns} lượt check-in.`,
+    );
   }
 
   function clearData() {
@@ -96,6 +117,7 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
   }
 
   const { stats } = snapshot;
+  const todayStart = startOfVnDay(Date.now());
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -141,6 +163,10 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
         />
         <Row label="Km theo GPS (đã lọc)" value={`${formatKm(stats.gpsDistanceM)} km`} />
         <Row
+          label={`Chỗ đứng yên đã gộp (từ ${FILTER.stopMinSeconds / 60} phút trong ${FILTER.stopRadiusM} m)`}
+          value={String(stats.stopCount)}
+        />
+        <Row
           label={`Điểm sai số trên ${FILTER.maxAccuracyM} m`}
           value={String(stats.poorAccuracyCount)}
         />
@@ -173,15 +199,48 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
               onPress={() => setViewing(photo.id)}
               style={styles.photoItem}
             >
-              <Text style={styles.photoTime}>{formatVnTime(photo.takenAt)}</Text>
-              <Text style={styles.muted}>{Math.round(photo.sizeBytes / 1024)} KB</Text>
+              <Text style={styles.photoTime}>
+                {formatVnTime(photo.takenAt).slice(0, 5)}
+                {photo.placeName ? `  ${photo.placeName}` : ''}
+              </Text>
+              <Text style={styles.muted}>{photo.address ?? 'Chưa có địa chỉ'}</Text>
             </Pressable>
           ))}
         </View>
       )}
 
+      <Text style={styles.section}>Xuất báo cáo Excel</Text>
+      <Text style={styles.muted}>
+        File theo mẫu Báo cáo cự ly di chuyển: mỗi lượt check-in một dòng, có địa chỉ, km theo GPS
+        và ảnh. Kèm trang Tổng hợp và trang Điểm GPS.
+      </Text>
+      <ProfileForm />
+      {!hasGeocodeKey() ? (
+        <Text style={styles.error}>Bản cài này chưa có khoá bản đồ nên chưa ra được địa chỉ.</Text>
+      ) : null}
+      {snapshot.exportDays.length === 0 ? (
+        <Text style={styles.muted}>Chưa có dữ liệu để xuất.</Text>
+      ) : (
+        <View style={styles.actions}>
+          {snapshot.exportDays.map((day) => (
+            <Button
+              key={day}
+              label={
+                exporting === day
+                  ? 'Đang tạo file'
+                  : day === todayStart
+                    ? `Hôm nay, ${formatVnDate(day).slice(0, 5)}`
+                    : formatVnDate(day)
+              }
+              onPress={() => void exportDay(day)}
+              variant={day === todayStart ? 'primary' : 'ghost'}
+            />
+          ))}
+        </View>
+      )}
+      {exportMessage ? <Text style={styles.muted}>{exportMessage}</Text> : null}
+
       <View style={styles.actions}>
-        <Button label="Xuất vết GPS hôm nay" onPress={() => void exportToday()} variant="ghost" />
         <Button label="Xoá dữ liệu thử" onPress={clearData} variant="danger" />
       </View>
 
@@ -195,6 +254,34 @@ function Row({ label, value }: { label: string; value: string }) {
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
       <Text style={styles.rowValue}>{value}</Text>
+    </View>
+  );
+}
+
+const PROFILE_FIELDS: { key: keyof TesterProfile; label: string }[] = [
+  { key: 'employeeName', label: 'Tên nhân viên' },
+  { key: 'employeeCode', label: 'Mã nhân viên' },
+  { key: 'orgUnitName', label: 'Tên đơn vị' },
+];
+
+/** Bản thử chưa đăng nhập, người thử tự điền một lần để file Excel có đủ cột nhân viên. */
+function ProfileForm() {
+  const [profile, setProfile] = useState<TesterProfile>(getTesterProfile);
+  return (
+    <View style={styles.card}>
+      {PROFILE_FIELDS.map((field) => (
+        <View key={field.key} style={styles.field}>
+          <Text style={styles.rowLabel}>{field.label}</Text>
+          <TextInput
+            value={profile[field.key]}
+            onChangeText={(value) => setProfile((current) => ({ ...current, [field.key]: value }))}
+            onEndEditing={() => saveTesterProfile(profile)}
+            accessibilityLabel={field.label}
+            autoCapitalize={field.key === 'employeeCode' ? 'none' : 'words'}
+            style={styles.input}
+          />
+        </View>
+      ))}
     </View>
   );
 }
@@ -247,12 +334,22 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 15, color: COLORS.text, marginTop: 2 },
   photoList: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
   photoItem: {
-    minWidth: 96,
+    width: '100%',
     minHeight: 48,
     padding: SPACE.sm,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  field: { paddingVertical: SPACE.sm, gap: SPACE.xs },
+  input: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: SPACE.md,
+    fontSize: 16,
+    color: COLORS.text,
   },
   photoTime: { fontSize: 15, fontWeight: FONT.bold, color: COLORS.text },
   viewer: { flex: 1, backgroundColor: COLORS.text },
