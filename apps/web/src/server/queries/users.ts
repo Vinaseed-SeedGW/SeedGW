@@ -126,7 +126,7 @@ export async function getUserDetail(id: string): Promise<UserDetail | null> {
 
 type FormOptionsContext = { editingUserId: string | null; currentManagerId: string | null };
 
-function buildOrgUnitLabels(
+export function buildOrgUnitLabels(
   units: ReadonlyArray<{ id: string; name: string; parentId: string | null }>,
 ): SelectOption[] {
   const byId = new Map(units.map((unit) => [unit.id, unit]));
