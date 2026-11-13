@@ -1,6 +1,8 @@
 # Information Architecture: DMS Vinaseed
 
-Ngày: 2026-11-09 · Dựa trên: DESIGN_BRIEF.md v3 · Task tương ứng: TASKS.md v3
+Ngày: 2026-11-09, cập nhật 2026-11-13 · Dựa trên: DESIGN_BRIEF.md · Task tương ứng: TASKS.md v4
+
+> **Cập nhật 13/11/2026 (DESIGN_BRIEF quyết định 27):** đợt này không làm đơn hàng. Đã bỏ khỏi cấu trúc: Cần duyệt, Đơn hàng, Tạo đơn, Tồn kho, Đồng bộ FAST (đơn hàng), Sản phẩm, Kho, Bảng giá, Quy trình duyệt, tab Đơn hàng trên app. FAST chỉ dùng để đọc công nợ đại lý và doanh số Thực bán. Dashboard tính từ check-in, đại lý và Thực bán.
 
 Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hướng, tên gọi và chỉ số dashboard. Brief và Tasks tham chiếu về đây.
 
@@ -19,9 +21,9 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 
 | Vai trò | Việc thường xuyên nhất (giảm dần) | Trang dùng ~80% thời gian |
 |---|---|---|
-| Nhân viên kinh doanh | Check-in đại lý, khách hàng, điểm khác → tạo đơn → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
-| ASM / quản lý vùng | Duyệt đơn → xem báo cáo ghé thăm → xem số vùng | **Cần duyệt** |
-| Sales Admin | Kiểm tra đơn → xử lý lỗi đồng bộ → đại lý mới | **Đơn hàng** |
+| Nhân viên kinh doanh | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| ASM / quản lý vùng | Xem báo cáo ghé thăm → duyệt toạ độ đại lý → lập tuyến → xem số vùng | **Check-in** |
+| Sales Admin | Danh mục đại lý → gán nhân viên phụ trách → đại lý mới đề xuất từ app | **Đại lý** |
 | Nhân viên CSKH | Trả lời tin nhắn → cập nhật phiếu | **Hộp thư** |
 | Trưởng nhóm CSKH | Phân công → theo dõi quá hạn → xem số | **Phiếu tiếp nhận** |
 | Quản trị (IT) | Tài khoản → danh mục → kết nối | **Tài khoản** |
@@ -43,24 +45,16 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - **Kinh doanh** `/kinh-doanh` (chuyển tới trang đích theo vai trò)
   - Tổng quan
     - Dashboard `/kinh-doanh/dashboard`
-    - Cần duyệt* `/kinh-doanh/can-duyet` (tab: Đơn hàng · Đại lý mới)
-  - Bán hàng
-    - Đơn hàng `/kinh-doanh/don-hang`
-      - Tạo đơn `/kinh-doanh/don-hang/tao-moi`
-      - Chi tiết đơn `/kinh-doanh/don-hang/[ma]` (tab: Thông tin · Duyệt · FAST · Lịch sử)
-    - Tồn kho* `/kinh-doanh/ton-kho`
-    - Chỉ tiêu* `/kinh-doanh/chi-tieu`
   - Đối tác
+    - Chỉ tiêu* `/kinh-doanh/chi-tieu`
     - Đại lý `/kinh-doanh/dai-ly`
-      - Thêm đại lý `/kinh-doanh/dai-ly/tao-moi`
-      - Hồ sơ đại lý `/kinh-doanh/dai-ly/[id]` (tab: Thông tin · Đơn hàng · Công nợ · Viếng thăm · Phản hồi)
+      - Hồ sơ đại lý `/kinh-doanh/dai-ly/[id]` (tab: Thông tin · Công nợ · Viếng thăm · Phản hồi)
     - Khách hàng `/kinh-doanh/khach-hang`
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
     - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham`
     - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem: danh sách, ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, bản đồ hành trình theo ngày, cờ nghi vấn)
   - Đối soát
-    - Đồng bộ FAST `/kinh-doanh/dong-bo-fast` (tab: Đơn hàng · Đại lý · Yêu cầu cập nhật · Danh mục)
     - Báo cáo `/kinh-doanh/bao-cao`
 
 - **CSKH** `/cskh` (chuyển tới Hộp thư)
@@ -78,16 +72,12 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Vai trò và quyền `/quan-tri/vai-tro`
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
   - Danh mục
-    - Sản phẩm `/quan-tri/san-pham`
-    - Kho `/quan-tri/kho`
-    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`
-    - Bảng giá `/quan-tri/bang-gia`
+    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`
   - Quy định
-    - Quy trình duyệt `/quan-tri/quy-trinh-duyet`, chi tiết: `/quan-tri/quy-trinh-duyet/[donViId]`
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
     - Tham số `/quan-tri/tham-so`
   - Hệ thống
-    - Kết nối `/quan-tri/ket-noi` (FAST · Zalo OA · Mattermost)
+    - Kết nối `/quan-tri/ket-noi` (FAST chỉ đọc · Zalo OA · Mattermost, kèm trạng thái và lỗi đồng bộ gần nhất)
     - Nhật ký `/quan-tri/nhat-ky`
 
 - **API (không có giao diện)**
@@ -100,7 +90,6 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - Đăng nhập / Đăng ký thiết bị
 - Tab **Hôm nay**: nút Check-in (mở máy ảnh trong app) · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
 - Tab **Tuyến**: đại lý hôm nay / gần tôi → Check-in · Thêm đại lý
-- Tab **Đơn hàng**: đơn của tôi · Tạo đơn nhanh (M8) · **Cần duyệt** (chỉ hiện với người có quyền duyệt)
 - Tab **Lịch sử**: check-in của tôi theo ngày, ảnh, ghi chú, km từng chặng, tổng km trong ngày, nút Kết thúc ngày
 - Tab **Tôi**: hồ sơ, thiết bị, thông báo, đăng xuất
 
@@ -118,20 +107,20 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 ## 2. Navigation Model
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
-- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 12 trang chia 5 nhóm; CSKH 5 trang không chia nhóm; Quản trị 13 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
-- **Điều hướng phụ**: tab trong trang chi tiết; tab cấp trang cho Cần duyệt, Đồng bộ FAST. Breadcrumb từ cấp bộ phận.
+- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; CSKH 5 trang không chia nhóm; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
+- **Điều hướng phụ**: tab trong trang chi tiết. Breadcrumb từ cấp bộ phận.
 - **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
-- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Cần duyệt, Hộp thư, Đồng bộ FAST.
+- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Hộp thư, Phiếu tiếp nhận và toạ độ đại lý chờ duyệt.
 - **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Hộp thư 3 cột thu thành 1 cột theo bước (danh sách → hội thoại → thông tin khách). Bảng dữ liệu ẩn bớt cột phụ.
-- **App điện thoại**: 5 tab dưới cùng; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
+- **App điện thoại**: 4 tab dưới cùng; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
 | Vai trò | Kinh doanh | CSKH | Quản trị |
 |---|---|---|---|
 | Nhân viên kinh doanh | Dashboard (số của tôi) | — | — |
-| ASM | Cần duyệt | — | — |
-| Sales Admin | Đơn hàng | — | — |
+| ASM | Check-in | — | — |
+| Sales Admin | Đại lý | — | — |
 | Nhân viên / Trưởng nhóm CSKH | — | Hộp thư / Phiếu tiếp nhận | — |
 | Quản trị hệ thống, Quản trị đơn vị | — | — | Tài khoản |
 | Lãnh đạo | Dashboard | Dashboard | — |
@@ -140,7 +129,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 
 ### 3.1 Bộ lọc chung
 
-Kỳ (tháng · quý · **vụ** · năm · tuỳ chọn) · đơn vị · nhóm sản phẩm/giống · nguồn số liệu (Đặt hàng / Thực bán). Bộ lọc nằm trên URL để gửi link được. Phạm vi dữ liệu tự áp theo vai trò ở phía máy chủ.
+Kỳ (ngày · tuần · tháng · quý · **vụ** · năm · tuỳ chọn) · đơn vị · nhân viên · cấp đại lý · nhóm sản phẩm (chỉ cho Thực bán). Bộ lọc nằm trên URL để gửi link được. Phạm vi dữ liệu tự áp theo vai trò ở phía máy chủ.
 
 Mọi khối số hiện **"cập nhật lúc hh:mm"**. Mọi khối bấm được để đi tới danh sách đã lọc tương ứng.
 
@@ -148,18 +137,17 @@ Mọi khối số hiện **"cập nhật lúc hh:mm"**. Mọi khối bấm đư�
 
 | Khu vực | Nội dung |
 |---|---|
-| **Hàng số chính** | Sản lượng đặt hàng · Sản lượng thực bán · Doanh thu thực bán · % hoàn thành chỉ tiêu · **Số đại lý đặt mua** / tổng đại lý đang hoạt động |
-| **Sản lượng** | Diễn biến theo tháng/vụ: Thực bán, Chỉ tiêu, Cùng kỳ · theo nhóm sản phẩm · top giống bán chạy và giống bán chậm |
-| **Đại lý** | Top đại lý theo sản lượng · đại lý mới có đơn đầu tiên · **đại lý không đặt hàng quá N ngày** · độ phủ theo vùng |
-| **Đơn hàng** | Số đơn theo trạng thái · đơn duyệt quá hạn · đơn có cảnh báo vượt công nợ/thiếu tồn · chênh lệch Đặt hàng và Thực bán |
-| **Công nợ và tồn kho** | Tổng công nợ · đại lý vượt hạn mức · sản phẩm tồn thấp |
-| **Thị trường** | Nhân viên đã check-in hôm nay · tổng km đi thị trường · tỉ lệ hoàn thành tuyến · số lượt viếng thăm · tỉ lệ viếng thăm có phát sinh đơn |
+| **Hàng số chính** | Số lượt ghé thăm · **Độ phủ đại lý** (đại lý được ghé ÷ đại lý đang hoạt động) · Nhân viên đã check-in hôm nay · Tổng km đi thị trường · Doanh số Thực bán và % chỉ tiêu (khi nối FAST) |
+| **Thị trường** | Lượt ghé thăm theo ngày, tuần, tháng · theo loại điểm (đại lý, khách hàng, điểm khác) · tỉ lệ hoàn thành tuyến · km bình quân mỗi lượt · check-in có cờ nghi vấn |
+| **Đại lý** | **Đại lý lâu chưa ghé thăm quá N ngày** · đại lý chưa có toạ độ · đại lý chưa gán nhân viên · độ phủ theo vùng và theo cấp |
+| **Nhân viên** | Bảng xếp hạng theo số lượt, độ phủ, km · nhân viên chưa check-in trong ngày làm việc |
+| **Thực bán và công nợ** (khi nối FAST) | Thực bán theo tháng và vụ so với chỉ tiêu và cùng kỳ · theo nhóm sản phẩm · top đại lý · tổng công nợ · đại lý vượt hạn mức |
 
-Theo vai trò: **Nhân viên** thấy số của mình và đại lý mình phụ trách, ẩn khối "Đơn duyệt quá hạn". **ASM** thấy vùng và có thêm bảng xếp hạng nhân viên. **Lãnh đạo** thấy toàn công ty và so sánh giữa các miền.
+Theo vai trò: **Nhân viên** thấy số của mình và đại lý mình phụ trách. **ASM** thấy vùng và có thêm bảng xếp hạng nhân viên. **Lãnh đạo** thấy toàn công ty và so sánh giữa các miền.
 
 ### 3.3 Tổng quan điều hành `/tong-quan`
 
-Một màn hình, không cuộn trên màn 1440px: Thực bán so với chỉ tiêu · Doanh thu · Số đại lý đặt mua · Công nợ · Phiếu quá hạn · Nhân viên đã check-in hôm nay; so sánh các miền; danh sách **"Cần chú ý"** (vùng dưới chỉ tiêu, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, phiếu khiếu nại mức cao).
+Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lượt ghé thăm · Nhân viên đã check-in hôm nay · Thực bán so với chỉ tiêu · Công nợ · Phiếu quá hạn; so sánh các miền; danh sách **"Cần chú ý"** (vùng độ phủ thấp, đại lý lâu chưa ghé, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, phiếu khiếu nại mức cao).
 
 ### 3.4 Dashboard CSKH `/cskh/dashboard`
 
@@ -169,19 +157,18 @@ Phiếu mới · đang mở · quá hạn · thời gian phản hồi đầu · 
 
 | Chỉ số | Cách tính | Nguồn | Độ mới |
 |---|---|---|---|
-| Sản lượng đặt hàng | Tổng số lượng quy đổi ra kg/tấn của đơn **đã duyệt, chưa huỷ**, theo ngày duyệt | DMS | ≤ 15 phút |
-| Sản lượng thực bán | Số lượng trên hoá đơn bán **trừ hàng trả lại**, theo ngày hoá đơn | FAST | Theo chu kỳ đồng bộ (dự kiến 15–60 phút) |
+| Số lượt ghé thăm | Số check-in trong kỳ và phạm vi đang chọn, theo giờ chụp ảnh | DMS | Gần như tức thì |
+| Độ phủ đại lý | Số đại lý **khác nhau** có ≥ 1 check-in trong kỳ ÷ số đại lý đang hoạt động trong phạm vi | DMS | ≤ 15 phút |
+| Đại lý lâu chưa ghé thăm | Đại lý đang hoạt động, check-in gần nhất cách quá N ngày (N đặt ở Tham số) | DMS | ≤ 15 phút |
+| Tổng km đi thị trường | Tổng Khoảng cách (km) theo đường đi; chưa có thì dùng Khoảng cách theo GPS | DMS | ≤ 15 phút |
+| Tỉ lệ hoàn thành tuyến | Điểm đã check-in ÷ điểm trong kế hoạch | DMS | ≤ 15 phút |
+| Sản lượng thực bán | Số lượng trên hoá đơn bán **trừ hàng trả lại**, quy ra kg, theo ngày hoá đơn | FAST | Theo chu kỳ đồng bộ (15 đến 60 phút) |
 | Doanh thu thực bán | Tiền hàng sau chiết khấu, chưa VAT, trừ hàng trả lại | FAST | Như trên |
 | % hoàn thành chỉ tiêu | Thực bán ÷ Chỉ tiêu của kỳ và phạm vi đang chọn | FAST + DMS | Như trên |
-| Số đại lý đặt mua | Số đại lý **khác nhau** có ≥ 1 đơn đã duyệt trong kỳ | DMS | ≤ 15 phút |
-| Độ phủ đại lý | Số đại lý đặt mua ÷ số đại lý đang hoạt động trong phạm vi | DMS | ≤ 15 phút |
-| Đại lý không đặt hàng | Đại lý đang hoạt động, đơn đã duyệt gần nhất cách quá N ngày (N đặt ở Tham số) | DMS | ≤ 15 phút |
-| Tỉ lệ hoàn thành tuyến | Điểm đã check-in ÷ điểm trong kế hoạch | DMS | ≤ 15 phút |
 
 Quy tắc tính:
-- Sản lượng luôn **quy đổi ra kg/tấn** qua bảng quy đổi ĐVT; không cộng trực tiếp "bao" với "kg". Sản phẩm thiếu quy đổi bị liệt kê riêng, không âm thầm bỏ qua.
-- Số liệu gắn với **đơn vị và nhân viên tại thời điểm bán**, nên đổi vùng hay đổi người phụ trách không làm sai số quá khứ.
-- *Thực bán* phụ thuộc FBO có cung cấp dữ liệu hoá đơn. Nếu không có API thì tạm dùng nhập file Excel xuất từ FAST.
+- Số liệu gắn với **đơn vị và nhân viên tại thời điểm phát sinh** (check-in lưu đơn vị lúc check-in), nên đổi vùng hay đổi người phụ trách không làm sai số quá khứ.
+- *Thực bán* phụ thuộc FBO cung cấp dữ liệu hoá đơn. Không có API thì tạm nhập file Excel xuất từ FAST.
 
 ## 4. Content Hierarchy
 
@@ -190,24 +177,6 @@ Quy tắc tính:
 2. Lối vào Tổng quan điều hành (nếu có quyền) — lãnh đạo vào số liệu nhanh nhất
 3. Việc cần làm của tôi — đơn chờ duyệt, phiếu được giao
 4. Thông báo gần đây — thông tin phụ
-
-### Cần duyệt
-1. Danh sách theo hạn duyệt, mục sắp quá hạn lên đầu — thứ tự xử lý là thông tin quan trọng nhất
-2. Cảnh báo trên từng dòng (vượt công nợ, thiếu tồn) — quyết định duyệt dựa vào đây
-3. Duyệt nhanh / từ chối ngay trên dòng và duyệt hàng loạt — giảm số lần mở trang
-4. Bộ lọc theo loại và đơn vị
-
-### Đơn hàng (danh sách)
-1. Mã đơn, đại lý, giá trị, trạng thái — đủ để nhận ra đơn
-2. Trạng thái đồng bộ FAST — việc chính của Sales Admin
-3. Bộ lọc nhanh theo trạng thái
-4. Xuất Excel, thao tác hàng loạt
-
-### Tạo đơn
-1. Chọn đại lý — quyết định giá, công nợ, kho
-2. Dòng sản phẩm kèm tồn khả dụng — nơi nhập liệu chính
-3. Cảnh báo công nợ và tổng tiền, cố định ở cột phải — luôn thấy khi nhập
-4. Lưu nháp / Gửi duyệt
 
 ### Hồ sơ đại lý
 1. Mã, tên, trạng thái đồng bộ, nhân viên phụ trách
@@ -226,22 +195,11 @@ Quy tắc tính:
 3. Tổng số lượt và tổng km theo bộ lọc
 4. Bản đồ các điểm của một nhân viên trong một ngày, nối theo thứ tự giờ
 
-### Đồng bộ FAST
-1. Số lỗi và danh sách lỗi — chỉ việc lỗi mới cần người xử lý
-2. Lý do lỗi và nút Gửi lại
-3. Hàng chờ và đã đồng bộ
-
 ### Hộp thư
 1. Khung hội thoại và ô trả lời
 2. Danh sách hội thoại chưa xử lý
 3. Thời hạn trả lời miễn phí và thông tin khách, phiếu, đơn gần nhất
 4. Bộ đếm hạn mức tin ngoài khung
-
-### Quy trình duyệt (cấu hình)
-1. Chuỗi bước của đơn vị và nguồn (riêng / kế thừa từ đơn vị cha); dựng bằng kéo thả, chi tiết bước đang chọn nằm cạnh chuỗi
-2. Điều kiện của từng bước
-3. Xem trước với đơn giả định
-4. Lịch sử phiên bản
 
 ### Hôm nay (app điện thoại)
 1. Nút Check-in — việc chính khi đi thị trường
@@ -258,26 +216,12 @@ Quy tắc tính:
 3. Bấm ô → tới trang đích theo vai trò.
    - Từ link thông báo → bỏ qua Hub, tới thẳng đối tượng.
 
-### Tạo đơn → duyệt → FAST
-1. Tạo đơn, chọn đại lý, nhập sản phẩm.
-2. Hệ thống tính giá, hiện tồn khả dụng và hạn mức.
-   - Thiếu tồn hoặc vượt hạn mức → **cảnh báo, vẫn gửi được**, đơn gắn cờ.
-   - Sản phẩm ngừng kinh doanh → chặn.
-3. Gửi duyệt → quy trình của đơn vị người tạo được áp dụng; có cờ thì có thể thêm bước.
-4. Đơn vào Cần duyệt của người duyệt.
-   - Từ chối / Trả lại sửa → về người tạo kèm lý do.
-5. Duyệt xong bước cuối → vào hàng đợi FAST.
-   - Đại lý chưa được FAST xác nhận → đơn chờ, hiện lý do ở Đồng bộ FAST.
-6. FAST nhận → đơn có số chứng từ.
-   - Lỗi → tab Lỗi của Đồng bộ FAST, Sales Admin sửa và Gửi lại; cảnh báo vào Mattermost.
-
-### Thêm đại lý mới
-1. Nhân viên thêm đại lý (web/app).
-   - App mất mạng → lưu trên máy, có mạng mới gửi và được cấp mã.
-2. Hệ thống kiểm tra trùng MST/SĐT, cấp mã.
-3. Mục vào Cần duyệt › Đại lý mới (nếu bật duyệt).
-4. Đẩy sang FAST → Đã xác nhận.
-   - Mã đã tồn tại trên FAST hoặc lỗi → báo lỗi để xử lý tay, không ghi đè.
+### Đề xuất đại lý mới (FAST chỉ đọc)
+1. Nhân viên đề xuất đại lý mới trên app tại chỗ: tên, số điện thoại, địa chỉ, toạ độ, ảnh.
+   - App mất mạng → lưu trên máy, có mạng mới gửi.
+2. Hệ thống kiểm tra trùng số điện thoại, mã số thuế với danh mục.
+3. Sales Admin xem đề xuất, tạo khách hàng trên FAST như hiện nay.
+4. Đồng bộ danh mục từ FAST về → hệ thống ghép đề xuất với đại lý mới theo mã FAST, giữ toạ độ và ảnh.
 
 ### Check-in và báo cáo ghé thăm
 1. App: bấm Check-in → máy ảnh trong app mở, khung ngắm hiện giờ và vị trí → chụp → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
@@ -301,7 +245,7 @@ Quy tắc tính:
 2. Phân bổ Miền → Vùng → Nhân viên.
    - Tổng cấp con khác cấp cha → cảnh báo chênh lệch.
 3. Dashboard và app hiện % hoàn thành.
-4. Lãnh đạo thấy vùng dưới chỉ tiêu trong "Cần chú ý" → bấm vào → Dashboard đã lọc vùng đó → danh sách đại lý không đặt hàng.
+4. Lãnh đạo thấy vùng dưới chỉ tiêu trong "Cần chú ý" → bấm vào → Dashboard đã lọc vùng đó → danh sách đại lý lâu chưa ghé thăm.
 
 ## 6. Naming Conventions
 
@@ -324,12 +268,10 @@ Quy tắc tính:
 | Chuỗi tin với một khách | **Hội thoại** | |
 | Mục tiêu được giao | **Chỉ tiêu** | Luôn là con số kế hoạch |
 | Thước đo hiển thị | **Chỉ số** | Không gọi là "KPI" trên giao diện |
-| Đơn đã duyệt tính vào số | **Đặt hàng** | |
 | Hoá đơn FAST trừ hàng trả lại | **Thực bán** | |
 | Khối lượng | **Sản lượng** | Đơn vị kg/tấn |
 | Mùa vụ làm kỳ báo cáo | **Vụ** | |
-| Hàng đợi cần phê duyệt | **Cần duyệt** | |
-| Trạng thái sang FAST | **Đã chuyển FAST** | Lỗi: "Lỗi đồng bộ" |
+| Đại lý có ít nhất một check-in trong kỳ | **Đã ghé thăm** | Tỉ lệ trên tổng đại lý gọi là **Độ phủ** |
 
 ## 7. Component Reuse Map
 
@@ -343,13 +285,10 @@ Quy tắc tính:
 | `FormSheet` / `FormPage` | Form ngắn / form dài | Hai variant tường minh |
 | `DealerProfile` | Kinh doanh, Quản trị | Tab theo quyền và lối vào |
 | `CustomerProfile` | Kinh doanh, CSKH | Tab mặc định khác nhau |
-| `ApprovalQueue` | Cần duyệt (web), Cần duyệt (app dùng cùng API) | Thao tác theo loại mục |
-| `ApprovalTimeline` | Đơn hàng, Đại lý mới, Đơn từ | Dữ liệu từ động cơ duyệt chung |
 | `DashboardGrid`, `MetricTile`, `ChartCard`, `DashboardFilters` | 3 dashboard và Báo cáo | Khối theo vai trò; mỗi khối một `<Suspense>` |
-| `SyncBadge` | Đơn hàng, Đại lý, Đồng bộ FAST | Trạng thái chung |
+| `SyncBadge` | Đại lý, Kết nối | Trạng thái đồng bộ từ FAST |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
 | `Inbox` (compound) | Hộp thư | Thu thành 1 cột dưới 1024px |
-| `WorkflowEditor` | Quy trình duyệt | Dùng cho đơn hàng, đại lý mới |
 
 ## 8. Content Growth Plan
 

@@ -1,8 +1,10 @@
 # Design Brief: DMS Vinaseed
 
-Ngày: 2026-11-06 · Cập nhật v3: 2026-11-09
+Ngày: 2026-11-06 · Cập nhật v3: 2026-11-09 · Cập nhật phạm vi: 2026-11-13
 Trạng thái: v3 — đã chốt các quyết định ở §9, đã bổ sung Dashboard và kiến trúc thông tin. Chờ duyệt chiến lược mã khách hàng (§10) và trả lời §11.
 Tài liệu đi kèm: [INFORMATION_ARCHITECTURE.md](INFORMATION_ARCHITECTURE.md) (cấu trúc trang, điều hướng, tên gọi, định nghĩa chỉ số) · [TASKS.md](TASKS.md) (danh sách việc).
+
+> **Phạm vi đợt này (quyết định 27, 13/11/2026):** không làm đơn hàng. Các phần nói về tạo đơn, duyệt đơn, đồng bộ đơn sang FAST, tồn kho, bảng giá, sản phẩm, quy trình duyệt và số liệu Đặt hàng trong tài liệu này để tham khảo cho đợt sau, không làm trong đợt này. FAST chỉ dùng để đọc công nợ đại lý và doanh số Thực bán. Dự kiến hoàn thành toàn bộ 26/3/2027, xem TASKS.md.
 
 ## 1. Mục tiêu
 
@@ -148,6 +150,7 @@ Giao diện nghiệp vụ gọn, mật độ thông tin cao, chủ đạo xanh l
 | 21 | Ảnh và km khi check-in (2026-11-11) | **Ảnh bắt buộc, chụp bằng máy ảnh trong app có in giờ và vị trí; km theo đường đi thực tế từ vết GPS 5 giây; check-in chỉ trên app, web chỉ có báo cáo** | App ghi vị trí và gửi theo lô, máy chủ khớp vết vào đường bằng máy chủ tìm đường tự dựng, địa chỉ lấy từ nhà cung cấp Việt Nam. Excel theo mẫu cự ly di chuyển, thêm cột Tên đại lý và Ghi chú. Chi tiết ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md). |
 | 22 | Thời gian lưu dữ liệu check-in (2026-11-12) | **Dòng check-in giữ 18 tháng, ảnh giữ 45 ngày** | Điểm GPS thô giữ 45 ngày cùng ảnh, km đã tính giữ theo dòng check-in. Job worker xoá dữ liệu quá hạn mỗi đêm. Chi tiết ở [CHECK_IN_PLAN.md](CHECK_IN_PLAN.md) §7. |
 | 23 | Thư viện cho app check-in (2026-11-12) | **Duyệt `expo-camera`, `expo-location`, `expo-task-manager`, `expo-image-manipulator`, `react-native-view-shot`** | Người dùng giao làm R3 sau khi xem danh sách. Đều miễn phí, bản đúng với Expo SDK của dự án. Ghi vị trí chạy nền cần bản build riêng của app, không chạy được trong Expo Go. |
+| 27 | Bỏ phần đơn hàng khỏi đợt này (2026-11-13) | **Không làm tạo đơn, duyệt đơn, đồng bộ đơn sang FAST, tồn kho, bảng giá, sản phẩm. Xoá hẳn Quy trình duyệt (A10). FAST chỉ đọc công nợ và Thực bán. Dashboard tính từ check-in, đại lý và Thực bán** | Đã xoá code, 4 bảng quy trình duyệt và uỷ quyền (đang 0 dòng) và 11 quyền liên quan. Kế hoạch mới 55 buổi làm việc, từ 16/11/2026 tới 26/3/2027 (TASKS.md v4). Làm lại phần đơn hàng khi có quyết định mới. |
 | 26 | Danh mục đại lý (2026-11-13) | **Mã khách hàng (tự nhập) trên DMS cũ là mã FAST; giữ 3 cấp đại lý C1, C2, C3; tỉnh đổi sang 34 tỉnh mới, xã, huyện, tỉnh cũ giữ dạng chữ; nhập đại lý trước, gán nhân viên sau** | Giữ 15 trường quan trọng: mã FAST, mã DMS cũ, tên, cấp, đại lý cấp trên, mã số thuế, trạng thái, điện thoại, chủ đại lý và điện thoại chủ, địa chỉ, tỉnh, toạ độ, đơn vị và nhân viên phụ trách. Bỏ các cột gần như trống (email, fax, website, sinh nhật, sở thích, ngành nghề, vốn, doanh thu, điểm tích luỹ, hạng thành viên). Đơn vị phụ trách tạo đúng tên trên DMS cũ, mã theo tiền tố mã đại lý, sửa sau ở Cơ cấu tổ chức. |
 | 25 | Đăng nhập app và thiết bị (2026-11-13) | **Duyệt `expo-secure-store`. Máy đầu tiên của nhân viên dùng được ngay, máy thứ hai chờ quản trị duyệt; duyệt máy mới thì máy cũ tự bị thu hồi** | Chưa duyệt `expo-crypto`, `expo-local-authentication` và `leaflet`: mã check-in sinh bằng hàm có sẵn, chưa có Face ID, trang Báo cáo ghé thăm chưa có bản đồ. Lưu ảnh MinIO và khoá đăng nhập app tự viết, không thêm thư viện. |
 | 24 | Xuất Excel và địa chỉ trên app thử (2026-11-13) | **Duyệt thêm `expo-file-system`, `expo-sharing`. Bản thử R3 gắn tạm khoá Vietmap trong app** | App tự ghi file .xlsx (không thêm thư viện Excel) rồi mở bảng chia sẻ. Khoá Vietmap nằm trong biến EAS `EXPO_PUBLIC_VIETMAP_API_KEY` chỉ cho bản thử, cài trên vài máy; thử xong đổi khoá. Bản chính thức hỏi địa chỉ qua máy chủ (V3). |
