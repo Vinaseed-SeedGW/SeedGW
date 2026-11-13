@@ -58,7 +58,7 @@ Vết có thể đứt khi nhân viên tắt định vị, máy hết pin, hoặ
 
 - Bỏ điểm có độ chính xác kém hơn 50 m.
 - Bỏ điểm tạo tốc độ phi lý so với điểm trước (trên 150 km/h).
-- Bỏ điểm nhảy qua lại quanh một chỗ khi đứng yên.
+- **Gộp chỗ dừng** (chốt 13/11/2026 sau lần thử thật): chuỗi điểm nằm trong bán kính 40 m quanh điểm đầu và kéo dài từ 1 phút trở lên được thay bằng một điểm ở giữa. Khi đứng yên, iPhone báo vị trí nhảy qua lại giữa các chỗ cách nhau khoảng 20 m, mỗi lần vượt ngưỡng 10 m nên sinh điểm mới. Cách lọc theo tốc độ và sai số chỉ bỏ được một nửa số km giả này.
 - Điểm do ứng dụng giả lập vị trí (Android báo được) vẫn lưu nhưng gắn cờ nghi vấn, không chặn.
 
 ### 3.5 Bắt đầu và dừng ghi hành trình

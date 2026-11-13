@@ -78,6 +78,23 @@ Ghi kết quả vào bảng ở mục 4. Trước khi bắt đầu một ngày t
 
 Ngưỡng đạt: hao pin không quá 25% trong 8 giờ ghi; không có đoạn đứt khi đang di chuyển với quyền Luôn cho phép; ảnh đọc rõ ngoài nắng. Vượt ngưỡng pin thì thử giảm độ chính xác hoặc tăng khoảng cách lọc lên 20 m.
 
+### Kết quả ngày 12/11/2026 (iPhone 11, đi xe máy trong nội thành Hà Nội)
+
+| Mục | Kết quả |
+|---|---|
+| Thời gian ghi | 4 phiên, tổng 2 giờ 42 phút |
+| Số điểm GPS | 2.759, trong đó 2.599 điểm (94%) khi app ở nền |
+| Sai số GPS | thường 14 m; 5 điểm trên 50 m, gồm lúc qua hầm Kim Liên (133 m trong 10 giây) |
+| Đoạn đứt | không có đoạn nào trên 5 phút khi đang di chuyển |
+| Vị trí giả lập | không có |
+| Km theo đồng hồ xe | 36 km (37.025 đến 37.061, đồng hồ chỉ hiện số nguyên nên thực tế từ 35 đến 37 km) |
+| Km GPS chưa lọc | 37,91 km, cao hơn đồng hồ khoảng 5% |
+| Km GPS chỉ bỏ điểm sai số lớn (cách app thử đang dùng) | 37,80 km |
+| Km GPS sau khi gộp chỗ dừng | **36,97 km, lệch 2,7% so với 36 km, nằm trong khoảng đồng hồ cho phép** |
+| Km giả do đứng yên | khoảng 0,94 km trên 15 chỗ dừng, lớn nhất 198 m trong 18 phút đứng ở khu Hồ Tây |
+
+Kết luận: ghi nền trên iPhone ổn định, hình dạng vết khớp đường phố, km sau khi gộp chỗ dừng đạt ngưỡng lệch 5%. Lần đo R4 nên dùng đồng hồ hành trình (trip) có số lẻ 0,1 km và chụp đồng hồ ở từng chặng để so chính xác hơn.
+
 ## 5. Nội dung giải trình quyền vị trí chạy nền
 
 Google Play và Apple đều duyệt kỹ quyền vị trí chạy nền. Google yêu cầu nộp video ngắn quay màn hình đồng ý và lúc app đang ghi.
