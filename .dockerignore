@@ -1,0 +1,15 @@
+**/node_modules
+**/.next
+**/.turbo
+**/.expo
+**/dist
+**/coverage
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+deploy/staging/*.env
+docs/VIEC_CAN_LAM.md
+.design
+.docker-data

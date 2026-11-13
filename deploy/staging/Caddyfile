@@ -1,0 +1,32 @@
+# Cổng vào duy nhất từ Internet. Caddy tự lấy và gia hạn chứng chỉ Let's Encrypt cho DMS_DOMAIN
+# (cần cổng 80 và 443 mở tới máy này). Máy thử không có tên miền thật thì đặt DMS_DOMAIN=localhost.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DMS_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Ảnh check-in: trình duyệt mở bằng link có hạn do máy chủ ký. Giữ nguyên Host để chữ ký khớp.
+	@photos path /{$S3_BUCKET}/*
+	handle @photos {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

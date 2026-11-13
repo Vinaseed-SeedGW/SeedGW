@@ -22,3 +22,6 @@ Thumbs.db
 
 # Du lieu cuc bo cua Docker
 .docker-data/
+
+# File bien moi truong that cua may chu thu
+deploy/staging/*.env

@@ -1,0 +1,100 @@
+# Máy chủ thử (staging) DMS Vinaseed. Chạy trên máy chủ nội bộ, Caddy tự lấy chứng chỉ HTTPS.
+# Chạy từ thư mục gốc repo:
+#   DMS_ENV_FILE=/opt/dms/staging.env docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build
+# Chỉ Caddy mở cổng ra ngoài (80, 443). Database, Redis, MinIO chỉ nằm trong mạng nội bộ của Docker.
+
+x-app-env: &app-env
+  env_file: ${DMS_ENV_FILE:-./staging.env}
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    <<: *app-env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    # Image mặc định chạy user không có quyền ghi vào volume mới tạo.
+    user: root
+    restart: unless-stopped
+    command: server /data
+    <<: *app-env
+    volumes:
+      - minio-data:/data
+
+  # Chạy migration rồi thoát. Web chỉ khởi động sau khi migration xong.
+  migrate:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      target: tools
+      args:
+        APP_VERSION: ${APP_VERSION:-staging}
+    image: dms-tools:staging
+    <<: *app-env
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      target: web
+      args:
+        APP_VERSION: ${APP_VERSION:-staging}
+    image: dms-web:staging
+    restart: unless-stopped
+    <<: *app-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  worker:
+    image: dms-tools:staging
+    restart: unless-stopped
+    <<: *app-env
+    command: ['pnpm', '--filter', '@dms/worker', 'exec', 'tsx', 'src/index.ts']
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    <<: *app-env
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  caddy-data:
+  caddy-config:
