@@ -1,29 +1,22 @@
 import {
   CalendarDays,
   ChartColumn,
-  ClipboardCheck,
   FileChartColumn,
   Inbox,
   LayoutDashboard,
   MapPin,
   MessageSquareText,
   Network,
-  Package,
   Plug,
-  RefreshCw,
   Route,
   ScrollText,
   ShieldCheck,
-  ShoppingCart,
   SlidersHorizontal,
   Store,
-  Tags,
   Target,
   Ticket,
   UserCog,
   Users,
-  Warehouse,
-  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 import type { DepartmentSlug } from '@dms/contracts/departments';
@@ -35,22 +28,12 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
   'kinh-doanh': [
     {
       label: 'Tổng quan',
-      items: [
-        { label: 'Dashboard', href: '/kinh-doanh/dashboard', icon: LayoutDashboard },
-        { label: 'Cần duyệt', href: '/kinh-doanh/can-duyet', icon: ClipboardCheck },
-      ],
-    },
-    {
-      label: 'Bán hàng',
-      items: [
-        { label: 'Đơn hàng', href: '/kinh-doanh/don-hang', icon: ShoppingCart },
-        { label: 'Tồn kho', href: '/kinh-doanh/ton-kho', icon: Warehouse },
-        { label: 'Chỉ tiêu', href: '/kinh-doanh/chi-tieu', icon: Target },
-      ],
+      items: [{ label: 'Dashboard', href: '/kinh-doanh/dashboard', icon: LayoutDashboard }],
     },
     {
       label: 'Đối tác',
       items: [
+        { label: 'Chỉ tiêu', href: '/kinh-doanh/chi-tieu', icon: Target },
         { label: 'Đại lý', href: '/kinh-doanh/dai-ly', icon: Store },
         { label: 'Khách hàng', href: '/kinh-doanh/khach-hang', icon: Users },
       ],
@@ -64,10 +47,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
     },
     {
       label: 'Đối soát',
-      items: [
-        { label: 'Đồng bộ FAST', href: '/kinh-doanh/dong-bo-fast', icon: RefreshCw },
-        { label: 'Báo cáo', href: '/kinh-doanh/bao-cao', icon: FileChartColumn },
-      ],
+      items: [{ label: 'Báo cáo', href: '/kinh-doanh/bao-cao', icon: FileChartColumn }],
     },
   ],
   cskh: [
@@ -92,17 +72,11 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
     },
     {
       label: 'Danh mục',
-      items: [
-        { label: 'Sản phẩm', href: '/quan-tri/san-pham', icon: Package },
-        { label: 'Kho', href: '/quan-tri/kho', icon: Warehouse },
-        { label: 'Đại lý', href: '/quan-tri/dai-ly', icon: Store },
-        { label: 'Bảng giá', href: '/quan-tri/bang-gia', icon: Tags },
-      ],
+      items: [{ label: 'Đại lý', href: '/quan-tri/dai-ly', icon: Store }],
     },
     {
       label: 'Quy định',
       items: [
-        { label: 'Quy trình duyệt', href: '/quan-tri/quy-trinh-duyet', icon: Workflow },
         { label: 'Lịch vụ', href: '/quan-tri/lich-vu', icon: CalendarDays },
         { label: 'Tham số', href: '/quan-tri/tham-so', icon: SlidersHorizontal },
       ],

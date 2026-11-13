@@ -24,15 +24,14 @@ function permissionsOf(roleCode: string): ReadonlySet<string> {
 const PAGE_PROBES = [
   '/tong-quan',
   '/kinh-doanh/dashboard',
-  '/kinh-doanh/can-duyet',
-  '/kinh-doanh/don-hang',
-  '/kinh-doanh/don-hang/tao-moi',
-  '/kinh-doanh/dong-bo-fast',
+  '/kinh-doanh/dai-ly',
+  '/kinh-doanh/check-in',
   '/kinh-doanh/bao-cao',
   '/cskh/hop-thu',
   '/cskh/phieu',
   '/cskh/dashboard',
   '/quan-tri/tai-khoan',
+  '/quan-tri/dai-ly/nhap-excel',
   '/quan-tri/ket-noi',
 ] as const;
 
@@ -40,19 +39,17 @@ const PAGE_PROBES = [
 const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>> = {
   admin: PAGE_PROBES,
   operations: ['/quan-tri/tai-khoan'],
-  sales: ['/kinh-doanh/dashboard', '/kinh-doanh/don-hang', '/kinh-doanh/don-hang/tao-moi'],
+  sales: ['/kinh-doanh/dashboard', '/kinh-doanh/dai-ly', '/kinh-doanh/check-in'],
   asm: [
     '/kinh-doanh/dashboard',
-    '/kinh-doanh/can-duyet',
-    '/kinh-doanh/don-hang',
-    '/kinh-doanh/don-hang/tao-moi',
+    '/kinh-doanh/dai-ly',
+    '/kinh-doanh/check-in',
     '/kinh-doanh/bao-cao',
   ],
   'sales-admin': [
     '/kinh-doanh/dashboard',
-    '/kinh-doanh/don-hang',
-    '/kinh-doanh/don-hang/tao-moi',
-    '/kinh-doanh/dong-bo-fast',
+    '/kinh-doanh/dai-ly',
+    '/kinh-doanh/check-in',
     '/kinh-doanh/bao-cao',
   ],
   'customer-care': ['/cskh/hop-thu', '/cskh/phieu'],
@@ -161,12 +158,14 @@ describe('roleExceedsActor', () => {
 
 describe('permissionForPath', () => {
   it('uu tien quy tac dai nhat', () => {
-    expect(permissionForPath('/kinh-doanh/don-hang/tao-moi')).toBe('sales.order.create');
-    expect(permissionForPath('/kinh-doanh/don-hang/DH-2611-0042')).toBe('sales.order.read');
+    expect(permissionForPath('/quan-tri/dai-ly/nhap-excel')).toBe('admin.dealer.manage');
+    expect(permissionForPath('/quan-tri/dai-ly/6f1c1d2e-3a4b-4c5d-8e9f-0a1b2c3d4e5f')).toBe(
+      'admin.dealer.read',
+    );
   });
 
   it('khong nham duong dan co cung tien to', () => {
-    expect(permissionForPath('/kinh-doanh/don-hang-cu')).toBeNull();
+    expect(permissionForPath('/kinh-doanh/dai-ly-cu')).toBeNull();
   });
 
   it('chan trang khong co quy tac', () => {
@@ -180,10 +179,10 @@ describe('departmentLanding', () => {
       '/kinh-doanh/dashboard',
     );
     expect(departmentLanding('kinh-doanh', ['asm'], permissionsOf('asm'))).toBe(
-      '/kinh-doanh/can-duyet',
+      '/kinh-doanh/check-in',
     );
     expect(departmentLanding('kinh-doanh', ['sales-admin'], permissionsOf('sales-admin'))).toBe(
-      '/kinh-doanh/don-hang',
+      '/kinh-doanh/dai-ly',
     );
     expect(
       departmentLanding('cskh', ['customer-care-lead'], permissionsOf('customer-care-lead')),

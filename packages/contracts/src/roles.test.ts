@@ -35,7 +35,7 @@ describe('quyen danh rieng va vai tro mac dinh', () => {
   it('nhan dung quyen danh rieng', () => {
     expect(isPermissionReserved('admin.role.manage')).toBe(true);
     expect(isPermissionReserved('admin.user.impersonate')).toBe(true);
-    expect(isPermissionReserved('sales.order.approve')).toBe(false);
+    expect(isPermissionReserved('sales.dealer.update')).toBe(false);
   });
 
   it('nhan dung vai tro mac dinh', () => {
@@ -56,10 +56,10 @@ describe('diffPermissionCodes', () => {
 
 describe('bo quyen co hieu luc voi quy tac trang', () => {
   it('thieu quyen thi khong vao duoc trang can quyen do', () => {
-    const asm = new Set(['sales.approval.read', 'sales.order.approve']);
-    expect(canAccessPath(asm, '/kinh-doanh/can-duyet')).toBe(true);
-    asm.delete('sales.approval.read');
-    expect(canAccessPath(asm, '/kinh-doanh/can-duyet')).toBe(false);
+    const asm = new Set(['sales.check-in.read', 'sales.dealer.read']);
+    expect(canAccessPath(asm, '/kinh-doanh/check-in')).toBe(true);
+    asm.delete('sales.check-in.read');
+    expect(canAccessPath(asm, '/kinh-doanh/check-in')).toBe(false);
   });
 });
 
@@ -92,14 +92,14 @@ describe('saveRoleMatrixInput', () => {
 
   it('nhan ma quyen co that', () => {
     const result = saveRoleMatrixInput.safeParse({
-      roles: [{ ...base, permissionCodes: ['sales.order.approve'] }],
+      roles: [{ ...base, permissionCodes: ['sales.dealer.update'] }],
     });
     expect(result.success).toBe(true);
   });
 
   it('tu choi ma quyen khong ton tai', () => {
     const result = saveRoleMatrixInput.safeParse({
-      roles: [{ ...base, permissionCodes: ['sales.order.xoa-het'] }],
+      roles: [{ ...base, permissionCodes: ['sales.dealer.xoa-het'] }],
     });
     expect(result.success).toBe(false);
   });

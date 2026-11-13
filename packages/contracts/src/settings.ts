@@ -24,15 +24,15 @@ const SALES_SETTINGS = [
     min: 1,
     max: 200,
     defaultValue: 100,
-    hint: 'Tính trên hạn mức của đại lý. Chỉ cảnh báo, không chặn tạo đơn.',
+    hint: 'Tính trên hạn mức của đại lý lấy từ FAST. Đại lý vượt ngưỡng hiện ở mục Cần chú ý.',
   },
   {
     key: 'dealerInactiveDays',
-    label: 'Số ngày coi là đại lý không đặt hàng',
+    label: 'Số ngày coi là đại lý lâu chưa ghé thăm',
     min: 1,
     max: 365,
     defaultValue: 30,
-    hint: 'Tính từ đơn đã duyệt gần nhất.',
+    hint: 'Tính từ lần check-in gần nhất tại đại lý.',
   },
 ] as const satisfies readonly SettingDefinition[];
 
@@ -84,14 +84,14 @@ const TICKET_SLA_SETTINGS = [
 const FAST_SYNC_SETTINGS = [
   {
     key: 'fastCatalogSyncMinutes',
-    label: 'Danh mục sản phẩm, kho, đại lý (phút)',
+    label: 'Danh mục đại lý (phút)',
     min: 15,
     max: 1440,
     defaultValue: 60,
   },
   {
     key: 'fastStockDebtSyncMinutes',
-    label: 'Tồn kho và công nợ (phút)',
+    label: 'Công nợ đại lý (phút)',
     min: 5,
     max: 1440,
     defaultValue: 15,

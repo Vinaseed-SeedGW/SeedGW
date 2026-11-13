@@ -5,11 +5,6 @@ export const PERMISSIONS = [
   { code: 'executive.overview.read', name: 'Xem Tổng quan điều hành' },
 
   { code: 'sales.dashboard.read', name: 'Xem Dashboard Kinh doanh' },
-  { code: 'sales.approval.read', name: 'Xem Cần duyệt' },
-  { code: 'sales.order.read', name: 'Xem Đơn hàng' },
-  { code: 'sales.order.create', name: 'Tạo Đơn hàng' },
-  { code: 'sales.order.approve', name: 'Duyệt Đơn hàng' },
-  { code: 'sales.inventory.read', name: 'Xem Tồn kho' },
   { code: 'sales.target.read', name: 'Xem Chỉ tiêu' },
   { code: 'sales.dealer.read', name: 'Xem Đại lý' },
   { code: 'sales.dealer.create', name: 'Thêm Đại lý' },
@@ -18,7 +13,6 @@ export const PERMISSIONS = [
   { code: 'sales.route.read', name: 'Xem Tuyến viếng thăm' },
   { code: 'sales.check-in.read', name: 'Xem Check-in' },
   { code: 'sales.check-in.create', name: 'Check-in trên app' },
-  { code: 'sales.fast-sync.read', name: 'Xem Đồng bộ FAST' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
 
   { code: 'cs.inbox.read', name: 'Xem Hộp thư' },
@@ -38,13 +32,8 @@ export const PERMISSIONS = [
   { code: 'admin.org-unit.read', name: 'Xem Cơ cấu tổ chức' },
   { code: 'admin.org-unit.manage', name: 'Quản lý Cơ cấu tổ chức' },
   { code: 'admin.org-unit.assign', name: 'Đổi Trưởng đơn vị' },
-  { code: 'admin.product.read', name: 'Xem Sản phẩm' },
-  { code: 'admin.warehouse.read', name: 'Xem Kho' },
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },
   { code: 'admin.dealer.manage', name: 'Quản lý danh mục Đại lý' },
-  { code: 'admin.price-list.read', name: 'Xem Bảng giá' },
-  { code: 'admin.workflow.read', name: 'Xem Quy trình duyệt' },
-  { code: 'admin.workflow.manage', name: 'Sửa Quy trình duyệt' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
@@ -73,14 +62,6 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/tong-quan', permission: 'executive.overview.read', department: null },
 
   { path: '/kinh-doanh/dashboard', permission: 'sales.dashboard.read', department: 'kinh-doanh' },
-  { path: '/kinh-doanh/can-duyet', permission: 'sales.approval.read', department: 'kinh-doanh' },
-  { path: '/kinh-doanh/don-hang', permission: 'sales.order.read', department: 'kinh-doanh' },
-  {
-    path: '/kinh-doanh/don-hang/tao-moi',
-    permission: 'sales.order.create',
-    department: 'kinh-doanh',
-  },
-  { path: '/kinh-doanh/ton-kho', permission: 'sales.inventory.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/chi-tieu', permission: 'sales.target.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/dai-ly', permission: 'sales.dealer.read', department: 'kinh-doanh' },
   {
@@ -95,11 +76,6 @@ export const ROUTE_RULES: readonly RouteRule[] = [
     department: 'kinh-doanh',
   },
   { path: '/kinh-doanh/check-in', permission: 'sales.check-in.read', department: 'kinh-doanh' },
-  {
-    path: '/kinh-doanh/dong-bo-fast',
-    permission: 'sales.fast-sync.read',
-    department: 'kinh-doanh',
-  },
   { path: '/kinh-doanh/bao-cao', permission: 'sales.report.read', department: 'kinh-doanh' },
 
   { path: '/cskh/hop-thu', permission: 'cs.inbox.read', department: 'cskh' },
@@ -122,16 +98,12 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   },
   { path: '/quan-tri/vai-tro', permission: 'admin.role.read', department: 'quan-tri' },
   { path: '/quan-tri/co-cau-to-chuc', permission: 'admin.org-unit.read', department: 'quan-tri' },
-  { path: '/quan-tri/san-pham', permission: 'admin.product.read', department: 'quan-tri' },
-  { path: '/quan-tri/kho', permission: 'admin.warehouse.read', department: 'quan-tri' },
   { path: '/quan-tri/dai-ly', permission: 'admin.dealer.read', department: 'quan-tri' },
   {
     path: '/quan-tri/dai-ly/nhap-excel',
     permission: 'admin.dealer.manage',
     department: 'quan-tri',
   },
-  { path: '/quan-tri/bang-gia', permission: 'admin.price-list.read', department: 'quan-tri' },
-  { path: '/quan-tri/quy-trinh-duyet', permission: 'admin.workflow.read', department: 'quan-tri' },
   { path: '/quan-tri/lich-vu', permission: 'admin.season.read', department: 'quan-tri' },
   { path: '/quan-tri/tham-so', permission: 'admin.setting.read', department: 'quan-tri' },
   { path: '/quan-tri/ket-noi', permission: 'admin.connection.read', department: 'quan-tri' },
@@ -170,7 +142,7 @@ const DEPARTMENT_LANDING: Record<
 > = {
   'kinh-doanh': {
     fallback: '/kinh-doanh/dashboard',
-    byRole: { asm: '/kinh-doanh/can-duyet', 'sales-admin': '/kinh-doanh/don-hang' },
+    byRole: { asm: '/kinh-doanh/check-in', 'sales-admin': '/kinh-doanh/dai-ly' },
   },
   cskh: {
     fallback: '/cskh/hop-thu',
@@ -279,13 +251,6 @@ function codesInModule(moduleName: string): PermissionCode[] {
   return ALL_CODES.filter((code) => code.startsWith(`${moduleName}.`));
 }
 
-function without(
-  codes: readonly PermissionCode[],
-  excluded: readonly PermissionCode[],
-): PermissionCode[] {
-  return codes.filter((code) => !excluded.includes(code));
-}
-
 // Vai tro khoi tao theo DESIGN_BRIEF muc 2. Task A3 cho phep chinh tren giao dien.
 export const ROLE_PRESETS: readonly RolePreset[] = [
   { code: 'admin', name: 'Quản trị hệ thống', dataScope: 'ALL', permissions: ALL_CODES },
@@ -306,9 +271,6 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     dataScope: 'OWN',
     permissions: [
       'sales.dashboard.read',
-      'sales.order.read',
-      'sales.order.create',
-      'sales.inventory.read',
       'sales.target.read',
       'sales.dealer.read',
       'sales.dealer.create',
@@ -323,13 +285,13 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     code: 'asm',
     name: 'Quản lý vùng',
     dataScope: 'ORG_UNIT_TREE',
-    permissions: without(codesInModule('sales'), ['sales.fast-sync.read']),
+    permissions: codesInModule('sales'),
   },
   {
     code: 'sales-admin',
     name: 'Sales Admin',
     dataScope: 'ALL',
-    permissions: without(codesInModule('sales'), ['sales.approval.read', 'sales.order.approve']),
+    permissions: codesInModule('sales'),
   },
   {
     code: 'customer-care',
