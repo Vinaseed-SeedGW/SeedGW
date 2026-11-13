@@ -2,6 +2,8 @@
 
 Ngày: 2026-11-09, cập nhật 2026-11-13 · Dựa trên: DESIGN_BRIEF.md · Task tương ứng: TASKS.md v4
 
+> **Cập nhật 13/11/2026 (quyết định 28):** bỏ bộ phận CSKH, thêm bộ phận **Trao đổi** (tin nhắn nội bộ, báo lỗi hệ thống); còn 3 vai trò Quản trị hệ thống, Quản trị đơn vị, Cán bộ nhân viên, chức danh ghi ở hồ sơ tài khoản; đại lý đồng bộ 2 chiều với FAST, có trang Đồng bộ FAST trong Quản trị.
+>
 > **Cập nhật 13/11/2026 (DESIGN_BRIEF quyết định 27):** đợt này không làm đơn hàng. Đã bỏ khỏi cấu trúc: Cần duyệt, Đơn hàng, Tạo đơn, Tồn kho, Đồng bộ FAST (đơn hàng), Sản phẩm, Kho, Bảng giá, Quy trình duyệt, tab Đơn hàng trên app. FAST chỉ dùng để đọc công nợ đại lý và doanh số Thực bán. Dashboard tính từ check-in, đại lý và Thực bán.
 
 Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hướng, tên gọi và chỉ số dashboard. Brief và Tasks tham chiếu về đây.
@@ -11,23 +13,19 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 | Câu hỏi | Quyết định |
 |---|---|
 | Sau đăng nhập đi đâu? | **Luôn qua Hub**, kể cả người chỉ có quyền 1 bộ phận. Ngoại lệ: bấm link từ thông báo/Mattermost thì tới thẳng trang đó (chưa đăng nhập → đăng nhập → tới trang đó). |
-| Hub có mấy bộ phận? | **3**: Kinh doanh · CSKH · Quản trị. "Tổng quan điều hành" là lối vào riêng cho người có quyền, không phải bộ phận thứ 4. |
+| Hub có mấy bộ phận? | **3**: Kinh doanh · Trao đổi · Quản trị. "Tổng quan điều hành" là lối vào riêng cho người có quyền, không phải bộ phận thứ 4. |
 | Menu sâu mấy cấp? | **Tối đa 2 cấp** trong bộ phận: nhóm (chỉ là nhãn, không bấm được) → trang. Chi tiết của một đối tượng dùng **tab**, không thêm cấp menu. |
-| Dashboard đặt ở đâu? | `/tong-quan` cho lãnh đạo; Dashboard riêng trong Kinh doanh và CSKH. Mỗi người chỉ thấy số trong phạm vi của mình. |
-| "Số lượng hàng bán" tính thế nào? | **Hai chỉ số tách rõ**: *Đặt hàng* (đơn đã duyệt trên DMS) và *Thực bán* (hoá đơn trên FAST, trừ hàng trả lại). |
+| Dashboard đặt ở đâu? | `/tong-quan` cho người được cấp quyền; Dashboard trong Kinh doanh; thống kê báo lỗi trong Trao đổi. Mỗi người chỉ thấy số trong phạm vi của mình. |
+| "Số lượng hàng bán" tính thế nào? | Chỉ có *Thực bán* (hoá đơn trên FAST, trừ hàng trả lại). Đợt này không có Đặt hàng. |
 | Có chỉ tiêu kế hoạch không? | **Có**: giao theo kỳ × đơn vị hoặc nhân viên × nhóm sản phẩm; dashboard hiện % hoàn thành. |
 
 ### Việc chính theo tần suất và trang dùng nhiều nhất
 
 | Vai trò | Việc thường xuyên nhất (giảm dần) | Trang dùng ~80% thời gian |
 |---|---|---|
-| Nhân viên kinh doanh | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
-| ASM / quản lý vùng | Xem báo cáo ghé thăm → duyệt toạ độ đại lý → lập tuyến → xem số vùng | **Check-in** |
-| Sales Admin | Danh mục đại lý → gán nhân viên phụ trách → đại lý mới đề xuất từ app | **Đại lý** |
-| Nhân viên CSKH | Trả lời tin nhắn → cập nhật phiếu | **Hộp thư** |
-| Trưởng nhóm CSKH | Phân công → theo dõi quá hạn → xem số | **Phiếu tiếp nhận** |
-| Quản trị (IT) | Tài khoản → danh mục → kết nối | **Tài khoản** |
-| Lãnh đạo | Xem chỉ số → xem chi tiết điểm bất thường | **Tổng quan điều hành** |
+| Cán bộ nhân viên | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → nhắn tin → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| Quản trị đơn vị | Xem báo cáo ghé thăm → duyệt toạ độ, đại lý mới → lập tuyến → xử lý báo lỗi của đơn vị → tài khoản trong đơn vị | **Check-in** |
+| Quản trị hệ thống | Tài khoản, vai trò → danh mục đại lý, đồng bộ FAST → báo lỗi được chuyển lên → tham số, kết nối | **Tài khoản** |
 
 ## 1. Site Map (web)
 
@@ -57,14 +55,9 @@ Trang có dấu `*` là bổ sung so với plan trước.
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
 
-- **CSKH** `/cskh` (chuyển tới Hộp thư)
-  - Hộp thư `/cskh/hop-thu`, mở một hội thoại: `/cskh/hop-thu/[id]`
-  - Phiếu tiếp nhận `/cskh/phieu`
-    - Tạo phiếu `/cskh/phieu/tao-moi`
-    - Chi tiết phiếu `/cskh/phieu/[ma]`
-  - Khách hàng* `/cskh/khach-hang`, hồ sơ: `/cskh/khach-hang/[id]`
-  - Mẫu trả lời `/cskh/mau-tra-loi`
-  - Dashboard `/cskh/dashboard` (thay cho `/cskh/bao-cao`; số liệu bấm vào được, có xuất Excel)
+- **Trao đổi** `/trao-doi` (Cán bộ nhân viên vào Tin nhắn, Quản trị đơn vị vào Báo lỗi)
+  - Tin nhắn `/trao-doi/tin-nhan`, mở một hội thoại: `/trao-doi/tin-nhan/[id]`
+  - Báo lỗi `/trao-doi/bao-loi`, chi tiết: `/trao-doi/bao-loi/[ma]`
 
 - **Quản trị** `/quan-tri` (chuyển tới Tài khoản)
   - Người dùng
@@ -72,12 +65,12 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Vai trò và quyền `/quan-tri/vai-tro`
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
   - Danh mục
-    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`
+    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
   - Quy định
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
     - Tham số `/quan-tri/tham-so`
   - Hệ thống
-    - Kết nối `/quan-tri/ket-noi` (FAST chỉ đọc · Zalo OA · Mattermost, kèm trạng thái và lỗi đồng bộ gần nhất)
+    - Kết nối `/quan-tri/ket-noi` (FAST: đại lý hai chiều, công nợ và Thực bán chỉ đọc · Mattermost, kèm trạng thái và lỗi đồng bộ gần nhất)
     - Nhật ký `/quan-tri/nhat-ky`
 
 - **API (không có giao diện)**
@@ -100,30 +93,27 @@ Trong plan trước, đại lý xuất hiện ở cả Kinh doanh và Quản tr�
 | Đối tượng | Lối vào | Khác nhau ở |
 |---|---|---|
 | Đại lý | Kinh doanh (làm việc hằng ngày) · Quản trị (quản lý danh mục) | Quản trị có thêm: gộp trùng, gán nhân viên hàng loạt, nhập Excel, tab Đồng bộ FAST |
-| Khách hàng | Kinh doanh · CSKH | CSKH mở mặc định tab Phản hồi; Kinh doanh mở mặc định tab Đơn hàng |
+| Khách hàng | Kinh doanh | Một lối vào trong đợt này |
 
 Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `DealerProfile` / `CustomerProfile`. URL theo bộ phận đang đứng để menu trái luôn đúng ngữ cảnh. Quyền kiểm tra theo từng trang và từng thao tác, không chỉ theo bộ phận.
 
 ## 2. Navigation Model
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
-- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; CSKH 5 trang không chia nhóm; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
+- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Trao đổi 2 trang không chia nhóm; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
 - **Điều hướng phụ**: tab trong trang chi tiết. Breadcrumb từ cấp bộ phận.
-- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
-- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Hộp thư, Phiếu tiếp nhận và toạ độ đại lý chờ duyệt.
-- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Hộp thư 3 cột thu thành 1 cột theo bước (danh sách → hội thoại → thông tin khách). Bảng dữ liệu ẩn bớt cột phụ.
-- **App điện thoại**: 4 tab dưới cùng; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
+- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · biểu tượng tin nhắn (mở nhanh Trao đổi, có số tin chưa đọc) · chuông thông báo · tài khoản của tôi.
+- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Tin nhắn (chưa đọc), Báo lỗi (chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
+- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Tin nhắn 2 cột thu thành 1 cột theo bước (danh sách → hội thoại). Bảng dữ liệu ẩn bớt cột phụ.
+- **App điện thoại**: 5 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Trao đổi, Tôi); không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
-| Vai trò | Kinh doanh | CSKH | Quản trị |
+| Vai trò | Kinh doanh | Trao đổi | Quản trị |
 |---|---|---|---|
-| Nhân viên kinh doanh | Dashboard (số của tôi) | — | — |
-| ASM | Check-in | — | — |
-| Sales Admin | Đại lý | — | — |
-| Nhân viên / Trưởng nhóm CSKH | — | Hộp thư / Phiếu tiếp nhận | — |
-| Quản trị hệ thống, Quản trị đơn vị | — | — | Tài khoản |
-| Lãnh đạo | Dashboard | Dashboard | — |
+| Cán bộ nhân viên | Dashboard (số của tôi) | Tin nhắn | không có |
+| Quản trị đơn vị | Check-in | Báo lỗi | Tài khoản |
+| Quản trị hệ thống | Dashboard | Tin nhắn | Tài khoản |
 
 ## 3. Dashboard và chỉ số
 
@@ -143,15 +133,11 @@ Mọi khối số hiện **"cập nhật lúc hh:mm"**. Mọi khối bấm đư�
 | **Nhân viên** | Bảng xếp hạng theo số lượt, độ phủ, km · nhân viên chưa check-in trong ngày làm việc |
 | **Thực bán và công nợ** (khi nối FAST) | Thực bán theo tháng và vụ so với chỉ tiêu và cùng kỳ · theo nhóm sản phẩm · top đại lý · tổng công nợ · đại lý vượt hạn mức |
 
-Theo vai trò: **Nhân viên** thấy số của mình và đại lý mình phụ trách. **ASM** thấy vùng và có thêm bảng xếp hạng nhân viên. **Lãnh đạo** thấy toàn công ty và so sánh giữa các miền.
+Theo vai trò: **Cán bộ nhân viên** thấy số của mình và đại lý mình phụ trách. **Quản trị đơn vị** thấy đơn vị và đơn vị con, có thêm bảng xếp hạng nhân viên. **Quản trị hệ thống** thấy toàn công ty và so sánh giữa các đơn vị.
 
 ### 3.3 Tổng quan điều hành `/tong-quan`
 
-Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lượt ghé thăm · Nhân viên đã check-in hôm nay · Thực bán so với chỉ tiêu · Công nợ · Phiếu quá hạn; so sánh các miền; danh sách **"Cần chú ý"** (vùng độ phủ thấp, đại lý lâu chưa ghé, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, phiếu khiếu nại mức cao).
-
-### 3.4 Dashboard CSKH `/cskh/dashboard`
-
-Phiếu mới · đang mở · quá hạn · thời gian phản hồi đầu · thời gian giải quyết · tỉ lệ đạt SLA · điểm hài lòng; theo loại và kênh; khiếu nại theo giống/lô; hiệu suất từng nhân viên; hạn mức tin Zalo ngoài khung đã dùng.
+Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lượt ghé thăm · Nhân viên đã check-in hôm nay · Thực bán so với chỉ tiêu · Công nợ · Báo lỗi quá hạn; so sánh các đơn vị; danh sách **"Cần chú ý"** (vùng độ phủ thấp, đại lý lâu chưa ghé, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, báo lỗi mức chặn công việc).
 
 ### 3.5 Định nghĩa chỉ số
 
@@ -195,12 +181,6 @@ Quy tắc tính:
 3. Tổng số lượt và tổng km theo bộ lọc
 4. Bản đồ các điểm của một nhân viên trong một ngày, nối theo thứ tự giờ
 
-### Hộp thư
-1. Khung hội thoại và ô trả lời
-2. Danh sách hội thoại chưa xử lý
-3. Thời hạn trả lời miễn phí và thông tin khách, phiếu, đơn gần nhất
-4. Bộ đếm hạn mức tin ngoài khung
-
 ### Hôm nay (app điện thoại)
 1. Nút Check-in — việc chính khi đi thị trường
 2. Điểm cần thăm tiếp theo
@@ -216,12 +196,13 @@ Quy tắc tính:
 3. Bấm ô → tới trang đích theo vai trò.
    - Từ link thông báo → bỏ qua Hub, tới thẳng đối tượng.
 
-### Đề xuất đại lý mới (FAST chỉ đọc)
+### Đề xuất đại lý mới
 1. Nhân viên đề xuất đại lý mới trên app tại chỗ: tên, số điện thoại, địa chỉ, toạ độ, ảnh.
    - App mất mạng → lưu trên máy, có mạng mới gửi.
 2. Hệ thống kiểm tra trùng số điện thoại, mã số thuế với danh mục.
-3. Sales Admin xem đề xuất, tạo khách hàng trên FAST như hiện nay.
-4. Đồng bộ danh mục từ FAST về → hệ thống ghép đề xuất với đại lý mới theo mã FAST, giữ toạ độ và ảnh.
+3. Quản trị đơn vị duyệt đề xuất → hệ thống cấp mã theo dải `DL` và tạo khách hàng trên FAST đúng mã đó (đồng bộ 2 chiều).
+   - FAST không cho ghi qua API → kế toán tạo tay trên FAST, lần đồng bộ sau tự ghép theo mã.
+4. Đại lý mới hiện trong danh mục với toạ độ và ảnh từ đề xuất.
 
 ### Check-in và báo cáo ghé thăm
 1. App: bấm Check-in → máy ảnh trong app mở, khung ngắm hiện giờ và vị trí → chụp → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
@@ -232,26 +213,21 @@ Quy tắc tính:
 4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
 5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.
 
-### Tin Zalo → phiếu → đóng
-1. Khách nhắn OA → tin vào Hộp thư, tạo hoặc ghép khách và phiếu.
-2. Phân công → nhân viên trả lời.
-   - Ngoài thời hạn miễn phí → hỏi xác nhận, trừ hạn mức; không có quyền thì bị chặn.
-3. Cần bộ phận khác → chuyển phiếu; báo vào Mattermost.
-   - Quá SLA → đổi màu, báo Mattermost.
-4. Đóng phiếu → gửi khảo sát nếu còn trong thời hạn.
-
 ### Giao chỉ tiêu và theo dõi
 1. Người có quyền tạo chỉ tiêu theo kỳ (tháng/vụ) tại `/kinh-doanh/chi-tieu`: nhập tay hoặc Excel.
 2. Phân bổ Miền → Vùng → Nhân viên.
    - Tổng cấp con khác cấp cha → cảnh báo chênh lệch.
 3. Dashboard và app hiện % hoàn thành.
-4. Lãnh đạo thấy vùng dưới chỉ tiêu trong "Cần chú ý" → bấm vào → Dashboard đã lọc vùng đó → danh sách đại lý lâu chưa ghé thăm.
+4. Quản trị hệ thống thấy đơn vị dưới chỉ tiêu trong "Cần chú ý" → bấm vào → Dashboard đã lọc vùng đó → danh sách đại lý lâu chưa ghé thăm.
 
 ## 6. Naming Conventions
 
 | Khái niệm | Nhãn trên giao diện | Ghi chú |
 |---|---|---|
-| Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 3: Kinh doanh, CSKH, Quản trị |
+| Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 3: Kinh doanh, Trao đổi, Quản trị |
+| Tin trao đổi giữa CBNV | **Tin nhắn** | |
+| Phản ánh lỗi phần mềm tới quản trị | **Báo lỗi** | Không gọi là "ticket" |
+| Ba vai trò | **Quản trị hệ thống**, **Quản trị đơn vị**, **Cán bộ nhân viên** | Chức danh là thông tin hồ sơ, không phải vai trò |
 | Miền/Vùng/Khu vực trong cơ cấu | **Đơn vị** | Không gọi là "bộ phận" |
 | Bên mua và nhận hoá đơn, có mã FAST | **Đại lý** | Có trường Loại: Cấp 1, Cấp 2, Tổ chức |
 | Mã KH trên FAST | **Mã đại lý** | Một mã duy nhất |
@@ -284,11 +260,11 @@ Quy tắc tính:
 | `DataTable` (compound) | Mọi danh sách | Cột, bộ lọc, thao tác theo trang |
 | `FormSheet` / `FormPage` | Form ngắn / form dài | Hai variant tường minh |
 | `DealerProfile` | Kinh doanh, Quản trị | Tab theo quyền và lối vào |
-| `CustomerProfile` | Kinh doanh, CSKH | Tab mặc định khác nhau |
+| `CustomerProfile` | Kinh doanh | |
 | `DashboardGrid`, `MetricTile`, `ChartCard`, `DashboardFilters` | 3 dashboard và Báo cáo | Khối theo vai trò; mỗi khối một `<Suspense>` |
 | `SyncBadge` | Đại lý, Kết nối | Trạng thái đồng bộ từ FAST |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
-| `Inbox` (compound) | Hộp thư | Thu thành 1 cột dưới 1024px |
+| `Chat` (compound) | Tin nhắn, trao đổi trong Báo lỗi | Thu thành 1 cột dưới 1024px |
 
 ## 8. Content Growth Plan
 
