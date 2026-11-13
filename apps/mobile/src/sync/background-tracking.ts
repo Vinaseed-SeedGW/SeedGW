@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { COLORS } from '../theme';
 import { vnHour } from './geo';
+import { syncNow } from './sync-queue';
 import {
   closeSession,
   getConsentAt,
@@ -25,6 +26,8 @@ export const TRACKING_CONFIG = {
 type TaskData = { locations?: Location.LocationObject[] };
 
 // Phải đăng ký ở phạm vi module, trước khi app render, để hệ điều hành gọi lại được khi app ở nền.
+const SYNC_FROM_BACKGROUND_MS = 60_000;
+
 TaskManager.defineTask<TaskData>(TRACKING_TASK, async ({ data, error }) => {
   if (error) {
     recordTaskError(`${error.code}: ${error.message}`);
@@ -42,6 +45,8 @@ TaskManager.defineTask<TaskData>(TRACKING_TASK, async ({ data, error }) => {
     ) {
       await stopTracking('AUTO_CUTOFF');
     }
+    // Gửi lô điểm khoảng mỗi phút ngay trong tác vụ nền (M12), lỗi mạng thì lần sau gửi tiếp.
+    await syncNow(SYNC_FROM_BACKGROUND_MS);
   } catch (cause) {
     recordTaskError(cause instanceof Error ? cause.message : String(cause));
   }

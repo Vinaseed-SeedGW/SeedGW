@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import type { MobileProfile } from '@dms/contracts/check-ins';
 import { hasGeocodeKey } from '../api/reverse-geocode';
 import { formatKm, formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import { TRACKING_CONFIG } from '../sync/background-tracking';
@@ -28,9 +29,12 @@ import {
   type PhotoSummary,
   type TesterProfile,
 } from '../sync/track-db';
-import { FILTER } from '../sync/track-filter';
+import { FILTER } from '@dms/contracts/track-distance';
 import { COLORS, FONT, SPACE } from '../theme';
+import { AccountCard } from './account-card';
+import { AppFooter } from './app-footer';
 import { Button } from './button';
+import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
 
 const REFRESH_MS = 5_000;
@@ -62,9 +66,14 @@ function readSnapshot(): Snapshot {
   };
 }
 
-type Props = { control: TrackingControl; onOpenCamera: () => void };
+type Props = {
+  control: TrackingControl;
+  onOpenCamera: () => void;
+  /** Có khi app nối máy chủ và đã đăng nhập. Null là chế độ bản thử, dữ liệu chỉ trên máy. */
+  account: { user: MobileProfile; sync: SyncControl } | null;
+};
 
-export function TrackingPanel({ control, onOpenCamera }: Props) {
+export function TrackingPanel({ control, onOpenCamera, account }: Props) {
   const { state, actions } = control;
   const [snapshot, setSnapshot] = useState<Snapshot>(readSnapshot);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -123,8 +132,18 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Hành trình hôm nay</Text>
       <Text style={styles.muted}>
-        {formatVnDate(Date.now())}. Bản thử R3, dữ liệu chỉ nằm trên máy này.
+        {formatVnDate(Date.now())}.{' '}
+        {account
+          ? 'Dữ liệu lưu trên máy trước rồi tự gửi lên máy chủ khi có mạng.'
+          : 'Bản thử R3, dữ liệu chỉ nằm trên máy này.'}
       </Text>
+      {account ? (
+        <AccountCard
+          user={account.user}
+          sync={account.sync}
+          onBeforeLogout={() => actions.stop()}
+        />
+      ) : null}
 
       <View style={[styles.status, state.tracking ? styles.statusOn : styles.statusOff]}>
         <Text style={styles.statusText}>
@@ -214,7 +233,7 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
         File theo mẫu Báo cáo cự ly di chuyển: mỗi lượt check-in một dòng, có địa chỉ, km theo GPS
         và ảnh. Kèm trang Tổng hợp và trang Điểm GPS.
       </Text>
-      <ProfileForm />
+      {account ? null : <ProfileForm />}
       {!hasGeocodeKey() ? (
         <Text style={styles.error}>Bản cài này chưa có khoá bản đồ nên chưa ra được địa chỉ.</Text>
       ) : null}
@@ -240,9 +259,13 @@ export function TrackingPanel({ control, onOpenCamera }: Props) {
       )}
       {exportMessage ? <Text style={styles.muted}>{exportMessage}</Text> : null}
 
-      <View style={styles.actions}>
-        <Button label="Xoá dữ liệu thử" onPress={clearData} variant="danger" />
-      </View>
+      {/* Đã nối máy chủ thì không cho xoá tay, tránh mất check-in chưa gửi. */}
+      {account ? null : (
+        <View style={styles.actions}>
+          <Button label="Xoá dữ liệu thử" onPress={clearData} variant="danger" />
+        </View>
+      )}
+      <AppFooter />
 
       <PhotoViewer photoId={viewing} onClose={() => setViewing(null)} />
     </ScrollView>

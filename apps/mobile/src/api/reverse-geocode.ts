@@ -1,7 +1,9 @@
 import { distanceMeters, type GeoPoint } from '../sync/geo';
+import { apiCall } from './client';
+import { serverEnabled } from './session';
 
-// Bản thử R3 gọi thẳng Vietmap bằng khoá gắn trong app (người dùng duyệt 13/11/2026).
-// Bản chính thức gọi qua máy chủ (task V3) để khoá không nằm trên điện thoại; thử xong phải đổi khoá.
+// Có máy chủ thì hỏi địa chỉ qua máy chủ (V3), khoá Vietmap không nằm trên điện thoại.
+// Bản thử R3 chưa có máy chủ thì gọi thẳng Vietmap bằng khoá gắn trong app (duyệt 13/11/2026), thử xong đổi khoá.
 const API_KEY = process.env.EXPO_PUBLIC_VIETMAP_API_KEY ?? '';
 const TIMEOUT_MS = 4_000;
 // Vietmap trả khoảng cách tới số nhà khớp được, theo km. Xa hơn 100 m thì số nhà chỉ là tham khảo.
@@ -21,8 +23,20 @@ export type GeocodeResult =
   | { ok: true; address: string }
   | { ok: false; reason: 'NO_KEY' | 'OFFLINE' | 'NOT_FOUND' | 'HTTP' };
 
+/** Có cách lấy địa chỉ: qua máy chủ DMS (bản chính thức) hoặc khoá gắn trong bản thử R3. */
 export function hasGeocodeKey(): boolean {
-  return API_KEY.length > 0;
+  return serverEnabled() || API_KEY.length > 0;
+}
+
+async function viaServer(point: GeoPoint): Promise<GeocodeResult> {
+  const result = await apiCall<{ address: string | null }>(
+    `/api/mobile/address?lat=${point.lat}&lng=${point.lng}`,
+    { method: 'GET' },
+  );
+  if (!result.ok) return { ok: false, reason: result.retryable ? 'OFFLINE' : 'HTTP' };
+  return result.data.address
+    ? { ok: true, address: result.data.address }
+    : { ok: false, reason: 'NOT_FOUND' };
 }
 
 function formatResult(result: VietmapResult): string | null {
@@ -42,6 +56,11 @@ export async function reverseGeocode(point: GeoPoint): Promise<GeocodeResult> {
   if (!hasGeocodeKey()) return { ok: false, reason: 'NO_KEY' };
   if (lastHit && distanceMeters(lastHit.point, point) <= REUSE_RADIUS_M) {
     return { ok: true, address: lastHit.address };
+  }
+  if (serverEnabled()) {
+    const outcome = await viaServer(point);
+    if (outcome.ok) lastHit = { point, address: outcome.address };
+    return outcome;
   }
   const url =
     'https://maps.vietmap.vn/api/reverse/v4' +

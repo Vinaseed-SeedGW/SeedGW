@@ -1,6 +1,12 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import type { LocationObject } from 'expo-location';
-import { filterTrack, segmentOf, type FilteredTrack, type RawPoint } from './track-filter';
+import { newId } from '../api/session';
+import {
+  filterTrack,
+  segmentOf,
+  type FilteredTrack,
+  type RawPoint,
+} from '@dms/contracts/track-distance';
 
 // Bản thử R3: dữ liệu chỉ nằm trên máy để đo GPS, pin và vết đứt. Đồng bộ lên máy chủ làm ở M3, M12.
 const DB_NAME = 'dms-r3.db';
@@ -134,11 +140,34 @@ function getDb(): SQLiteDatabase {
   const photoColumns = new Set(
     opened.getAllSync<{ name: string }>('PRAGMA table_info(photos)').map((c) => c.name),
   );
-  for (const column of ['address', 'place_kind', 'place_name', 'note']) {
+  for (const column of ['address', 'place_kind', 'place_name', 'note', 'client_id', 'sync_error']) {
     if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
   }
+  // Dữ liệu thử R3 có từ trước khi nối máy chủ thì không gửi lên: ảnh "legacy", điểm và phiên coi như đã gửi.
+  if (!photoColumns.has('sync_status')) {
+    opened.execSync("ALTER TABLE photos ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'legacy'");
+  }
+  addColumnIfMissing(opened, 'track_points', 'synced', 'INTEGER NOT NULL DEFAULT 1');
+  addColumnIfMissing(opened, 'sessions', 'synced', 'INTEGER NOT NULL DEFAULT 1');
+  addColumnIfMissing(opened, 'sessions', 'client_id', 'TEXT');
+  opened.execSync(`
+    CREATE INDEX IF NOT EXISTS track_points_unsynced ON track_points (synced, recorded_at);
+    DELETE FROM photos WHERE sync_status = 'draft' AND taken_at < ${Date.now() - DAY_MS};
+  `);
   db = opened;
   return opened;
+}
+
+function addColumnIfMissing(
+  database: SQLiteDatabase,
+  table: string,
+  column: string,
+  type: string,
+): void {
+  const columns = database.getAllSync<{ name: string }>(`PRAGMA table_info(${table})`);
+  if (!columns.some((c) => c.name === column)) {
+    database.execSync(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
 }
 
 export function insertTrackPoints(
@@ -150,8 +179,8 @@ export function insertTrackPoints(
   let inserted = 0;
   database.withTransactionSync(() => {
     const statement = database.prepareSync(
-      `INSERT OR IGNORE INTO track_points (recorded_at, lat, lng, accuracy, speed, mocked, app_state)
-       VALUES ($recordedAt, $lat, $lng, $accuracy, $speed, $mocked, $appState)`,
+      `INSERT OR IGNORE INTO track_points (recorded_at, lat, lng, accuracy, speed, mocked, app_state, synced)
+       VALUES ($recordedAt, $lat, $lng, $accuracy, $speed, $mocked, $appState, 0)`,
     );
     try {
       for (const location of locations) {
@@ -235,12 +264,16 @@ export function getOpenSession(): SessionRow | null {
 
 export function openSession(at: number): void {
   if (getOpenSession()) return;
-  getDb().runSync('INSERT INTO sessions (started_at) VALUES (?)', at);
+  getDb().runSync(
+    'INSERT INTO sessions (started_at, client_id, synced) VALUES (?, ?, 0)',
+    at,
+    newId(),
+  );
 }
 
 export function closeSession(at: number, reason: SessionEndReason): void {
   getDb().runSync(
-    'UPDATE sessions SET ended_at = ?, end_reason = ? WHERE ended_at IS NULL',
+    'UPDATE sessions SET ended_at = ?, end_reason = ?, synced = 0 WHERE ended_at IS NULL',
     at,
     reason,
   );
@@ -257,8 +290,8 @@ export function insertPhoto(photo: {
 }): number {
   const base64Length = photo.dataUri.length - photo.dataUri.indexOf(',') - 1;
   const result = getDb().runSync(
-    `INSERT INTO photos (taken_at, lat, lng, accuracy, mocked, size_bytes, data_uri, address)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO photos (taken_at, lat, lng, accuracy, mocked, size_bytes, data_uri, address, client_id, sync_status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft')`,
     photo.takenAt,
     photo.lat,
     photo.lng,
@@ -267,16 +300,20 @@ export function insertPhoto(photo: {
     Math.round((base64Length * 3) / 4),
     photo.dataUri,
     photo.address,
+    newId(),
   );
   return result.lastInsertRowId;
 }
 
+/** Lưu nơi check-in và đưa vào hàng chờ gửi. Ảnh nháp chưa lưu thì không gửi, không xuất. */
 export function updatePhotoPlace(
   id: number,
   place: { kind: PlaceKind; name: string; note: string },
 ): void {
   getDb().runSync(
-    'UPDATE photos SET place_kind = ?, place_name = ?, note = ? WHERE id = ?',
+    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?,
+       sync_status = CASE WHEN sync_status = 'draft' THEN 'pending' ELSE sync_status END
+     WHERE id = ?`,
     place.kind,
     place.name.trim() || null,
     place.note.trim() || null,
@@ -292,7 +329,7 @@ export function listPhotosBetween(from: number, to: number): PhotoSummary[] {
   return getDb()
     .getAllSync<Pick<PhotoRow, 'id' | 'taken_at' | 'size_bytes' | 'address' | 'place_name'>>(
       `SELECT id, taken_at, size_bytes, address, place_name FROM photos
-       WHERE taken_at >= ? AND taken_at < ? ORDER BY taken_at DESC`,
+       WHERE taken_at >= ? AND taken_at < ? AND sync_status != 'draft' ORDER BY taken_at DESC`,
       from,
       to,
     )
@@ -315,7 +352,7 @@ export function getPhotoDataUri(id: number): string | null {
 export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
   return getDb()
     .getAllSync<PhotoRow>(
-      'SELECT * FROM photos WHERE taken_at >= ? AND taken_at < ? ORDER BY taken_at',
+      "SELECT * FROM photos WHERE taken_at >= ? AND taken_at < ? AND sync_status != 'draft' ORDER BY taken_at",
       from,
       to,
     )
@@ -391,7 +428,7 @@ export function computeDayStats(dayStart: number): DayStats {
   const last = points.at(-1);
   const photoCount =
     getDb().getFirstSync<{ n: number }>(
-      'SELECT COUNT(*) AS n FROM photos WHERE taken_at >= ? AND taken_at < ?',
+      "SELECT COUNT(*) AS n FROM photos WHERE taken_at >= ? AND taken_at < ? AND sync_status != 'draft'",
       dayStart,
       dayEnd,
     )?.n ?? 0;
@@ -427,4 +464,101 @@ export function clearAllTestData(): void {
   getDb().execSync(
     'DELETE FROM track_points; DELETE FROM photos; DELETE FROM sessions; DELETE FROM task_errors;',
   );
+}
+
+export function deleteDraftPhoto(id: number): void {
+  getDb().runSync("DELETE FROM photos WHERE id = ? AND sync_status = 'draft'", id);
+}
+
+// ---------- Hàng đợi gửi lên máy chủ (M3, M12) ----------
+
+export type PhotoSyncStatus = 'legacy' | 'draft' | 'pending' | 'row_synced' | 'synced' | 'failed';
+
+export type QueuedCheckIn = PhotoRecord & { clientId: string; status: PhotoSyncStatus };
+
+export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
+  return getDb()
+    .getAllSync<PhotoRow & { client_id: string; sync_status: PhotoSyncStatus }>(
+      "SELECT * FROM photos WHERE sync_status IN ('pending', 'row_synced') ORDER BY taken_at LIMIT ?",
+      limit,
+    )
+    .map((row) => ({
+      id: row.id,
+      takenAt: row.taken_at,
+      lat: row.lat,
+      lng: row.lng,
+      accuracy: row.accuracy,
+      mocked: row.mocked === 1,
+      dataUri: row.data_uri,
+      address: row.address,
+      placeKind: row.place_kind,
+      placeName: row.place_name,
+      note: row.note,
+      clientId: row.client_id,
+      status: row.sync_status,
+    }));
+}
+
+export function setCheckInSyncStatus(
+  id: number,
+  status: PhotoSyncStatus,
+  error: string | null,
+): void {
+  getDb().runSync(
+    'UPDATE photos SET sync_status = ?, sync_error = ? WHERE id = ?',
+    status,
+    error,
+    id,
+  );
+}
+
+export function listUnsyncedPoints(limit: number): TrackPoint[] {
+  return getDb()
+    .getAllSync<PointRow>(
+      `SELECT recorded_at, lat, lng, accuracy, speed, mocked, app_state FROM track_points
+       WHERE synced = 0 ORDER BY recorded_at LIMIT ?`,
+      limit,
+    )
+    .map((p) => ({
+      recordedAt: p.recorded_at,
+      lat: p.lat,
+      lng: p.lng,
+      accuracy: p.accuracy,
+      speed: p.speed,
+      mocked: p.mocked === 1,
+      appState: p.app_state,
+    }));
+}
+
+export function markPointsSynced(from: number, to: number): void {
+  getDb().runSync(
+    'UPDATE track_points SET synced = 1 WHERE synced = 0 AND recorded_at >= ? AND recorded_at <= ?',
+    from,
+    to,
+  );
+}
+
+export function listUnsyncedSessions(): (SessionRow & { client_id: string })[] {
+  return getDb().getAllSync<SessionRow & { client_id: string }>(
+    'SELECT * FROM sessions WHERE synced = 0 AND client_id IS NOT NULL ORDER BY started_at',
+  );
+}
+
+/** Phiên kết thúc trong lúc đang gửi thì giữ chưa gửi để lần sau gửi giờ kết thúc. */
+export function markSessionSynced(id: number, endedAt: number | null): void {
+  getDb().runSync('UPDATE sessions SET synced = 1 WHERE id = ? AND ended_at IS ?', id, endedAt);
+}
+
+export type PendingCounts = { checkIns: number; failedCheckIns: number; points: number };
+
+export function countPending(): PendingCounts {
+  const database = getDb();
+  const one = (sql: string) => database.getFirstSync<{ n: number }>(sql)?.n ?? 0;
+  return {
+    checkIns: one(
+      "SELECT COUNT(*) AS n FROM photos WHERE sync_status IN ('pending', 'row_synced')",
+    ),
+    failedCheckIns: one("SELECT COUNT(*) AS n FROM photos WHERE sync_status = 'failed'"),
+    points: one('SELECT COUNT(*) AS n FROM track_points WHERE synced = 0'),
+  };
 }

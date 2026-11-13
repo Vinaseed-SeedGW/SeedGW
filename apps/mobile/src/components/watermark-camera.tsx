@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -23,8 +24,9 @@ import {
   type GeocodeResult,
 } from '../api/reverse-geocode';
 import { distanceMeters, type GeoPoint } from '../sync/geo';
-import { insertPhoto, updatePhotoPlace, type PlaceKind } from '../sync/track-db';
-import { FILTER } from '../sync/track-filter';
+import { syncNow } from '../sync/sync-queue';
+import { deleteDraftPhoto, insertPhoto, updatePhotoPlace, type PlaceKind } from '../sync/track-db';
+import { FILTER } from '@dms/contracts/track-distance';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
@@ -298,8 +300,36 @@ function Review({
     }
   }
 
-  function savePlace() {
-    if (photoId !== null) updatePhotoPlace(photoId, place);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Theo M2: phải có tên nơi check-in, ghi chú bắt buộc khi không ở đại lý.
+  function saveCheckIn() {
+    if (photoId === null) return;
+    if (!place.name.trim()) {
+      setFormError('Nhập tên nơi check-in.');
+      return;
+    }
+    if (place.kind !== 'DEALER' && !place.note.trim()) {
+      setFormError('Nhập ghi chú khi không check-in tại đại lý.');
+      return;
+    }
+    updatePhotoPlace(photoId, place);
+    void syncNow();
+    onClose();
+  }
+
+  function discard() {
+    Alert.alert('Bỏ ảnh này?', 'Ảnh chưa lưu thành check-in sẽ bị xoá khỏi máy.', [
+      { text: 'Giữ lại', style: 'cancel' },
+      {
+        text: 'Bỏ ảnh',
+        style: 'destructive',
+        onPress: () => {
+          if (photoId !== null) deleteDraftPhoto(photoId);
+          onRetake();
+        },
+      },
+    ]);
   }
 
   return (
@@ -333,23 +363,11 @@ function Review({
           <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
         ) : null}
         {state === 'saved' ? <PlaceForm value={place} onChange={setPlace} /> : null}
+        {formError ? <Banner tone="danger" text={formError} /> : null}
       </ScrollView>
       <View style={styles.controls}>
-        <Button
-          label="Chụp ảnh khác"
-          onPress={() => {
-            savePlace();
-            onRetake();
-          }}
-          variant="ghost"
-        />
-        <Button
-          label="Lưu và xong"
-          onPress={() => {
-            savePlace();
-            onClose();
-          }}
-        />
+        <Button label="Bỏ ảnh" onPress={discard} variant="ghost" />
+        <Button label="Lưu check-in" onPress={saveCheckIn} />
       </View>
     </KeyboardAvoidingView>
   );
@@ -402,7 +420,9 @@ function PlaceForm({
         autoCapitalize="words"
         returnKeyType="next"
       />
-      <Text style={styles.formLabel}>Ghi chú</Text>
+      <Text style={styles.formLabel}>
+        {value.kind === 'DEALER' ? 'Ghi chú' : 'Ghi chú (bắt buộc)'}
+      </Text>
       <TextInput
         value={value.note}
         onChangeText={(note) => onChange({ ...value, note })}

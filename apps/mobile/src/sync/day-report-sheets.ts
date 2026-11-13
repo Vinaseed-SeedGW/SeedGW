@@ -1,5 +1,5 @@
 import { formatCoord, formatVnDate, formatVnTime } from './geo';
-import { cumulativeAt, FILTER, type FilteredTrack } from './track-filter';
+import { cumulativeAt, FILTER, type FilteredTrack } from '@dms/contracts/track-distance';
 import type { PhotoRecord, PlaceKind, SessionRow, TesterProfile, TrackPoint } from './track-db';
 import {
   base64ToBytes,
