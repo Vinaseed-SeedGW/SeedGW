@@ -84,6 +84,9 @@ const AUDIT_ENTITY_TYPES = Object.keys(AUDIT_ENTITY_LABEL) as [
 
 // Chuc nang Ca lam viec da bo ngay 11/11/2026. Van giu nhan de doc nhat ky cu, nhung khong dua vao bo loc.
 const RETIRED_ENTITY_TYPES: ReadonlySet<AuditEntityType> = new Set([
+  // Quy trình duyệt và uỷ quyền bỏ ngày 13/11/2026 cùng phần đơn hàng.
+  'ApprovalWorkflow',
+  'Delegation',
   'Shift',
   'ShiftAssignment',
   'Holiday',

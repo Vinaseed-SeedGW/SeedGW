@@ -175,16 +175,15 @@ export function deleteOrgUnit(id: string): Promise<OrgUnitOutcome> {
         code: true,
         name: true,
         parentId: true,
-        _count: { select: { users: true, children: true } },
-        approvalWorkflows: { where: { activeVersion: { not: null } }, select: { id: true } },
+        _count: { select: { users: true, children: true, dealers: true } },
       },
     });
     if (!unit) throw new DomainError('NOT_FOUND', 'Không tìm thấy đơn vị này');
     if (unit.parentId === null) throw new DomainError('CONFLICT', 'Không thể xoá đơn vị gốc');
-    if (unit.approvalWorkflows.length > 0) {
+    if (unit._count.dealers > 0) {
       throw new DomainError(
         'CONFLICT',
-        'Đơn vị đang có quy trình duyệt riêng, cần chuyển về kế thừa trước khi xoá',
+        `Đơn vị còn ${unit._count.dealers} đại lý, dùng nút Đổi đơn vị ở danh sách đại lý để chuyển trước khi xoá`,
       );
     }
     if (unit._count.users > 0) {

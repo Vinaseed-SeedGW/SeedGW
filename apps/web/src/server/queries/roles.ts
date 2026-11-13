@@ -14,7 +14,7 @@ export async function getRoleMatrix(): Promise<RoleMatrixRole[]> {
     select: {
       ...ROLE_MATRIX_SELECT,
       users: { where: { userId: user.id }, select: { userId: true } },
-      _count: { select: { users: true, approvalSteps: true } },
+      _count: { select: { users: true } },
     },
   });
 
@@ -27,6 +27,6 @@ export async function getRoleMatrix(): Promise<RoleMatrixRole[]> {
     userCount: row._count.users,
     updatedAt: row.updatedAt.toISOString(),
     lockReason: roleLockReason(row.code, row.users.length > 0),
-    canDelete: !isPresetRole(row.code) && row._count.users === 0 && row._count.approvalSteps === 0,
+    canDelete: !isPresetRole(row.code) && row._count.users === 0,
   }));
 }

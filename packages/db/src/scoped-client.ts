@@ -6,7 +6,6 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   User: { ownerField: 'id', orgUnitField: 'orgUnitId' },
   MobileDevice: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   AuditLog: { ownerField: 'actorId', orgUnitField: 'actor.orgUnitId' },
-  Delegation: { ownerField: 'delegatorId', orgUnitField: 'delegator.orgUnitId' },
   // Theo don vi luc check-in de bao cao cu khong doi khi nhan vien chuyen don vi.
   CheckIn: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
   TrackPoint: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
