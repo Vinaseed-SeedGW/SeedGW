@@ -20,6 +20,7 @@ import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
 import { reverseGeocode } from '@/server/integrations/vietmap';
 import { DomainError } from './domain-error';
+import { resolveCheckInDealer } from './mobile-dealers';
 
 // Cờ nghi vấn chỉ để quản lý xem, không bao giờ chặn ghi nhận check-in (CLAUDE.md).
 const POOR_ACCURACY_FLAG_M = 100;
@@ -87,6 +88,7 @@ export async function saveCheckIn(
         placeName: input.placeName,
         note: input.note,
         addressOnPhoto: input.addressOnPhoto,
+        dealerId: await resolveCheckInDealer(user, input.dealerId),
         flags: checkInFlags(input, clockSkewMs),
       },
       select: { id: true },

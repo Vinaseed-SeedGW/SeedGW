@@ -1,10 +1,12 @@
 import 'server-only';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import type { PermissionCode } from '@dms/contracts/access';
+import { widestDataScope, type DataScope, type PermissionCode } from '@dms/contracts/access';
 import type { MobileAuthReason } from '@dms/contracts/check-ins';
 import type { ErrorCode } from '@dms/contracts/common';
 import { db } from '@dms/db/client';
+import { getOrgUnitTreeIds } from '@dms/db/org-units';
+import { scopedDb } from '@dms/db/scoped-client';
 import { DomainError } from '@/server/services/domain-error';
 
 // Khoá truy cập ngắn hạn cho app (JWT ký HMAC-SHA256), tự viết để không thêm thư viện.
@@ -16,6 +18,7 @@ export type MobileUser = {
   fullName: string;
   orgUnitId: string | null;
   deviceId: string;
+  dataScope: DataScope;
   permissions: ReadonlySet<string>;
 };
 
@@ -95,7 +98,11 @@ export async function requireMobileUser(request: Request): Promise<MobileUser> {
         orgUnitId: true,
         isActive: true,
         sessionVersion: true,
-        roles: { select: { role: { select: { permissions: { select: { code: true } } } } } },
+        roles: {
+          select: {
+            role: { select: { dataScope: true, permissions: { select: { code: true } } } },
+          },
+        },
       },
     }),
     db.mobileDevice.findUnique({
@@ -116,8 +123,20 @@ export async function requireMobileUser(request: Request): Promise<MobileUser> {
     fullName: user.fullName,
     orgUnitId: user.orgUnitId,
     deviceId: claims.did,
+    dataScope: widestDataScope(user.roles.map(({ role }) => role.dataScope)),
     permissions: new Set(user.roles.flatMap(({ role }) => role.permissions.map((p) => p.code))),
   };
+}
+
+/** Client database áp phạm vi dữ liệu của người dùng app, giống getScopedDb() bên web. */
+export async function mobileScopedDb(user: MobileUser) {
+  const needsTree = user.dataScope === 'ORG_UNIT_TREE' && user.orgUnitId !== null;
+  return scopedDb({
+    dataScope: user.dataScope,
+    userId: user.id,
+    orgUnitId: user.orgUnitId,
+    orgUnitTreeIds: needsTree && user.orgUnitId ? await getOrgUnitTreeIds(user.orgUnitId) : [],
+  });
 }
 
 export function assertMobileCan(user: MobileUser, permission: PermissionCode): void {

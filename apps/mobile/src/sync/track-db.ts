@@ -46,6 +46,7 @@ type PhotoRow = {
   place_kind: PlaceKind | null;
   place_name: string | null;
   note: string | null;
+  dealer_id: string | null;
 };
 
 export type PhotoSummary = {
@@ -68,6 +69,8 @@ export type PhotoRecord = {
   placeKind: PlaceKind | null;
   placeName: string | null;
   note: string | null;
+  /** Đại lý chọn từ danh mục trên máy chủ (A7). Bản thử chưa đăng nhập thì null. */
+  dealerId: string | null;
 };
 
 export type TrackPoint = {
@@ -140,7 +143,15 @@ function getDb(): SQLiteDatabase {
   const photoColumns = new Set(
     opened.getAllSync<{ name: string }>('PRAGMA table_info(photos)').map((c) => c.name),
   );
-  for (const column of ['address', 'place_kind', 'place_name', 'note', 'client_id', 'sync_error']) {
+  for (const column of [
+    'address',
+    'place_kind',
+    'place_name',
+    'note',
+    'client_id',
+    'sync_error',
+    'dealer_id',
+  ]) {
     if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
   }
   // Dữ liệu thử R3 có từ trước khi nối máy chủ thì không gửi lên: ảnh "legacy", điểm và phiên coi như đã gửi.
@@ -308,15 +319,16 @@ export function insertPhoto(photo: {
 /** Lưu nơi check-in và đưa vào hàng chờ gửi. Ảnh nháp chưa lưu thì không gửi, không xuất. */
 export function updatePhotoPlace(
   id: number,
-  place: { kind: PlaceKind; name: string; note: string },
+  place: { kind: PlaceKind; name: string; note: string; dealerId: string | null },
 ): void {
   getDb().runSync(
-    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?,
+    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?,
        sync_status = CASE WHEN sync_status = 'draft' THEN 'pending' ELSE sync_status END
      WHERE id = ?`,
     place.kind,
     place.name.trim() || null,
     place.note.trim() || null,
+    place.kind === 'DEALER' ? place.dealerId : null,
     id,
   );
 }
@@ -368,6 +380,7 @@ export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
       placeKind: row.place_kind,
       placeName: row.place_name,
       note: row.note,
+      dealerId: row.dealer_id,
     }));
 }
 
@@ -494,6 +507,7 @@ export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
       placeKind: row.place_kind,
       placeName: row.place_name,
       note: row.note,
+      dealerId: row.dealer_id,
       clientId: row.client_id,
       status: row.sync_status,
     }));

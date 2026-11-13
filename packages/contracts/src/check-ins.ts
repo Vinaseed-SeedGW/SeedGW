@@ -92,6 +92,8 @@ export const createCheckInInput = z
     note: z.string().trim().max(1000).default(''),
     // Địa chỉ app đã in lên ảnh, máy chủ vẫn tự lấy lại để không phụ thuộc dữ liệu từ máy.
     addressOnPhoto: z.string().trim().max(500).nullable().default(null),
+    // Đại lý chọn từ danh mục (A7). App bản thử chưa có danh mục thì không gửi.
+    dealerId: z.uuid().nullable().default(null),
   })
   .refine((value) => value.placeKind === 'DEALER' || value.note.length > 0, {
     path: ['note'],

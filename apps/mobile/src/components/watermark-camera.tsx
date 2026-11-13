@@ -29,6 +29,8 @@ import { deleteDraftPhoto, insertPhoto, updatePhotoPlace, type PlaceKind } from 
 import { FILTER } from '@dms/contracts/track-distance';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
+import { serverEnabled } from '../api/session';
+import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
 
 const LONG_EDGE_PX = 1600;
@@ -269,7 +271,12 @@ function Review({
   const [state, setState] = useState<'composing' | 'saved' | 'failed'>('composing');
   const [sizeBytes, setSizeBytes] = useState(0);
   const [photoId, setPhotoId] = useState<number | null>(null);
-  const [place, setPlace] = useState<PlaceDraft>({ kind: 'DEALER', name: '', note: '' });
+  const [place, setPlace] = useState<PlaceDraft>({
+    kind: 'DEALER',
+    name: '',
+    note: '',
+    dealerId: null,
+  });
   const started = useRef(false);
 
   async function compose() {
@@ -362,7 +369,13 @@ function Review({
         {shot.mocked ? (
           <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
         ) : null}
-        {state === 'saved' ? <PlaceForm value={place} onChange={setPlace} /> : null}
+        {state === 'saved' ? (
+          <PlaceForm
+            value={place}
+            onChange={setPlace}
+            point={{ lat: shot.location.lat, lng: shot.location.lng }}
+          />
+        ) : null}
         {formError ? <Banner tone="danger" text={formError} /> : null}
       </ScrollView>
       <View style={styles.controls}>
@@ -373,7 +386,7 @@ function Review({
   );
 }
 
-type PlaceDraft = { kind: PlaceKind; name: string; note: string };
+type PlaceDraft = { kind: PlaceKind; name: string; note: string; dealerId: string | null };
 
 const PLACE_KINDS: { kind: PlaceKind; label: string; nameLabel: string }[] = [
   { kind: 'DEALER', label: 'Đại lý', nameLabel: 'Tên đại lý' },
@@ -381,15 +394,22 @@ const PLACE_KINDS: { kind: PlaceKind; label: string; nameLabel: string }[] = [
   { kind: 'OTHER', label: 'Điểm khác', nameLabel: 'Tên điểm' },
 ];
 
-/** Bản thử chưa có danh sách đại lý (M3), nên gõ tên tay để file Excel ghi rõ đã ghé ai. */
+/**
+ * Đã đăng nhập máy chủ thì chọn đại lý từ danh mục (A7), không có trong danh sách thì gõ tên tay.
+ * Bản thử chưa nối máy chủ chỉ gõ tên tay.
+ */
 function PlaceForm({
   value,
   onChange,
+  point,
 }: {
   value: PlaceDraft;
   onChange: (next: PlaceDraft) => void;
+  point: { lat: number; lng: number };
 }) {
   const current = PLACE_KINDS.find((item) => item.kind === value.kind) ?? PLACE_KINDS[0];
+  const usePicker = value.kind === 'DEALER' && serverEnabled();
+  const selectedDealer = value.dealerId ? { id: value.dealerId, name: value.name } : null;
   return (
     <View style={styles.form}>
       <Text style={styles.formLabel}>Nơi check-in</Text>
@@ -401,7 +421,14 @@ function PlaceForm({
               key={item.kind}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              onPress={() => onChange({ ...value, kind: item.kind })}
+              onPress={() =>
+                onChange({
+                  ...value,
+                  kind: item.kind,
+                  // Đổi loại điểm thì bỏ đại lý đã chọn để không gửi nhầm.
+                  ...(item.kind !== 'DEALER' && value.dealerId ? { dealerId: null, name: '' } : {}),
+                })
+              }
               style={[styles.chip, selected && styles.chipSelected]}
             >
               <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
@@ -412,14 +439,30 @@ function PlaceForm({
         })}
       </View>
       <Text style={styles.formLabel}>{current?.nameLabel}</Text>
-      <TextInput
-        value={value.name}
-        onChangeText={(name) => onChange({ ...value, name })}
-        accessibilityLabel={current?.nameLabel}
-        style={styles.input}
-        autoCapitalize="words"
-        returnKeyType="next"
-      />
+      {usePicker ? (
+        <DealerPicker
+          point={point}
+          selected={selectedDealer}
+          onSelect={(dealer) =>
+            onChange({ ...value, dealerId: dealer?.id ?? null, name: dealer?.name ?? '' })
+          }
+        />
+      ) : null}
+      {usePicker && selectedDealer ? null : (
+        <>
+          {usePicker ? (
+            <Text style={styles.formLabel}>Không có trong danh sách thì gõ tên đại lý</Text>
+          ) : null}
+          <TextInput
+            value={value.name}
+            onChangeText={(name) => onChange({ ...value, name, dealerId: null })}
+            accessibilityLabel={current?.nameLabel}
+            style={styles.input}
+            autoCapitalize="words"
+            returnKeyType="next"
+          />
+        </>
+      )}
       <Text style={styles.formLabel}>
         {value.kind === 'DEALER' ? 'Ghi chú' : 'Ghi chú (bắt buộc)'}
       </Text>
