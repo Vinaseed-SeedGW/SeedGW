@@ -5,14 +5,9 @@ export const DEPARTMENTS = [
     description: 'Check-in, đại lý, khách hàng, tuyến, báo cáo',
   },
   {
-    slug: 'trao-doi',
-    name: 'Trao đổi',
-    description: 'Hỏi đáp, báo lỗi, góp ý gửi quản trị',
-  },
-  {
     slug: 'quan-tri',
     name: 'Quản trị',
-    description: 'Tài khoản, cơ cấu tổ chức, danh mục, tham số',
+    description: 'Hỗ trợ, tài khoản, cơ cấu tổ chức, danh mục, tham số',
   },
 ] as const;
 

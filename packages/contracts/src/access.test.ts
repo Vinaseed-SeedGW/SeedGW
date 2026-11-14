@@ -11,6 +11,7 @@ import {
   permissionForPath,
   roleExceedsActor,
   scopeWhere,
+  showsSupportButton,
   widestDataScope,
   type ScopeContext,
 } from './access';
@@ -27,7 +28,7 @@ const PAGE_PROBES = [
   '/kinh-doanh/dai-ly',
   '/kinh-doanh/check-in',
   '/kinh-doanh/bao-cao',
-  '/trao-doi/ho-tro',
+  '/quan-tri/ho-tro',
   '/quan-tri/tai-khoan',
   '/quan-tri/dai-ly/nhap-excel',
   '/quan-tri/ket-noi',
@@ -41,21 +42,16 @@ const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>
     '/kinh-doanh/dai-ly',
     '/kinh-doanh/check-in',
     '/kinh-doanh/bao-cao',
-    '/trao-doi/ho-tro',
+    '/quan-tri/ho-tro',
     '/quan-tri/tai-khoan',
   ],
-  staff: [
-    '/kinh-doanh/dashboard',
-    '/kinh-doanh/dai-ly',
-    '/kinh-doanh/check-in',
-    '/trao-doi/ho-tro',
-  ],
+  staff: ['/kinh-doanh/dashboard', '/kinh-doanh/dai-ly', '/kinh-doanh/check-in'],
 };
 
 const EXPECTED_DEPARTMENTS: Record<string, readonly string[]> = {
-  admin: ['kinh-doanh', 'trao-doi', 'quan-tri'],
-  operations: ['kinh-doanh', 'trao-doi', 'quan-tri'],
-  staff: ['kinh-doanh', 'trao-doi'],
+  admin: ['kinh-doanh', 'quan-tri'],
+  operations: ['kinh-doanh', 'quan-tri'],
+  staff: ['kinh-doanh'],
 };
 
 describe('ma tran vai tro va trang', () => {
@@ -71,7 +67,7 @@ describe('ma tran vai tro va trang', () => {
       });
     }
 
-    for (const slug of ['kinh-doanh', 'trao-doi', 'quan-tri'] as const) {
+    for (const slug of ['kinh-doanh', 'quan-tri'] as const) {
       const allowed = EXPECTED_DEPARTMENTS[role.code]?.includes(slug) ?? false;
       it(`${role.code} ${allowed ? 'thay' : 'khong thay'} bo phan ${slug}`, () => {
         expect(canAccessDepartment(permissionsOf(role.code), slug)).toBe(allowed);
@@ -168,11 +164,11 @@ describe('departmentLanding', () => {
     expect(departmentLanding('kinh-doanh', ['operations'], permissionsOf('operations'))).toBe(
       '/kinh-doanh/check-in',
     );
-    expect(departmentLanding('trao-doi', ['staff'], permissionsOf('staff'))).toBe(
-      '/trao-doi/ho-tro',
+    expect(departmentLanding('quan-tri', ['operations'], permissionsOf('operations'))).toBe(
+      '/quan-tri/ho-tro',
     );
-    expect(departmentLanding('trao-doi', ['operations'], permissionsOf('operations'))).toBe(
-      '/trao-doi/ho-tro',
+    expect(departmentLanding('quan-tri', ['admin'], permissionsOf('admin'))).toBe(
+      '/quan-tri/tai-khoan',
     );
   });
 
@@ -184,6 +180,15 @@ describe('departmentLanding', () => {
 
   it('ve 403 khi khong co quyen nao', () => {
     expect(departmentLanding('quan-tri', [], new Set())).toBe('/403');
+  });
+});
+
+describe('nut noi Ho tro', () => {
+  it('chi hien cho nguoi gui, khong hien cho nguoi xu ly', () => {
+    expect(showsSupportButton(permissionsOf('staff'))).toBe(true);
+    expect(showsSupportButton(permissionsOf('operations'))).toBe(false);
+    expect(showsSupportButton(permissionsOf('admin'))).toBe(false);
+    expect(showsSupportButton(new Set())).toBe(false);
   });
 });
 

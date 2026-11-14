@@ -5,6 +5,7 @@ import { Logo } from '@dms/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@dms/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
+import { SupportLauncher } from '@/features/support/components/support-launcher';
 
 type HubLayoutProps = {
   userName: string;
@@ -33,6 +34,7 @@ export function HubLayout({ userName, children }: HubLayoutProps) {
         <div className="mx-auto max-w-270">{children}</div>
       </main>
       <AppFooter variant="full" />
+      <SupportLauncher />
     </div>
   );
 }

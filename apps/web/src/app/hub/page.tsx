@@ -1,4 +1,4 @@
-import { Briefcase, MessagesSquare, Settings, type LucideIcon } from 'lucide-react';
+import { Briefcase, Settings, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { DepartmentSlug } from '@dms/contracts/departments';
@@ -11,7 +11,6 @@ export const metadata: Metadata = { title: 'Hub' };
 
 const DEPARTMENT_ICON: Record<DepartmentSlug, LucideIcon> = {
   'kinh-doanh': Briefcase,
-  'trao-doi': MessagesSquare,
   'quan-tri': Settings,
 };
 

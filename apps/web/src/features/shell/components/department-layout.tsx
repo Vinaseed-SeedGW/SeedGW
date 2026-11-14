@@ -8,6 +8,7 @@ import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
 import { DEPARTMENT_NAV } from '@/features/shell/navigation';
+import { SupportLauncher } from '@/features/support/components/support-launcher';
 import { requireDepartmentAccess } from '@/server/auth/can';
 
 type DepartmentLayoutProps = {
@@ -74,6 +75,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
         </AppShell.Header>
         <AppShell.Content>{children}</AppShell.Content>
         <AppFooter variant="compact" />
+        <SupportLauncher />
       </AppShell.Main>
     </AppShell.Root>
   );

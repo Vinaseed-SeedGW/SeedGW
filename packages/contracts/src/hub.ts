@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const hubDepartment = z.object({
-  slug: z.enum(['kinh-doanh', 'trao-doi', 'quan-tri']),
+  slug: z.enum(['kinh-doanh', 'quan-tri']),
   name: z.string(),
   description: z.string(),
   pendingCount: z.number().int().nonnegative(),

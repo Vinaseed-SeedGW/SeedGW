@@ -47,12 +47,11 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       items: [{ label: 'Báo cáo', href: '/kinh-doanh/bao-cao', icon: FileChartColumn }],
     },
   ],
-  'trao-doi': [
-    {
-      items: [{ label: 'Hỗ trợ', href: '/trao-doi/ho-tro', icon: LifeBuoy }],
-    },
-  ],
   'quan-tri': [
+    {
+      label: 'Tiếp nhận',
+      items: [{ label: 'Hỗ trợ', href: '/quan-tri/ho-tro', icon: LifeBuoy }],
+    },
     {
       label: 'Người dùng',
       items: [

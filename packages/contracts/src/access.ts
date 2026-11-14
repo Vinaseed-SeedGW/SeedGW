@@ -73,8 +73,7 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/kinh-doanh/check-in', permission: 'sales.check-in.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/bao-cao', permission: 'sales.report.read', department: 'kinh-doanh' },
 
-  { path: '/trao-doi/ho-tro', permission: 'support.request.create', department: 'trao-doi' },
-
+  { path: '/quan-tri/ho-tro', permission: 'support.request.manage', department: 'quan-tri' },
   { path: '/quan-tri/tai-khoan', permission: 'admin.user.read', department: 'quan-tri' },
   {
     path: '/quan-tri/tai-khoan/tao-moi',
@@ -134,17 +133,18 @@ const DEPARTMENT_LANDING: Record<
     fallback: '/kinh-doanh/dashboard',
     byRole: { operations: '/kinh-doanh/check-in' },
   },
-  'trao-doi': {
-    fallback: '/trao-doi/ho-tro',
-    byRole: {},
-  },
   'quan-tri': {
     fallback: '/quan-tri/tai-khoan',
-    byRole: {},
+    byRole: { operations: '/quan-tri/ho-tro' },
   },
 };
 
 export const FORBIDDEN_PATH = '/403';
+
+// Quyet dinh 30: nguoi gui yeu cau dung nut noi o moi trang; nguoi xu ly dung trang Quan tri > Ho tro.
+export function showsSupportButton(permissions: PermissionSet): boolean {
+  return permissions.has('support.request.create') && !permissions.has('support.request.manage');
+}
 
 // Trang dich theo INFORMATION_ARCHITECTURE muc 2, luon la trang nguoi dung co quyen vao.
 export function departmentLanding(
