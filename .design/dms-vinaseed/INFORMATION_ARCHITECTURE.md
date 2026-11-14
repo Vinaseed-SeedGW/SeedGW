@@ -2,6 +2,8 @@
 
 Ngày: 2026-11-09, cập nhật 2026-11-13 · Dựa trên: DESIGN_BRIEF.md · Task tương ứng: TASKS.md v4
 
+> **Cập nhật 14/11/2026 (quyết định 30):** bỏ bộ phận Trao đổi, Hub còn **Kinh doanh, Quản trị**. Hỗ trợ chia theo vai trò: trên web, Cán bộ nhân viên dùng **nút nổi Hỗ trợ** ở góc dưới bên phải mọi trang; Quản trị đơn vị và Quản trị hệ thống xử lý ở trang **Quản trị › Hỗ trợ** `/quan-tri/ho-tro`. Trên app, Hỗ trợ là một màn hình riêng mở từ tab Tôi.
+>
 > **Cập nhật 14/11/2026 (quyết định 29):** Trao đổi chỉ còn giữa CBNV và quản trị, gộp Tin nhắn và Báo lỗi thành một trang **Hỗ trợ** `/trao-doi/ho-tro`.
 >
 > **Cập nhật 13/11/2026 (quyết định 28):** bỏ bộ phận CSKH, thêm bộ phận **Trao đổi** (tin nhắn nội bộ, báo lỗi hệ thống); còn 3 vai trò Quản trị hệ thống, Quản trị đơn vị, Cán bộ nhân viên, chức danh ghi ở hồ sơ tài khoản; đại lý đồng bộ 2 chiều với FAST, có trang Đồng bộ FAST trong Quản trị.
@@ -15,9 +17,9 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 | Câu hỏi | Quyết định |
 |---|---|
 | Sau đăng nhập đi đâu? | **Luôn qua Hub**, kể cả người chỉ có quyền 1 bộ phận. Ngoại lệ: bấm link từ thông báo/Mattermost thì tới thẳng trang đó (chưa đăng nhập → đăng nhập → tới trang đó). |
-| Hub có mấy bộ phận? | **3**: Kinh doanh · Trao đổi · Quản trị. "Tổng quan điều hành" là lối vào riêng cho người có quyền, không phải bộ phận thứ 4. |
+| Hub có mấy bộ phận? | **2**: Kinh doanh · Quản trị (quyết định 30). Hỗ trợ không phải bộ phận: nhân viên dùng nút nổi, quản trị dùng trang trong Quản trị. "Tổng quan điều hành" là lối vào riêng cho người có quyền, không phải bộ phận thứ 4. |
 | Menu sâu mấy cấp? | **Tối đa 2 cấp** trong bộ phận: nhóm (chỉ là nhãn, không bấm được) → trang. Chi tiết của một đối tượng dùng **tab**, không thêm cấp menu. |
-| Dashboard đặt ở đâu? | `/tong-quan` cho người được cấp quyền; Dashboard trong Kinh doanh; thống kê báo lỗi trong Trao đổi. Mỗi người chỉ thấy số trong phạm vi của mình. |
+| Dashboard đặt ở đâu? | `/tong-quan` cho người được cấp quyền; Dashboard trong Kinh doanh; thống kê yêu cầu hỗ trợ trong Quản trị › Hỗ trợ. Mỗi người chỉ thấy số trong phạm vi của mình. |
 | "Số lượng hàng bán" tính thế nào? | Chỉ có *Thực bán* (hoá đơn trên FAST, trừ hàng trả lại). Đợt này không có Đặt hàng. |
 | Có chỉ tiêu kế hoạch không? | **Có**: giao theo kỳ × đơn vị hoặc nhân viên × nhóm sản phẩm; dashboard hiện % hoàn thành. |
 
@@ -57,10 +59,10 @@ Trang có dấu `*` là bổ sung so với plan trước.
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
 
-- **Trao đổi** `/trao-doi` (chuyển tới Hỗ trợ)
-  - Hỗ trợ `/trao-doi/ho-tro`, chi tiết: `/trao-doi/ho-tro/[ma]`, tạo mới: `/trao-doi/ho-tro/tao-moi`
 
-- **Quản trị** `/quan-tri` (chuyển tới Tài khoản)
+- **Quản trị** `/quan-tri` (Quản trị đơn vị vào Hỗ trợ, Quản trị hệ thống vào Tài khoản)
+  - Tiếp nhận
+    - Hỗ trợ `/quan-tri/ho-tro`, chi tiết: `/quan-tri/ho-tro/[ma]`
   - Người dùng
     - Tài khoản `/quan-tri/tai-khoan`, chi tiết: `/quan-tri/tai-khoan/[id]`
     - Vai trò và quyền `/quan-tri/vai-tro`
@@ -101,20 +103,20 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 ## 2. Navigation Model
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
-- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Trao đổi 1 trang; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
+- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Quản trị 9 trang chia 5 nhóm (thêm nhóm Tiếp nhận có trang Hỗ trợ). Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
 - **Điều hướng phụ**: tab trong trang chi tiết. Breadcrumb từ cấp bộ phận.
-- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · biểu tượng Hỗ trợ (có số yêu cầu có trả lời chưa đọc) · chuông thông báo · tài khoản của tôi.
-- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Hỗ trợ (chưa đọc với nhân viên, chờ xử lý với quản trị) và toạ độ, đại lý mới chờ duyệt.
-- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Hỗ trợ 2 cột thu thành 1 cột theo bước (danh sách yêu cầu → chi tiết và trao đổi). Bảng dữ liệu ẩn bớt cột phụ.
-- **App điện thoại**: 5 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Trao đổi, Tôi); không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
+- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
+- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên nút nổi Hỗ trợ (trả lời chưa đọc, với nhân viên), trên Quản trị › Hỗ trợ (yêu cầu chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
+- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Quản trị › Hỗ trợ 2 cột thu thành 1 cột theo bước (danh sách yêu cầu → chi tiết và trao đổi). Nút nổi Hỗ trợ dời sát góc (cách mép 16 px), trang chừa khoảng trống cuối để nút không che chân trang. Bảng dữ liệu ẩn bớt cột phụ.
+- **App điện thoại**: 4 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Tôi); màn hình **Hỗ trợ** riêng mở từ đầu tab Tôi, tab Tôi có số đỏ khi quản trị trả lời; không dùng nút nổi vì che camera và bản đồ; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
-| Vai trò | Kinh doanh | Trao đổi | Quản trị |
+| Vai trò | Kinh doanh | Quản trị | Hỗ trợ |
 |---|---|---|---|
-| Cán bộ nhân viên | Dashboard (số của tôi) | Hỗ trợ (yêu cầu của tôi) | không có |
-| Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Tài khoản |
-| Quản trị hệ thống | Dashboard | Hỗ trợ (yêu cầu được chuyển lên) | Tài khoản |
+| Cán bộ nhân viên | Dashboard (số của tôi) | không có | Nút nổi ở mọi trang web, màn hình Hỗ trợ trên app |
+| Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Trang Quản trị › Hỗ trợ |
+| Quản trị hệ thống | Dashboard | Tài khoản | Trang Quản trị › Hỗ trợ (yêu cầu được chuyển lên) |
 
 ## 3. Dashboard và chỉ số
 
@@ -225,7 +227,7 @@ Quy tắc tính:
 
 | Khái niệm | Nhãn trên giao diện | Ghi chú |
 |---|---|---|
-| Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 3: Kinh doanh, Trao đổi, Quản trị |
+| Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 2: Kinh doanh, Quản trị |
 | Trao đổi giữa CBNV và quản trị | **Hỗ trợ**, mỗi lần gửi là một **Yêu cầu** | Loại: Hỏi đáp, Báo lỗi, Góp ý. Không gọi là "ticket" |
 | Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |
 | Ba vai trò | **Quản trị hệ thống**, **Quản trị đơn vị**, **Cán bộ nhân viên** | Chức danh là thông tin hồ sơ, không phải vai trò |
@@ -265,7 +267,8 @@ Quy tắc tính:
 | `DashboardGrid`, `MetricTile`, `ChartCard`, `DashboardFilters` | 3 dashboard và Báo cáo | Khối theo vai trò; mỗi khối một `<Suspense>` |
 | `SyncBadge` | Đại lý, Kết nối | Trạng thái đồng bộ từ FAST |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
-| `SupportThread` (compound) | Chi tiết yêu cầu Hỗ trợ, web và app | Thu thành 1 cột dưới 1024px |
+| `SupportButton` | Mọi trang web của Cán bộ nhân viên (Hub và các bộ phận) | Không hiện với người có quyền xử lý; không có trên trang đăng nhập |
+| `SupportThread` (compound) | Khung của nút nổi, trang Quản trị › Hỗ trợ, màn hình Hỗ trợ trên app | Thu thành 1 cột dưới 1024px |
 
 ## 8. Content Growth Plan
 

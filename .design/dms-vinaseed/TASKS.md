@@ -1,8 +1,8 @@
-# Build Tasks: DMS Vinaseed (Hub: Kinh doanh, Trao đổi, Quản trị + App check-in)
+# Build Tasks: DMS Vinaseed (Hub: Kinh doanh, Quản trị + Hỗ trợ + App check-in)
 
-Dựa trên: DESIGN_BRIEF.md (quyết định 1 đến 29), INFORMATION_ARCHITECTURE.md, CHECK_IN_PLAN.md
+Dựa trên: DESIGN_BRIEF.md (quyết định 1 đến 30), INFORMATION_ARCHITECTURE.md, CHECK_IN_PLAN.md
 Bản v5, 13/11/2026: bỏ đơn hàng (quyết định 27); 3 vai trò, bỏ CSKH, thêm Trao đổi, đại lý đồng bộ 2 chiều với FAST (quyết định 28).
-Cập nhật 14/11/2026: Trao đổi chỉ còn giữa CBNV và quản trị, gộp thành một mục Hỗ trợ (quyết định 29).
+Cập nhật 14/11/2026: Trao đổi chỉ còn giữa CBNV và quản trị, gộp thành một mục Hỗ trợ (quyết định 29). Bỏ bộ phận Trao đổi: nút nổi Hỗ trợ cho CBNV trên web, trang Quản trị › Hỗ trợ cho quản trị, màn hình Hỗ trợ trên app (quyết định 30).
 
 ## Cách đọc
 
@@ -18,7 +18,7 @@ Cập nhật 14/11/2026: Trao đổi chỉ còn giữa CBNV và quản trị, g�
 
 | Mã | Nội dung | Ghi chú |
 |---|---|---|
-| F1 | Đăng nhập, Hub | Hub còn 3 ô: Kinh doanh, Trao đổi, Quản trị |
+| F1 | Đăng nhập, Hub | Hub còn 2 ô: Kinh doanh, Quản trị; nút nổi Hỗ trợ cho CBNV đã gắn vào khung trang (14/11) |
 | F2 | Nhận diện thương hiệu, token, AppShell | |
 | F3 | Phân quyền, phạm vi dữ liệu, 3 vai trò | Quản trị hệ thống, Quản trị đơn vị, Cán bộ nhân viên. Chức danh ghi ở hồ sơ tài khoản |
 | F4 | Bảng dữ liệu dùng chung | |
@@ -48,7 +48,7 @@ Mục tiêu: nhóm thử dùng app mỗi ngày, dữ liệu lên máy chủ trê
 - [ ] **M2. Hoàn thiện màn check-in** (1 buổi): giờ trên ảnh theo giờ máy chủ, tên nhân viên trên ảnh, font và màu theo BRAND, cảnh báo khi vuốt tắt app, câu hỏi quyền tiếng Việt còn sót.
 - [ ] **M5. Cờ nghi vấn** (0,5 buổi): thêm tốc độ di chuyển phi lý giữa hai lượt, máy đã root hoặc jailbreak. Không chặn check-in.
 - [ ] **A9b. Tham số check-in** (0,5 buổi): giờ tự dừng ghi hành trình, khoảng lọc điểm GPS, bán kính gộp chỗ dừng đưa vào trang Tham số.
-- [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang ở tab Tôi. Tab Trao đổi thêm ở giai đoạn 3.
+- [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang ở tab Tôi. Màn hình Hỗ trợ (mở từ tab Tôi) thêm ở giai đoạn 3.
 - [ ] **R4. Máy chủ tìm đường** (1,5 buổi): OSRM bản đồ Việt Nam chạy bằng Docker, khớp vết GPS vào đường; đo trên 3 tuyến có đồng hồ hành trình 0,1 km.
   - **Xong khi**: km theo đường đi lệch đồng hồ xe không quá 5% trên 3 tuyến.
 - [ ] **V1b. Khoảng cách theo đường đi** (1 buổi): điền cột Khoảng cách (km) trong báo cáo và Excel; đoạn mất vết nối bằng đường ngắn nhất, ghi "ước tính".
@@ -68,13 +68,13 @@ Mục tiêu: nhóm thử dùng app mỗi ngày, dữ liệu lên máy chủ trê
 
 **Cộng giai đoạn 2: 8 buổi.**
 
-## Giai đoạn 3: Trao đổi: yêu cầu hỗ trợ gửi quản trị (14/12 đến 25/12/2026)
+## Giai đoạn 3: Hỗ trợ: yêu cầu gửi quản trị (14/12 đến 25/12/2026)
 
-Bộ phận mới thay cho CSKH, chỉ trao đổi giữa CBNV và quản trị, không nhắn tin giữa nhân viên với nhau. Không phụ thuộc bên ngoài nên làm trước FAST. Chi tiết ở mục "Kế hoạch module Trao đổi" phía dưới.
+Thay cho CSKH, chỉ trao đổi giữa CBNV và quản trị, không nhắn tin giữa nhân viên với nhau. Không còn là bộ phận trên Hub (quyết định 30). Không phụ thuộc bên ngoài nên làm trước FAST. Chi tiết ở mục "Kế hoạch module Trao đổi" phía dưới.
 
 - [ ] **T1. Nền dữ liệu và cập nhật tức thì** (1,5 buổi)
-- [ ] **T2. Hỗ trợ trên web `/trao-doi/ho-tro`** (2 buổi)
-- [ ] **T3. Hỗ trợ trên app, tab Trao đổi** (2 buổi)
+- [ ] **T2. Hỗ trợ trên web: nút nổi cho CBNV, trang `/quan-tri/ho-tro` cho quản trị** (2 buổi)
+- [ ] **T3. Màn hình Hỗ trợ trên app** (2 buổi)
 - [ ] **T4. Thời hạn xử lý, nhắc, thống kê** (1 buổi)
 - [ ] **T5. Lưu trữ 18 tháng, giới hạn tệp, nhật ký** (0,5 buổi)
 - [ ] **Dự phòng** (2 buổi): dùng cho FAST nếu chậm, nếu không thì sửa lỗi sau đợt thử.
@@ -126,13 +126,13 @@ Chỉ số theo INFORMATION_ARCHITECTURE §3: lượt ghé thăm, độ phủ đ
 
 ## Giai đoạn 7: Nghiệm thu, đào tạo, đưa vào dùng (15/2 đến 19/3/2027)
 
-- [ ] **G2. Nghiệm thu theo kịch bản** (15/2 đến 26/2): Thị trường (check-in 3 loại điểm, mất mạng, ngoài bán kính, km, báo cáo Excel), Trao đổi (gửi yêu cầu hỗ trợ trên app, Quản trị đơn vị nhận và chuyển lên Quản trị hệ thống), Quản trị (tài khoản, 3 vai trò, thiết bị, đại lý), FAST (đại lý 2 chiều, công nợ, đối soát Thực bán), Dashboard (phạm vi từng vai trò).
+- [ ] **G2. Nghiệm thu theo kịch bản** (15/2 đến 26/2): Thị trường (check-in 3 loại điểm, mất mạng, ngoài bán kính, km, báo cáo Excel), Hỗ trợ (gửi yêu cầu bằng nút nổi trên web và màn hình Hỗ trợ trên app, Quản trị đơn vị nhận và chuyển lên Quản trị hệ thống), Quản trị (tài khoản, 3 vai trò, thiết bị, đại lý), FAST (đại lý 2 chiều, công nợ, đối soát Thực bán), Dashboard (phạm vi từng vai trò).
 - [ ] **G3. Đào tạo và tài liệu** (tuần 22/2): hướng dẫn theo 3 vai trò, tài liệu vận hành cho IT.
 - [ ] **G4. Đưa vào dùng theo 3 đợt**: đợt 1 một đơn vị thí điểm từ 1/3; đợt 2 khoảng nửa số đơn vị từ 8/3; đợt 3 toàn bộ 300 đến 400 người từ 15/3/2027.
 
 ---
 
-## Kế hoạch module Trao đổi (giai đoạn 3)
+## Kế hoạch module Hỗ trợ (giai đoạn 3)
 
 Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị và Quản trị hệ thống ngay trong DMS, có người nhận, có trạng thái, thay cho nhắn rời rạc qua Zalo. Không có nhắn tin giữa nhân viên với nhau.
 
@@ -141,6 +141,11 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 2. Người nhận đầu tiên luôn là Quản trị đơn vị của người gửi. Quản trị đơn vị bấm **Chuyển lên** khi cần Quản trị hệ thống. Đơn vị chưa có Quản trị đơn vị thì gửi thẳng Quản trị hệ thống.
 3. Hộp chung của đơn vị: mọi Quản trị đơn vị của đơn vị đó (và đơn vị cha) đều thấy và trả lời được; ai bấm **Nhận xử lý** thì ghi tên người đó.
 4. Nội dung và ảnh đính kèm lưu 18 tháng như check-in, rồi tự xoá.
+
+**Chia theo vai trò (quyết định 30, 14/11/2026):**
+- Web, Cán bộ nhân viên: **nút nổi Hỗ trợ** ở góc dưới bên phải mọi trang (Hub và các bộ phận). Bấm vào mở khung bên phải: yêu cầu của tôi, tạo yêu cầu, trao đổi trong từng yêu cầu. Tự gắn trang đang mở. Nút có số đỏ khi quản trị trả lời. Đã gắn nút vào khung trang ngày 14/11, khung tạm hiện cách liên hệ Phòng ĐMST&CĐS.
+- Web, Quản trị đơn vị và Quản trị hệ thống: trang đầy đủ **Quản trị › Hỗ trợ** `/quan-tri/ho-tro` để tiếp nhận, xử lý, **Chuyển lên** Quản trị hệ thống. Quản trị đơn vị vào Quản trị thì mở thẳng trang này. Không hiện nút nổi.
+- App: **màn hình Hỗ trợ riêng**, mở từ đầu tab Tôi; tab Tôi có số đỏ khi có trả lời; khi gửi dữ liệu lỗi có nút "Báo lỗi này".
 
 **Quyền** (đổi 14/11/2026): `support.request.create` Gửi Yêu cầu hỗ trợ (Cán bộ nhân viên; người gửi chỉ thấy yêu cầu của mình), `support.request.manage` Xử lý Yêu cầu hỗ trợ (Quản trị đơn vị trong đơn vị và đơn vị con, Quản trị hệ thống toàn công ty).
 
@@ -151,8 +156,8 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 | Mã | Nội dung | Xong khi |
 |---|---|---|
 | T1 | Bảng yêu cầu, tin trao đổi trong yêu cầu, tệp đính kèm (MinIO), lịch sử trạng thái và người nhận. Cập nhật tức thì trên web bằng SSE, app nhận qua thông báo đẩy (M7). Đánh dấu đã xem | Trả lời ở web, app người gửi thấy trong 1 phút |
-| T2 | Web `/trao-doi/ho-tro`. Nhân viên: danh sách yêu cầu của tôi, tạo yêu cầu (loại, tiêu đề, mô tả, mức độ nếu là Báo lỗi: chặn công việc, ảnh hưởng, nhẹ; ảnh chụp màn hình). Quản trị: hộp chung theo đơn vị, lọc theo trạng thái, loại, mức độ; Nhận xử lý, Chuyển lên, đổi trạng thái. Trao đổi ngay trong yêu cầu. Biểu tượng Hỗ trợ có số chưa đọc trên thanh trên | Tạo, nhận, chuyển lên, đóng một yêu cầu chạy trên 1440 và 375 px |
-| T3 | App tab Trao đổi: yêu cầu của tôi, tạo yêu cầu, chụp ảnh màn hình đính kèm, tự gắn phiên bản app, loại máy, màn hình đang dùng; soạn lúc mất mạng thì gửi sau; nút **Báo lỗi** nhanh ở tab Tôi | Bật chế độ máy bay tạo 1 yêu cầu và 2 tin, có mạng thì gửi đủ, không trùng |
+| T2 | Web. Nhân viên, trong khung của nút nổi: danh sách yêu cầu của tôi, tạo yêu cầu (loại, tiêu đề, mô tả, mức độ nếu là Báo lỗi: chặn công việc, ảnh hưởng, nhẹ; ảnh chụp màn hình). Quản trị, ở `/quan-tri/ho-tro`: hộp chung theo đơn vị, lọc theo trạng thái, loại, mức độ; Nhận xử lý, Chuyển lên, đổi trạng thái. Trao đổi ngay trong yêu cầu. Số chưa đọc trên nút nổi, số chờ xử lý trên menu Quản trị | Tạo, nhận, chuyển lên, đóng một yêu cầu chạy trên 1440 và 375 px |
+| T3 | App, màn hình Hỗ trợ mở từ tab Tôi: yêu cầu của tôi, tạo yêu cầu, chụp ảnh màn hình đính kèm, tự gắn phiên bản app, loại máy, màn hình đang dùng; soạn lúc mất mạng thì gửi sau; nút **Báo lỗi này** khi gửi dữ liệu lỗi | Bật chế độ máy bay tạo 1 yêu cầu và 2 tin, có mạng thì gửi đủ, không trùng |
 | T4 | Thời hạn phản hồi đầu và xử lý theo mức độ (ở Tham số), nhắc Quản trị đơn vị khi sắp quá hạn, báo Mattermost khi Báo lỗi mức chặn công việc quá hạn; thống kê theo đơn vị, loại, mức độ, thời gian xử lý | Yêu cầu quá hạn hiện ở Hub và thống kê |
 | T5 | Tự xoá nội dung và ảnh sau 18 tháng, chỉ nhận ảnh, PDF, Excel, Word dưới 10 MB, nhật ký mọi thao tác nhận, chuyển, đổi trạng thái | Gửi tệp .exe bị từ chối; nhật ký ghi đủ người và giờ |
 
@@ -164,14 +169,14 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 |---|---|---|---|
 | 1. Check-in chạy thử thật | 16/11 đến 27/11/2026 | 9,5 | 2 đến 3 tài khoản dùng app thật, km theo đường đi, toạ độ đại lý |
 | 2. Thị trường | 30/11 đến 11/12/2026 | 8 | Khách hàng, tuyến, đề xuất đại lý mới, thông báo |
-| 3. Trao đổi | 14/12 đến 25/12/2026 | 7 + 2 dự phòng | Yêu cầu hỗ trợ (hỏi đáp, báo lỗi, góp ý) gửi quản trị, trên web và app |
+| 3. Hỗ trợ | 14/12 đến 25/12/2026 | 7 + 2 dự phòng | Yêu cầu hỗ trợ (hỏi đáp, báo lỗi, góp ý): nút nổi cho CBNV, trang Quản trị › Hỗ trợ, màn hình trên app |
 | 4. FAST | 28/12/2026 đến 12/1/2027 | 10 | Đại lý 2 chiều, nút Đồng bộ FAST, công nợ, Thực bán |
 | 5. Dashboard và chỉ tiêu | 13/1 đến 22/1/2027 | 8 | Dashboard, báo cáo, chỉ tiêu, Tổng quan điều hành |
 | 6. Hoàn thiện | 25/1 đến 5/2/2027 | 9 | Hiệu năng, bảo mật, phát hành app, lên máy chủ IT |
 | 7. Nghiệm thu và đưa vào dùng | 15/2 đến 19/3/2027 | | 3 đợt, toàn bộ người dùng |
 | **Tổng** | **16/11/2026 đến 19/3/2027, khoảng 18 tuần** | **51,5 buổi + 2 dự phòng** | |
 
-**Dự kiến hoàn thành toàn bộ: 19/3/2027**, theo dõi sau khi dùng thật thêm 2 tuần tới 2/4/2027. Gộp Trao đổi (quyết định 29) bớt 2 buổi; giữ nguyên mốc, 2 buổi này để dự phòng cho FAST.
+**Dự kiến hoàn thành toàn bộ: 19/3/2027**, theo dõi sau khi dùng thật thêm 2 tuần tới 2/4/2027. Gộp Hỗ trợ (quyết định 29) bớt 2 buổi; giữ nguyên mốc, 2 buổi này để dự phòng cho FAST.
 
 **Mốc có thể dùng sớm:** check-in và báo cáo ghé thăm đủ dùng cho một đơn vị khoảng 30 người từ khoảng 14/12/2026, nếu đưa lên máy chủ của IT sớm (F7 làm trước) và phát hành app bằng TestFlight hoặc file APK. Máy cá nhân chỉ đủ cho 2 đến 3 tài khoản thử.
 

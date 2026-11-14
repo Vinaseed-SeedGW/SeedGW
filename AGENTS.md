@@ -4,7 +4,7 @@ Claude xây dựng toàn bộ Backend và Frontend. Cách làm việc nằm ở 
 
 ## 1. Dự án
 
-Phần mềm nội bộ của Vinaseed, gồm web và app điện thoại cho 300-400 người dùng. Sau đăng nhập, người dùng luôn đi qua **Hub** chia 3 bộ phận: Kinh doanh, CSKH, Quản trị. Hệ thống kết nối FAST Business Online, Zalo OA, Mattermost và có dashboard chỉ số, chỉ tiêu.
+Phần mềm nội bộ của Vinaseed, gồm web và app điện thoại cho 300-400 người dùng. Sau đăng nhập, người dùng luôn đi qua **Hub** chia 2 bộ phận: Kinh doanh, Quản trị. Cán bộ nhân viên gửi yêu cầu hỗ trợ bằng nút nổi trên web, quản trị xử lý ở Quản trị › Hỗ trợ. Hệ thống kết nối FAST Business Online, Mattermost và có dashboard chỉ số, chỉ tiêu.
 
 ## 2. Nguồn sự thật
 
