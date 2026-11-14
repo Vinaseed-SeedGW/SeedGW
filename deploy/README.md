@@ -127,7 +127,7 @@ Lệnh cuối in ra địa chỉ dạng `https://<bốn-từ>.trycloudflare.com`
 
 ```powershell
 cd apps/mobile
-npx eas-cli env:update --environment preview --variable-name EXPO_PUBLIC_API_URL --value https://<địa-chỉ-mới>
+npx eas-cli env:set --environment preview --name EXPO_PUBLIC_API_URL --value https://<địa-chỉ-mới> --non-interactive
 npx eas-cli update --channel thu-nghiem --environment preview --message "Đổi địa chỉ máy chủ thử"
 ```
 
