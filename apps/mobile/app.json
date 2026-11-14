@@ -43,6 +43,14 @@
         "projectId": "777ad09e-0669-4b2d-a77d-b97ef8cea83a"
       }
     },
-    "owner": "vinaseed"
+    "owner": "vinaseed",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/777ad09e-0669-4b2d-a77d-b97ef8cea83a",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }

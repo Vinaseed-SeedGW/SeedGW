@@ -1,8 +1,15 @@
+import * as Updates from 'expo-updates';
 import { StyleSheet, Text, View } from 'react-native';
 import { FOOTER } from '@dms/config/footer';
 import { COLORS, SPACE } from '../theme';
 
 // Chân trang theo BRAND.md: app đặt ở cuối màn Tôi (ở bản thử là cuối màn hành trình).
+// Ghi kèm mã bản cập nhật để khi báo lỗi biết máy đang chạy bản nào.
+function versionLabel(): string {
+  const runtime = Updates.runtimeVersion ?? 'chạy thử';
+  return Updates.updateId ? `${runtime}, cập nhật ${Updates.updateId.slice(0, 8)}` : runtime;
+}
+
 export function AppFooter() {
   return (
     <View style={styles.footer}>
@@ -12,6 +19,7 @@ export function AppFooter() {
       <Text style={styles.text}>
         Liên hệ {FOOTER.department}: {FOOTER.email}, SĐT {FOOTER.phone}
       </Text>
+      <Text style={styles.text}>Phiên bản: {versionLabel()}</Text>
     </View>
   );
 }

@@ -7,8 +7,13 @@
     "thu-nghiem": {
       "distribution": "internal",
       "environment": "preview",
-      "android": { "buildType": "apk" },
-      "ios": { "simulator": false }
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      },
+      "channel": "thu-nghiem"
     }
   }
 }
