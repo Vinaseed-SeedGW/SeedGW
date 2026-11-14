@@ -7,7 +7,7 @@ export const DEPARTMENTS = [
   {
     slug: 'trao-doi',
     name: 'Trao đổi',
-    description: 'Tin nhắn nội bộ, báo lỗi hệ thống',
+    description: 'Hỏi đáp, báo lỗi, góp ý gửi quản trị',
   },
   {
     slug: 'quan-tri',

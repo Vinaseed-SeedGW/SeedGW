@@ -15,9 +15,8 @@ export const PERMISSIONS = [
   { code: 'sales.check-in.create', name: 'Check-in trên app' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
 
-  { code: 'chat.message.use', name: 'Dùng Tin nhắn nội bộ' },
-  { code: 'chat.issue.create', name: 'Gửi Báo lỗi hệ thống' },
-  { code: 'chat.issue.manage', name: 'Xử lý Báo lỗi hệ thống' },
+  { code: 'support.request.create', name: 'Gửi Yêu cầu hỗ trợ' },
+  { code: 'support.request.manage', name: 'Xử lý Yêu cầu hỗ trợ' },
 
   { code: 'admin.user.read', name: 'Xem Tài khoản' },
   { code: 'admin.user.manage', name: 'Quản lý Tài khoản' },
@@ -74,8 +73,7 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/kinh-doanh/check-in', permission: 'sales.check-in.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/bao-cao', permission: 'sales.report.read', department: 'kinh-doanh' },
 
-  { path: '/trao-doi/tin-nhan', permission: 'chat.message.use', department: 'trao-doi' },
-  { path: '/trao-doi/bao-loi', permission: 'chat.issue.create', department: 'trao-doi' },
+  { path: '/trao-doi/ho-tro', permission: 'support.request.create', department: 'trao-doi' },
 
   { path: '/quan-tri/tai-khoan', permission: 'admin.user.read', department: 'quan-tri' },
   {
@@ -137,8 +135,8 @@ const DEPARTMENT_LANDING: Record<
     byRole: { operations: '/kinh-doanh/check-in' },
   },
   'trao-doi': {
-    fallback: '/trao-doi/tin-nhan',
-    byRole: { operations: '/trao-doi/bao-loi' },
+    fallback: '/trao-doi/ho-tro',
+    byRole: {},
   },
   'quan-tri': {
     fallback: '/quan-tri/tai-khoan',
@@ -253,7 +251,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     dataScope: 'ORG_UNIT_TREE',
     permissions: [
       ...codesInModule('sales'),
-      ...codesInModule('chat'),
+      ...codesInModule('support'),
       'admin.user.read',
       'admin.user.manage',
       'admin.user.export',
@@ -276,8 +274,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.route.read',
       'sales.check-in.read',
       'sales.check-in.create',
-      'chat.message.use',
-      'chat.issue.create',
+      'support.request.create',
     ],
   },
 ];

@@ -27,8 +27,7 @@ const PAGE_PROBES = [
   '/kinh-doanh/dai-ly',
   '/kinh-doanh/check-in',
   '/kinh-doanh/bao-cao',
-  '/trao-doi/tin-nhan',
-  '/trao-doi/bao-loi',
+  '/trao-doi/ho-tro',
   '/quan-tri/tai-khoan',
   '/quan-tri/dai-ly/nhap-excel',
   '/quan-tri/ket-noi',
@@ -42,16 +41,14 @@ const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>
     '/kinh-doanh/dai-ly',
     '/kinh-doanh/check-in',
     '/kinh-doanh/bao-cao',
-    '/trao-doi/tin-nhan',
-    '/trao-doi/bao-loi',
+    '/trao-doi/ho-tro',
     '/quan-tri/tai-khoan',
   ],
   staff: [
     '/kinh-doanh/dashboard',
     '/kinh-doanh/dai-ly',
     '/kinh-doanh/check-in',
-    '/trao-doi/tin-nhan',
-    '/trao-doi/bao-loi',
+    '/trao-doi/ho-tro',
   ],
 };
 
@@ -172,16 +169,16 @@ describe('departmentLanding', () => {
       '/kinh-doanh/check-in',
     );
     expect(departmentLanding('trao-doi', ['staff'], permissionsOf('staff'))).toBe(
-      '/trao-doi/tin-nhan',
+      '/trao-doi/ho-tro',
     );
     expect(departmentLanding('trao-doi', ['operations'], permissionsOf('operations'))).toBe(
-      '/trao-doi/bao-loi',
+      '/trao-doi/ho-tro',
     );
   });
 
   it('chon trang dau tien co quyen khi trang mac dinh bi cam', () => {
-    expect(departmentLanding('trao-doi', ['x'], new Set(['chat.issue.create']))).toBe(
-      '/trao-doi/bao-loi',
+    expect(departmentLanding('kinh-doanh', ['x'], new Set(['sales.check-in.read']))).toBe(
+      '/kinh-doanh/check-in',
     );
   });
 

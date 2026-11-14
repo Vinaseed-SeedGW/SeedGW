@@ -24,7 +24,7 @@ export const DATA_SCOPE_OPTIONS = dataScope.options.map((value) => ({
 const PERMISSION_GROUP_DEFINITIONS = [
   { label: 'Điều hành', prefix: 'executive.' },
   { label: 'Kinh doanh', prefix: 'sales.' },
-  { label: 'Trao đổi', prefix: 'chat.' },
+  { label: 'Trao đổi', prefix: 'support.' },
   { label: 'Quản trị', prefix: 'admin.' },
 ] as const;
 

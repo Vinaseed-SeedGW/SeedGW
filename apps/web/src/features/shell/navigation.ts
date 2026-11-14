@@ -1,10 +1,9 @@
 import {
-  Bug,
   CalendarDays,
   FileChartColumn,
   LayoutDashboard,
+  LifeBuoy,
   MapPin,
-  MessageSquareText,
   Network,
   Plug,
   Route,
@@ -50,10 +49,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
   ],
   'trao-doi': [
     {
-      items: [
-        { label: 'Tin nhắn', href: '/trao-doi/tin-nhan', icon: MessageSquareText },
-        { label: 'Báo lỗi', href: '/trao-doi/bao-loi', icon: Bug },
-      ],
+      items: [{ label: 'Hỗ trợ', href: '/trao-doi/ho-tro', icon: LifeBuoy }],
     },
   ],
   'quan-tri': [
