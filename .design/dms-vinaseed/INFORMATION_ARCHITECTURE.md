@@ -2,6 +2,8 @@
 
 Ngày: 2026-11-09, cập nhật 2026-11-13 · Dựa trên: DESIGN_BRIEF.md · Task tương ứng: TASKS.md v4
 
+> **Cập nhật 14/11/2026 (quyết định 29):** Trao đổi chỉ còn giữa CBNV và quản trị, gộp Tin nhắn và Báo lỗi thành một trang **Hỗ trợ** `/trao-doi/ho-tro`.
+>
 > **Cập nhật 13/11/2026 (quyết định 28):** bỏ bộ phận CSKH, thêm bộ phận **Trao đổi** (tin nhắn nội bộ, báo lỗi hệ thống); còn 3 vai trò Quản trị hệ thống, Quản trị đơn vị, Cán bộ nhân viên, chức danh ghi ở hồ sơ tài khoản; đại lý đồng bộ 2 chiều với FAST, có trang Đồng bộ FAST trong Quản trị.
 >
 > **Cập nhật 13/11/2026 (DESIGN_BRIEF quyết định 27):** đợt này không làm đơn hàng. Đã bỏ khỏi cấu trúc: Cần duyệt, Đơn hàng, Tạo đơn, Tồn kho, Đồng bộ FAST (đơn hàng), Sản phẩm, Kho, Bảng giá, Quy trình duyệt, tab Đơn hàng trên app. FAST chỉ dùng để đọc công nợ đại lý và doanh số Thực bán. Dashboard tính từ check-in, đại lý và Thực bán.
@@ -23,9 +25,9 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 
 | Vai trò | Việc thường xuyên nhất (giảm dần) | Trang dùng ~80% thời gian |
 |---|---|---|
-| Cán bộ nhân viên | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → nhắn tin → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
-| Quản trị đơn vị | Xem báo cáo ghé thăm → duyệt toạ độ, đại lý mới → lập tuyến → xử lý báo lỗi của đơn vị → tài khoản trong đơn vị | **Check-in** |
-| Quản trị hệ thống | Tài khoản, vai trò → danh mục đại lý, đồng bộ FAST → báo lỗi được chuyển lên → tham số, kết nối | **Tài khoản** |
+| Cán bộ nhân viên | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → gửi yêu cầu hỗ trợ khi vướng → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| Quản trị đơn vị | Xem báo cáo ghé thăm → duyệt toạ độ, đại lý mới → lập tuyến → xử lý yêu cầu hỗ trợ của đơn vị → tài khoản trong đơn vị | **Check-in** |
+| Quản trị hệ thống | Tài khoản, vai trò → danh mục đại lý, đồng bộ FAST → yêu cầu hỗ trợ được chuyển lên → tham số, kết nối | **Tài khoản** |
 
 ## 1. Site Map (web)
 
@@ -55,9 +57,8 @@ Trang có dấu `*` là bổ sung so với plan trước.
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
 
-- **Trao đổi** `/trao-doi` (Cán bộ nhân viên vào Tin nhắn, Quản trị đơn vị vào Báo lỗi)
-  - Tin nhắn `/trao-doi/tin-nhan`, mở một hội thoại: `/trao-doi/tin-nhan/[id]`
-  - Báo lỗi `/trao-doi/bao-loi`, chi tiết: `/trao-doi/bao-loi/[ma]`
+- **Trao đổi** `/trao-doi` (chuyển tới Hỗ trợ)
+  - Hỗ trợ `/trao-doi/ho-tro`, chi tiết: `/trao-doi/ho-tro/[ma]`, tạo mới: `/trao-doi/ho-tro/tao-moi`
 
 - **Quản trị** `/quan-tri` (chuyển tới Tài khoản)
   - Người dùng
@@ -100,20 +101,20 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 ## 2. Navigation Model
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
-- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Trao đổi 2 trang không chia nhóm; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
+- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Trao đổi 1 trang; Quản trị 8 trang chia 4 nhóm. Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
 - **Điều hướng phụ**: tab trong trang chi tiết. Breadcrumb từ cấp bộ phận.
-- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · biểu tượng tin nhắn (mở nhanh Trao đổi, có số tin chưa đọc) · chuông thông báo · tài khoản của tôi.
-- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Tin nhắn (chưa đọc), Báo lỗi (chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
-- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Tin nhắn 2 cột thu thành 1 cột theo bước (danh sách → hội thoại). Bảng dữ liệu ẩn bớt cột phụ.
+- **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · biểu tượng Hỗ trợ (có số yêu cầu có trả lời chưa đọc) · chuông thông báo · tài khoản của tôi.
+- **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên Hỗ trợ (chưa đọc với nhân viên, chờ xử lý với quản trị) và toạ độ, đại lý mới chờ duyệt.
+- **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Hỗ trợ 2 cột thu thành 1 cột theo bước (danh sách yêu cầu → chi tiết và trao đổi). Bảng dữ liệu ẩn bớt cột phụ.
 - **App điện thoại**: 5 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Trao đổi, Tôi); không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
 | Vai trò | Kinh doanh | Trao đổi | Quản trị |
 |---|---|---|---|
-| Cán bộ nhân viên | Dashboard (số của tôi) | Tin nhắn | không có |
-| Quản trị đơn vị | Check-in | Báo lỗi | Tài khoản |
-| Quản trị hệ thống | Dashboard | Tin nhắn | Tài khoản |
+| Cán bộ nhân viên | Dashboard (số của tôi) | Hỗ trợ (yêu cầu của tôi) | không có |
+| Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Tài khoản |
+| Quản trị hệ thống | Dashboard | Hỗ trợ (yêu cầu được chuyển lên) | Tài khoản |
 
 ## 3. Dashboard và chỉ số
 
@@ -137,7 +138,7 @@ Theo vai trò: **Cán bộ nhân viên** thấy số của mình và đại lý 
 
 ### 3.3 Tổng quan điều hành `/tong-quan`
 
-Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lượt ghé thăm · Nhân viên đã check-in hôm nay · Thực bán so với chỉ tiêu · Công nợ · Báo lỗi quá hạn; so sánh các đơn vị; danh sách **"Cần chú ý"** (vùng độ phủ thấp, đại lý lâu chưa ghé, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, báo lỗi mức chặn công việc).
+Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lượt ghé thăm · Nhân viên đã check-in hôm nay · Thực bán so với chỉ tiêu · Công nợ · Yêu cầu hỗ trợ quá hạn; so sánh các đơn vị; danh sách **"Cần chú ý"** (vùng độ phủ thấp, đại lý lâu chưa ghé, đại lý vượt hạn mức, lỗi đồng bộ FAST kéo dài, Báo lỗi mức chặn công việc quá hạn).
 
 ### 3.5 Định nghĩa chỉ số
 
@@ -225,8 +226,8 @@ Quy tắc tính:
 | Khái niệm | Nhãn trên giao diện | Ghi chú |
 |---|---|---|
 | Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 3: Kinh doanh, Trao đổi, Quản trị |
-| Tin trao đổi giữa CBNV | **Tin nhắn** | |
-| Phản ánh lỗi phần mềm tới quản trị | **Báo lỗi** | Không gọi là "ticket" |
+| Trao đổi giữa CBNV và quản trị | **Hỗ trợ**, mỗi lần gửi là một **Yêu cầu** | Loại: Hỏi đáp, Báo lỗi, Góp ý. Không gọi là "ticket" |
+| Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |
 | Ba vai trò | **Quản trị hệ thống**, **Quản trị đơn vị**, **Cán bộ nhân viên** | Chức danh là thông tin hồ sơ, không phải vai trò |
 | Miền/Vùng/Khu vực trong cơ cấu | **Đơn vị** | Không gọi là "bộ phận" |
 | Bên mua và nhận hoá đơn, có mã FAST | **Đại lý** | Có trường Loại: Cấp 1, Cấp 2, Tổ chức |
@@ -240,7 +241,7 @@ Quy tắc tính:
 | Quãng đường từ điểm check-in trước theo đường thật | **Khoảng cách (km)** | Theo mẫu Excel cự ly di chuyển |
 | Độ dài vết GPS từ điểm trước | **Khoảng cách theo GPS (km)** | |
 | Trang check-in trên web | **Báo cáo ghé thăm** | Đường dẫn vẫn là `/kinh-doanh/check-in` |
-| Yêu cầu của khách cần xử lý | **Phiếu** | Thay "ticket" |
+| Yêu cầu của khách cần xử lý | **Phiếu** | Để tham khảo, chưa làm trong đợt này (quyết định 28) |
 | Chuỗi tin với một khách | **Hội thoại** | |
 | Mục tiêu được giao | **Chỉ tiêu** | Luôn là con số kế hoạch |
 | Thước đo hiển thị | **Chỉ số** | Không gọi là "KPI" trên giao diện |
@@ -264,15 +265,15 @@ Quy tắc tính:
 | `DashboardGrid`, `MetricTile`, `ChartCard`, `DashboardFilters` | 3 dashboard và Báo cáo | Khối theo vai trò; mỗi khối một `<Suspense>` |
 | `SyncBadge` | Đại lý, Kết nối | Trạng thái đồng bộ từ FAST |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
-| `Chat` (compound) | Tin nhắn, trao đổi trong Báo lỗi | Thu thành 1 cột dưới 1024px |
+| `SupportThread` (compound) | Chi tiết yêu cầu Hỗ trợ, web và app | Thu thành 1 cột dưới 1024px |
 
 ## 8. Content Growth Plan
 
 | Nội dung | Tốc độ tăng | Cách xử lý |
 |---|---|---|
-| Đơn hàng, Phiếu, Check-in | Liên tục | Phân trang phía máy chủ, mặc định lọc kỳ gần nhất, có tìm kiếm |
+| Check-in, Yêu cầu hỗ trợ | Liên tục | Phân trang phía máy chủ, mặc định lọc kỳ gần nhất, có tìm kiếm |
 | Ảnh check-in (~90–180 GB/năm) | Liên tục | Nén trên máy; chính sách lưu ảnh gốc theo thời hạn cần chốt |
-| Tin nhắn, Hội thoại | Liên tục | Tải dần khi cuộn; hội thoại đã đóng lâu chuyển trạng thái lưu trữ, vẫn tìm được |
+| Tin trao đổi trong yêu cầu | Liên tục | Tải dần khi cuộn; tự xoá sau 18 tháng như check-in |
 | Số liệu dashboard | Liên tục | Bảng tổng hợp theo ngày, không tính trực tiếp từ dữ liệu gốc |
 | Nhật ký hệ thống, nhật ký đồng bộ | Liên tục, nhanh | Chia bảng theo tháng; giữ ngắn hạn phần nội dung request |
 | Đại lý, Khách hàng | Vừa | Tìm không dấu, lọc đơn vị, phạm vi theo vai trò |
@@ -284,7 +285,7 @@ Quy tắc tính:
 
 - Mẫu: `/{bo-phan}/{tai-nguyen}/{dinh-danh}`; tiếng Việt không dấu, chữ thường, nối bằng `-`.
 - Trang tạo mới: `/tao-moi` (từ khoá dành riêng, mã không được trùng).
-- Định danh: Đơn hàng và Phiếu dùng **mã** (`[ma]`) vì mã không đổi và dễ đọc qua điện thoại. Đại lý, Khách hàng, Tài khoản dùng **`[id]`** vì mã đại lý có thể đổi nếu phải dùng phương án dự phòng.
+- Định danh: Yêu cầu hỗ trợ (và Đơn hàng, Phiếu ở đợt sau) dùng **mã** (`[ma]`) vì mã không đổi và dễ đọc qua điện thoại. Đại lý, Khách hàng, Tài khoản dùng **`[id]`** vì mã đại lý có thể đổi nếu phải dùng phương án dự phòng.
 - Tham số truy vấn: `?q=` tìm kiếm · `?trang=` · `?sap-xep=` · `?tab=` · dashboard: `?ky=2026-11` hoặc `?ky=vu-dong-xuan-2026`, `?don-vi=`, `?nhom=`, `?nguon=dat-hang|thuc-ban`.
 - Mọi trạng thái lọc nằm trên URL để gửi link và tải lại đúng trạng thái.
 - API đánh số phiên bản qua đường dẫn (`/api/v1`); thay đổi phá vỡ tương thích → `/api/v2`.
