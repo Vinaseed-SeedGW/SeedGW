@@ -107,3 +107,30 @@ Báo lại tên miền cho Phòng ĐMST&CĐS để:
 
 - Đặt biến `EXPO_PUBLIC_API_URL=https://<tên miền>` cho bản build app trên Expo, rồi build lại app iPhone.
 - Đổi khoá Vietmap đã gắn trong app bản thử R3, khoá mới chỉ đặt trong `staging.env`.
+
+## 8. Thử trên máy cá nhân qua Cloudflare Tunnel (TASKS P1)
+
+Dùng trong giai đoạn xây dựng, 2 đến 3 tài khoản thử, chưa có máy chủ của IT. Điện thoại đi 4G gọi vào máy cá nhân qua Cloudflare; máy không cần mở cổng router.
+
+- Caddy có thêm cổng `127.0.0.1:8080`, **chỉ cho đi qua `/api/mobile/*` và `/api/health`**. Trang web quản trị không ra Internet, xem trong máy ở `https://localhost`.
+- `cloudflared` cài ở `C:\Users\<tên>\tools\cloudflared\cloudflared.exe` (bản 2026.10.7, có chữ ký Cloudflare).
+
+Chạy (PowerShell, từ thư mục gốc repo, Docker Desktop đang chạy):
+
+```powershell
+$env:DMS_ENV_FILE = './local-test.env'
+docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build
+& "$HOME\tools\cloudflared\cloudflared.exe" tunnel --no-autoupdate --url http://127.0.0.1:8080
+```
+
+Lệnh cuối in ra địa chỉ dạng `https://<bốn-từ>.trycloudflare.com`. Đây là **tunnel tạm**: mỗi lần chạy lại (tắt máy, khởi động lại) địa chỉ đổi. Khi đổi:
+
+```powershell
+cd apps/mobile
+npx eas-cli env:update --environment preview --variable-name EXPO_PUBLIC_API_URL --value https://<địa-chỉ-mới>
+npx eas-cli update --channel thu-nghiem --environment preview --message "Đổi địa chỉ máy chủ thử"
+```
+
+App tự tải bản cập nhật ở lần mở kế tiếp và dùng địa chỉ mới từ lần mở sau nữa. Dữ liệu đang chờ gửi trên máy không mất.
+
+Muốn địa chỉ cố định: thêm một tên miền vào tài khoản Cloudflare, tạo tunnel có tên (`cloudflared tunnel login`, `cloudflared tunnel create dms-thu`) và trỏ một tên miền con vào `http://127.0.0.1:8080`. Khi đó không cần bước cập nhật app ở trên.

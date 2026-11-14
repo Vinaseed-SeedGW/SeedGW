@@ -1,7 +1,7 @@
 # Máy chủ thử (staging) DMS Vinaseed. Chạy trên máy chủ nội bộ, Caddy tự lấy chứng chỉ HTTPS.
 # Chạy từ thư mục gốc repo:
 #   DMS_ENV_FILE=/opt/dms/staging.env docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build
-# Chỉ Caddy mở cổng ra ngoài (80, 443). Database, Redis, MinIO chỉ nằm trong mạng nội bộ của Docker.
+# Chỉ Caddy mở cổng ra ngoài (80, 443; 8080 chỉ trong máy cho Cloudflare Tunnel). Database, Redis, MinIO chỉ nằm trong mạng nội bộ của Docker.
 
 x-app-env: &app-env
   env_file: ${DMS_ENV_FILE:-./staging.env}
@@ -85,6 +85,8 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      # Chỉ trong máy, cho cloudflared nối vào khi thử trên máy cá nhân.
+      - '127.0.0.1:8080:8080'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

@@ -30,3 +30,21 @@
 		format console
 	}
 }
+
+# Cổng cho Cloudflare Tunnel khi máy chủ thử chạy trên máy cá nhân (TASKS P1). Chỉ cho app điện thoại
+# đi qua; trang web quản trị vẫn chỉ mở trong máy. Docker chỉ mở cổng này cho 127.0.0.1, cloudflared nối vào.
+:8080 {
+	@app path /api/mobile/* /api/health
+	handle @app {
+		reverse_proxy web:3000
+	}
+
+	handle {
+		respond 404
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
