@@ -28,7 +28,7 @@ Cập nhật 16/11 chiều: thêm G1a (nhập nhân viên thật, bạn gửi da
 | F4 | Bảng dữ liệu dùng chung | |
 | F5 | Form dùng chung, nhật ký thao tác, thông báo | |
 | A1 | Cơ cấu tổ chức | Đã thêm 19 đơn vị từ DMS cũ, sửa tên và vị trí sau |
-| A2 | Tài khoản CBNV, nhập Excel, thiết bị di động | Có ô Chức danh. Chưa nhập danh sách nhân viên thật |
+| A2 | Tài khoản CBNV, nhập Excel, thiết bị di động | Có ô Chức danh. Đã nhập 291 nhân viên thật vào máy chủ thử (G1a) |
 | A3 | Vai trò và ma trận quyền | |
 | A9 | Tham số hệ thống | Mốc lâu chưa ghé thăm theo cấp đại lý: cấp 1 14 ngày, cấp 2 30 ngày, cấp 3 45 ngày |
 | A7 | Danh mục đại lý | 15.819 đại lý, mã FAST, 3 cấp, 34 tỉnh mới, gán và đổi đơn vị hàng loạt, chọn đại lý trên app. Còn A7b |
@@ -50,7 +50,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 |---|---|---|
 | T2 16/11 | Kế hoạch demo, tài liệu chuyển máy chủ, phát APK cho nhóm thử | |
 | T3 17/11 | **M2** Hoàn thiện màn check-in. Nhóm thử bắt đầu đi thật | 1 |
-| T4 18/11 sáng | **G1a** Nhập nhân viên thật, ghép đại lý (khi đã có danh sách) | 0,5 |
+| T2 16/11 | **G1a** Nhập nhân viên thật, ghép đại lý. Đã xong, sớm 2 ngày | 0,5 |
 | T4 18/11 chiều đến T5 19/11 | **M6** App 4 tab | 1,5 |
 | T6 20/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa | 1 |
 | T2 23/11 sáng | **M9a** Bản iPhone qua TestFlight cho người xem demo | 0,5 |
@@ -60,8 +60,8 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | T6 27/11 | **Demo** | |
 
 - [ ] **M2. Hoàn thiện màn check-in** (1 buổi): giờ trên ảnh theo giờ máy chủ, tên nhân viên trên ảnh, font và màu theo BRAND, cảnh báo khi vuốt tắt app, câu hỏi quyền tiếng Việt còn sót.
-- [ ] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (0,5 buổi): nhập danh sách bằng Excel ở trang Tài khoản (có cột Chức danh, vai trò mặc định Cán bộ nhân viên) vào máy chủ thử, bấm Ghép nhân viên theo tên cho 12.087 đại lý đang chờ gán. Tài khoản mẫu giữ lại cho buổi demo.
-  - Cần: file danh sách nhân viên (mã, họ tên, đơn vị, chức danh; số điện thoại, email nếu có).
+- [x] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (xong 16/11): file 316 tài khoản theo mẫu hệ thống cũ, bỏ 10 tài khoản test, khách và 15 tài khoản kế toán dùng chung, nhập 291 người vào máy chủ thử với vai trò Cán bộ nhân viên, mật khẩu tạm phải đổi lần đầu. Tạo 3 đơn vị con của SSC chưa có: Chi nhánh Lâm Hà `SS-LH`, Phòng Sản xuất `SS-SX`, Chi nhánh Campuchia `SS-CPC` (mã tạm). Ghép theo tên được 9.464 đại lý, còn 2.615 chờ gán (74 tên phụ trách cũ không có trong danh sách, 2 cặp trùng tên). Tài khoản mẫu giữ lại cho buổi demo.
+  - Còn thiếu: chức danh, ngày vào làm, quản lý trực tiếp (file không có); vai trò Quản trị đơn vị gán tay khi cần.
 - [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang và phiên bản ở tab Tôi. Tab Tuyến tạm hiện đại lý tôi phụ trách, phần tuyến theo ngày làm ở S8.
 - [ ] **M4. Toạ độ đại lý từ check-in** (1 buổi): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt; check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ.
 - [ ] **V2b. Bản đồ hành trình** (1 buổi): bản đồ một ngày của một nhân viên bằng `leaflet` (đã duyệt): vết đi, các điểm check-in có ảnh; lọc theo đơn vị. Job xoá dữ liệu quá hạn dời sang D5.
@@ -70,7 +70,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
-**Cộng giai đoạn 1: 9 buổi** (P1 đã xong, còn 8).
+**Cộng giai đoạn 1: 9 buổi** (P1, G1a đã xong, còn 7,5).
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
@@ -221,7 +221,7 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 |---|---|---|
 | Bạn | Chọn 2 đến 3 người thử, cài APK, bắt đầu đi thật | 17/11/2026 |
 | Bạn | Chốt thời gian, phòng, máy chiếu, mạng cho buổi demo; ai có mặt | 24/11/2026 |
-| Bạn | Danh sách nhân viên (mã, họ tên, đơn vị, chức danh), bạn gửi 16 đến 17/11 | 17/11/2026 |
+| Bạn | ~~Danh sách nhân viên~~ đã gửi 16/11, đã nhập | Xong |
 | Bạn | Địa chỉ cố định cho máy chủ thử: Vinaseed đã có `vinaseed.com.vn` nhưng tunnel có tên cần tên miền nằm trên Cloudflare. Chọn: giữ tunnel tạm tới demo, mua một tên miền riêng cho đợt thử, hay nhờ IT (để sau demo) | 18/11/2026 |
 | Bạn | Email Apple ID của người dùng iPhone trong buổi demo, có mặt để đăng nhập Apple khi build TestFlight | 20/11/2026 |
 | FAST và Kế toán | Tài liệu API đọc và ghi khách hàng, đọc công nợ, hoá đơn bán; chốt dải mã `DL` cho đại lý tạo từ DMS | 11/12/2026 |
