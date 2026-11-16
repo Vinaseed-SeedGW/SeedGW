@@ -69,6 +69,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
   - Danh mục
     - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
+    - Duyệt toạ độ `/quan-tri/dai-ly/duyet-toa-do` (tab: Chờ duyệt · Đã xử lý; đề xuất toạ độ từ lần check-in đầu tại đại lý chưa có toạ độ, kèm ảnh, địa chỉ lúc chụp, cùng phố hay khác phố)
   - Quy định
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
     - Tham số `/quan-tri/tham-so`
@@ -209,9 +210,12 @@ Quy tắc tính:
 
 ### Check-in và báo cáo ghé thăm
 1. App: bấm Check-in → máy ảnh trong app mở, khung ngắm hiện giờ và vị trí → chụp → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
+   - Cách thứ hai: bấm **Đại lý gần tôi** → danh sách đại lý mình phụ trách, gần nhất lên đầu, có số mét → bấm một đại lý → máy ảnh mở với đại lý đã chọn sẵn.
    - Từ lượt check-in đầu ngày, app ghi hành trình 5 giây một lần cho tới khi bấm Kết thúc ngày hoặc tới giờ tự dừng.
 2. Nhân viên nhập Ghi chú (bắt buộc nếu không tại đại lý) → lưu trên máy → gửi khi có mạng.
    - Đại lý, khách hàng ngoài bán kính → bắt nhập lý do, gắn cờ, vẫn ghi nhận.
+   - Đại lý chưa có toạ độ → so tên phố trong địa chỉ lúc chụp với địa chỉ trong danh mục, khác phố thì gắn cờ; lần check-in đầu tạo đề xuất toạ độ, Quản trị đơn vị duyệt ở Quản trị › Duyệt toạ độ.
+   - Gõ tên tay đúng tên một đại lý mình phụ trách → máy chủ tự gắn đại lý.
 3. Máy chủ lấy địa chỉ và tính km từ điểm check-in trước trong cùng ngày, theo đường đi thực tế và theo GPS.
 4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
 5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.

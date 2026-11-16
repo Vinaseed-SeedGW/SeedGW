@@ -52,7 +52,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | T3 17/11 | **M2** Hoàn thiện màn check-in. Nhóm thử bắt đầu đi thật | 1 |
 | T2 16/11 | **G1a** Nhập nhân viên thật, ghép đại lý. Đã xong, sớm 2 ngày | 0,5 |
 | T4 18/11 chiều đến T5 19/11 | **M6** App 4 tab | 1,5 |
-| T6 20/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa | 1 |
+| T2 16/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa, Đại lý gần tôi. Làm sớm sau chuyến đi thử | 1 |
 | T2 23/11 sáng | **M9a** Bản iPhone qua TestFlight cho người xem demo | 0,5 |
 | T2 23/11 chiều đến T3 24/11 sáng | **V2b** Bản đồ hành trình trên web | 1 |
 | T3 24/11 chiều đến T4 25/11 | **K0** Dashboard check-in bản đầu | 1,5 |
@@ -63,14 +63,16 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 - [x] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (xong 16/11): file 316 tài khoản theo mẫu hệ thống cũ, bỏ 10 tài khoản test, khách và 15 tài khoản kế toán dùng chung, nhập 291 người vào máy chủ thử với vai trò Cán bộ nhân viên, mật khẩu tạm phải đổi lần đầu. Tạo 3 đơn vị con của SSC chưa có: Chi nhánh Lâm Hà `SS-LH`, Phòng Sản xuất `SS-SX`, Chi nhánh Campuchia `SS-CPC` (mã tạm). Ghép theo tên được 9.464 đại lý, còn 2.615 chờ gán (74 tên phụ trách cũ không có trong danh sách, 2 cặp trùng tên). Tài khoản mẫu giữ lại cho buổi demo.
   - Còn thiếu: chức danh, ngày vào làm, quản lý trực tiếp (file không có); vai trò Quản trị đơn vị gán tay khi cần.
 - [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang và phiên bản ở tab Tôi. Tab Tuyến tạm hiện đại lý tôi phụ trách, phần tuyến theo ngày làm ở S8.
-- [ ] **M4. Toạ độ đại lý từ check-in** (1 buổi): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt; check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ.
+- [x] **M4. Toạ độ đại lý từ check-in** (làm 16/11, sớm 4 ngày): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt ở `/quan-tri/dai-ly/duyet-toa-do` (quyền `admin.dealer-location.approve`); check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ Xa đại lý.
+  - Thêm sau chuyến đi thử 16/11: cách check-in thứ hai **Đại lý gần tôi** trên app; đại lý chưa có toạ độ thì so tên phố lúc chụp với địa chỉ danh mục, khác phố gắn cờ; gõ tên tay đúng tên đại lý mình phụ trách thì máy chủ tự gắn; app tự tìm lại đại lý khi mất mạng.
+  - Chưa làm: ước tính toạ độ hàng loạt từ địa chỉ qua Vietmap (chờ duyệt dùng lượt gọi).
 - [ ] **V2b. Bản đồ hành trình** (1 buổi): bản đồ một ngày của một nhân viên bằng `leaflet` (đã duyệt): vết đi, các điểm check-in có ảnh; lọc theo đơn vị. Job xoá dữ liệu quá hạn dời sang D5.
 - [ ] **K0. Dashboard check-in bản đầu** (1,5 buổi): `/kinh-doanh/dashboard` theo IA §3, chỉ phần không cần FAST: lượt ghé thăm, độ phủ đại lý, **đại lý lâu chưa ghé thăm** theo mốc từng cấp (có danh sách), km di chuyển; lọc kỳ và đơn vị; phạm vi theo vai trò. Thực bán và chỉ tiêu thêm ở K4.
 - [ ] **M9a. Bản iPhone qua TestFlight** (0,5 buổi): build iOS bản phát hành, đẩy lên App Store Connect, mời người xem demo làm **người thử nội bộ** (tối đa 100 người trong nhóm App Store Connect, không cần Apple duyệt, không cần bật Chế độ nhà phát triển, không cần UDID). Người thử cài app TestFlight rồi nhận lời mời qua email.
   - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
-**Cộng giai đoạn 1: 9 buổi** (P1, G1a đã xong, còn 7,5).
+**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4 đã xong, còn 6,5).
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
