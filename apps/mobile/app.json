@@ -10,7 +10,9 @@
       "buildNumber": "1",
       "supportsTablet": false,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "vi",
+        "CFBundleLocalizations": ["vi"]
       }
     },
     "android": {

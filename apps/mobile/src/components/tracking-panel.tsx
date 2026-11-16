@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from './text';
 import type { MobileProfile } from '@dms/contracts/check-ins';
 import { hasGeocodeKey } from '../api/reverse-geocode';
 import { formatKm, formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
@@ -154,6 +145,11 @@ export function TrackingPanel({ control, onOpenCamera, onOpenNearby, account }: 
         {snapshot.sessionStartedAt !== null ? (
           <Text style={styles.statusSub}>
             Bắt đầu lúc {formatVnTime(snapshot.sessionStartedAt)}
+          </Text>
+        ) : null}
+        {state.tracking ? (
+          <Text style={styles.statusSub}>
+            Khoá màn hình hoặc chuyển app thoải mái. Đừng vuốt tắt app, hành trình sẽ bị đứt.
           </Text>
         ) : null}
       </View>

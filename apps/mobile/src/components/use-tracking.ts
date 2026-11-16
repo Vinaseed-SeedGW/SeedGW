@@ -9,7 +9,26 @@ import {
   TRACKING_CONFIG,
   type StartResult,
 } from '../sync/background-tracking';
-import { getConsentAt, saveConsent } from '../sync/track-db';
+import { getConsentAt, getLastPointAt, saveConsent } from '../sync/track-db';
+
+// iOS dừng ghi vị trí khi người dùng vuốt tắt app. App mở lại từ đầu (không phải từ chạy nền)
+// trong lúc đang ghi mà điểm cuối đã cũ thì báo đoạn bị đứt, để người dùng biết và lần sau không tắt app.
+const GAP_WARNING_MS = 3 * 60_000;
+let coldStartChecked = false;
+
+function formatTime(at: number): string {
+  const date = new Date(at + 7 * 3_600_000);
+  return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
+}
+
+function coldStartGapWarning(active: boolean): string | null {
+  if (coldStartChecked) return null;
+  coldStartChecked = true;
+  if (Platform.OS !== 'ios' || !active) return null;
+  const last = getLastPointAt();
+  if (last === null || Date.now() - last < GAP_WARNING_MS) return null;
+  return `App đã bị tắt trong lúc ghi hành trình, điểm vị trí cuối lúc ${formatTime(last)}. Đoạn đường lúc app tắt có thể không được tính km. Khi đang ghi, chỉ khoá màn hình hoặc chuyển app, không vuốt tắt app.`;
+}
 
 export type PermissionLevel = Awaited<ReturnType<typeof describeLocationPermission>>;
 
@@ -59,6 +78,8 @@ export function useTracking() {
     const [active, level] = await Promise.all([isTracking(), describeLocationPermission()]);
     setTracking(active);
     setPermission(level);
+    const warning = coldStartGapWarning(active);
+    if (warning) setMessage(warning);
   }, []);
 
   useEffect(() => {

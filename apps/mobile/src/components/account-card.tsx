@@ -1,4 +1,5 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import type { MobileProfile } from '@dms/contracts/check-ins';
 import { logout } from '../api/client';
 import { COLORS, FONT, SPACE } from '../theme';

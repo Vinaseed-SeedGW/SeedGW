@@ -254,6 +254,24 @@ export function saveConsent(at: number): void {
   setMeta('consent_at', String(at));
 }
 
+/** Độ lệch giờ máy so với giờ máy chủ lần đo gần nhất, dùng khi đang mất mạng (M2). */
+export function getClockOffsetMs(): number {
+  const value = Number(getMeta('clock_offset_ms'));
+  return Number.isFinite(value) ? value : 0;
+}
+
+export function saveClockOffsetMs(offsetMs: number): void {
+  setMeta('clock_offset_ms', String(Math.round(offsetMs)));
+}
+
+/** Giờ của điểm GPS cuối cùng đã ghi, để biết hành trình bị đứt khi app bị tắt. */
+export function getLastPointAt(): number | null {
+  return (
+    getDb().getFirstSync<{ at: number | null }>('SELECT MAX(recorded_at) AS at FROM track_points')
+      ?.at ?? null
+  );
+}
+
 /** Bản thử chưa có đăng nhập, người thử tự nhập để file Excel có đủ cột nhân viên. */
 export function getTesterProfile(): TesterProfile {
   return {

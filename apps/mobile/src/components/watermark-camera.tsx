@@ -7,12 +7,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   useWindowDimensions,
   View,
   type HostInstance,
 } from 'react-native';
+import { Text, TextInput } from './text';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as Location from 'expo-location';
@@ -31,6 +30,7 @@ import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { serverEnabled } from '../api/session';
 import { checkInRadiusM, type DealerChoice } from '../api/dealers';
+import { serverNow } from '../api/server-clock';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
 
@@ -152,9 +152,9 @@ function useLiveLocation() {
 }
 
 function useClock() {
-  const [now, setNow] = useState(Date.now);
+  const [now, setNow] = useState(serverNow);
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1_000);
+    const timer = setInterval(() => setNow(serverNow()), 1_000);
     return () => clearInterval(timer);
   }, []);
   return now;
@@ -183,8 +183,9 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
     if (!camera.current || !location || !stripLocation) return;
     setBusy(true);
     setError(null);
-    // Chốt giờ và vị trí đúng lúc bấm chụp, không lấy lúc xử lý xong.
-    const at = Date.now();
+    // Chốt giờ và vị trí đúng lúc bấm chụp, không lấy lúc xử lý xong. Giờ theo máy chủ (M2);
+    // máy bị chỉnh giờ thì máy chủ vẫn gắn cờ lệch giờ nhờ header giờ máy gửi kèm.
+    const at = serverNow();
     const frozen = { ...stripLocation };
     const mocked = location.mocked === true;
     // Hỏi địa chỉ song song lúc xử lý ảnh; đứng yên thì lấy lại kết quả vừa hiện trên khung ngắm.

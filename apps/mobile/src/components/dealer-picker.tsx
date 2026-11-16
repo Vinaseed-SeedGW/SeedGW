@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from './text';
 import { DEALER_LEVEL_LABEL, type MobileDealerOption } from '@dms/contracts/dealers';
 import { searchDealers, type DealerChoice } from '../api/dealers';
 import { COLORS, FONT, SPACE } from '../theme';

@@ -20,3 +20,9 @@ export const COLORS = {
 export const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 } as const;
 
 export const FONT = { regular: '400', bold: '700' } as const;
+
+// Tên nạp font bằng expo-font ở App.tsx; component chữ trong ./components/text tự chọn theo độ đậm.
+export const FONT_FAMILY = {
+  regular: 'UTMNeoSansIntel-Regular',
+  bold: 'UTMNeoSansIntel-Bold',
+} as const;

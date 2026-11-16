@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { Text } from './text';
 import { COLORS, FONT, SPACE } from '../theme';
 
 type Variant = 'primary' | 'ghost' | 'danger';

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useFonts } from 'expo-font';
+import brandBold from './assets/fonts/UTMNeoSansIntel-Bold.ttf';
+import brandRegular from './assets/fonts/UTMNeoSansIntel-Regular.ttf';
 import {
   ActivityIndicator,
   Platform,
@@ -15,12 +18,21 @@ import { TrackingPanel } from './src/components/tracking-panel';
 import { useTracking } from './src/components/use-tracking';
 import { useAutoSync, useSession } from './src/components/use-sync';
 import { WatermarkCamera } from './src/components/watermark-camera';
-import { COLORS } from './src/theme';
+import { COLORS, FONT_FAMILY } from './src/theme';
 
 // Có địa chỉ máy chủ thì phải đăng nhập (M1) và dữ liệu được gửi lên (M3, M12).
 // Chưa có máy chủ thì chạy như bản thử R3, dữ liệu chỉ nằm trên máy.
+// Font thương hiệu nằm trong gói cập nhật của app, nạp một lần lúc mở app (M2).
+const BRAND_FONTS = {
+  [FONT_FAMILY.regular]: brandRegular,
+  [FONT_FAMILY.bold]: brandBold,
+};
+
 export function App() {
-  const { ready, session } = useSession();
+  const { ready: sessionReady, session } = useSession();
+  // Nạp font lỗi thì vẫn chạy bằng font hệ thống, không chặn check-in.
+  const [fontsLoaded, fontError] = useFonts(BRAND_FONTS);
+  const ready = sessionReady && (fontsLoaded || fontError !== null);
   const needsLogin = serverEnabled() && !session;
 
   return (

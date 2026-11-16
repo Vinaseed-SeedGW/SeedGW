@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import { formatCoord, formatVnDate, formatVnTime } from '../sync/geo';
 import { COLORS, FONT } from '../theme';
 

@@ -1,5 +1,6 @@
 import * as Updates from 'expo-updates';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import { FOOTER } from '@dms/config/footer';
 import { COLORS, SPACE } from '../theme';
 

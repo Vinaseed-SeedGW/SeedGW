@@ -1,4 +1,5 @@
 import type { MobileAuthReason, MobileSession } from '@dms/contracts/check-ins';
+import { noteServerDate } from './server-clock';
 import { API_URL, getDeviceIdentity, loadSession, saveSession } from './session';
 
 const TIMEOUT_MS = 20_000;
@@ -20,6 +21,7 @@ async function rawFetch<T>(
 ): Promise<ApiResult<T>> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const sentAt = Date.now();
   try {
     const response = await fetch(`${API_URL}${path}`, {
       method: init.method,
@@ -33,6 +35,7 @@ async function rawFetch<T>(
       },
       body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
     });
+    noteServerDate(response.headers.get('date'), sentAt, Date.now());
     const body = (await response.json().catch(() => ({}))) as {
       code?: string;
       message?: string;

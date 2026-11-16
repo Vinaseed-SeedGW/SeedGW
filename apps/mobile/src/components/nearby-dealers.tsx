@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from './text';
 import * as Location from 'expo-location';
 import type { DealerChoice } from '../api/dealers';
 import { COLORS, FONT, SPACE } from '../theme';

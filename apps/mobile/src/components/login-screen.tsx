@@ -1,13 +1,6 @@
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from './text';
 import { login } from '../api/client';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
