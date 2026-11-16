@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { activeNavHref } from '@dms/contracts/access';
 
 type DepartmentBreadcrumbProps = {
   departmentName: string;
@@ -10,7 +11,11 @@ type DepartmentBreadcrumbProps = {
 
 export function DepartmentBreadcrumb({ departmentName, pages }: DepartmentBreadcrumbProps) {
   const pathname = usePathname();
-  const page = pages.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const active = activeNavHref(
+    pathname,
+    pages.map((item) => item.href),
+  );
+  const page = pages.find((item) => item.href === active);
 
   return (
     <>

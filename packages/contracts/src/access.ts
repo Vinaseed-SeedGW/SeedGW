@@ -112,6 +112,17 @@ export function isActionPath(path: string): boolean {
   return path.endsWith('/tao-moi') || path.endsWith('/nhap-excel');
 }
 
+// Muc menu dang mo: muc khop dai nhat, de trang con co muc menu rieng (Duyet toa do nam duoi Dai ly)
+// thi chi muc con sang, khong sang ca muc cha.
+export function activeNavHref(pathname: string, hrefs: readonly string[]): string | null {
+  let longest: string | null = null;
+  for (const href of hrefs) {
+    const matches = pathname === href || pathname.startsWith(`${href}/`);
+    if (matches && (!longest || href.length > longest.length)) longest = href;
+  }
+  return longest;
+}
+
 // Quy tac dai nhat duoc uu tien de trang con co the can quyen rieng.
 export function permissionForPath(pathname: string): PermissionCode | null {
   let longest: RouteRule | null = null;

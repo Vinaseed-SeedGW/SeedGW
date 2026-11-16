@@ -5,6 +5,7 @@ import {
   ROLE_PRESETS,
   ROUTE_RULES,
   SYSTEM_ROLE_CODE,
+  activeNavHref,
   canAccessDepartment,
   canAccessPath,
   departmentLanding,
@@ -136,6 +137,22 @@ describe('roleExceedsActor', () => {
     for (const role of ROLE_PRESETS) {
       expect(roleExceedsActor(admin, presetAuthority(role.code))).toBe(false);
     }
+  });
+});
+
+describe('activeNavHref', () => {
+  const hrefs = ['/quan-tri/dai-ly', '/quan-tri/dai-ly/duyet-toa-do', '/quan-tri/tham-so'];
+
+  it('chi sang muc khop dai nhat', () => {
+    expect(activeNavHref('/quan-tri/dai-ly/duyet-toa-do', hrefs)).toBe(
+      '/quan-tri/dai-ly/duyet-toa-do',
+    );
+    expect(activeNavHref('/quan-tri/dai-ly/abc-123', hrefs)).toBe('/quan-tri/dai-ly');
+    expect(activeNavHref('/quan-tri/dai-ly', hrefs)).toBe('/quan-tri/dai-ly');
+  });
+
+  it('khong nham tien to cung chu', () => {
+    expect(activeNavHref('/quan-tri/dai-ly-cu', hrefs)).toBeNull();
   });
 });
 

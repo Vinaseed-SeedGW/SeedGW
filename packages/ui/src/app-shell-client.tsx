@@ -12,6 +12,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
+import { activeNavHref } from '@dms/contracts/access';
 import { SIDEBAR_STORAGE_KEY } from './sidebar-storage';
 import { SkipLink } from './skip-link';
 import { useDismissable } from './use-dismissable';
@@ -19,7 +20,7 @@ import { useDismissable } from './use-dismissable';
 type ShellContextValue = {
   state: { collapsed: boolean; drawerOpen: boolean };
   actions: { toggleCollapsed: () => void; openDrawer: () => void; closeDrawer: () => void };
-  meta: { storageKey: string };
+  meta: { storageKey: string; navHrefs: readonly string[] };
 };
 
 const ShellContext = createContext<ShellContextValue | null>(null);
@@ -60,7 +61,16 @@ function toggleCollapsed() {
   collapseListeners.forEach((listener) => listener());
 }
 
-export function ShellRoot({ children }: { children: ReactNode }) {
+const NO_HREFS: readonly string[] = [];
+
+export function ShellRoot({
+  navHrefs = NO_HREFS,
+  children,
+}: {
+  /** Mọi đường dẫn trên menu, để chỉ mục khớp dài nhất được đánh dấu đang mở. */
+  navHrefs?: readonly string[];
+  children: ReactNode;
+}) {
   const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, readCollapsedOnServer);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -86,9 +96,9 @@ export function ShellRoot({ children }: { children: ReactNode }) {
     () => ({
       state: { collapsed, drawerOpen },
       actions,
-      meta: { storageKey: SIDEBAR_STORAGE_KEY },
+      meta: { storageKey: SIDEBAR_STORAGE_KEY, navHrefs },
     }),
-    [collapsed, drawerOpen, actions],
+    [collapsed, drawerOpen, actions, navHrefs],
   );
 
   return (
@@ -147,8 +157,9 @@ type ShellNavItemProps = {
 
 export function ShellNavItem({ href, label, children }: ShellNavItemProps) {
   const pathname = usePathname();
-  const { actions } = useShell();
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  const { actions, meta } = useShell();
+  const isActive =
+    activeNavHref(pathname, meta.navHrefs.length > 0 ? meta.navHrefs : [href]) === href;
   return (
     <Link
       href={href}

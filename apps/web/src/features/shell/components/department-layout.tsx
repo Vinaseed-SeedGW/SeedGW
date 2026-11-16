@@ -27,13 +27,14 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
       items: group.items.filter((item) => canAccessPath(user.permissions, item.href)),
     }))
     .filter((group) => group.items.length > 0);
+  const pages = groups.flatMap((group) => group.items.map(({ href, label }) => ({ href, label })));
   const otherDepartments = DEPARTMENTS.filter(
     (department) =>
       department.slug !== slug && canAccessDepartment(user.permissions, department.slug),
   );
 
   return (
-    <AppShell.Root>
+    <AppShell.Root navHrefs={pages.map((page) => page.href)}>
       <AppShell.Sidebar homeHref="/hub">
         {groups.map((group, index) => (
           <AppShell.NavGroup key={group.label ?? index} label={group.label}>
@@ -49,12 +50,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
         <ImpersonationBanner />
         <AppShell.Header>
           <AppShell.Breadcrumb>
-            <DepartmentBreadcrumb
-              departmentName={current?.name ?? ''}
-              pages={groups.flatMap((group) =>
-                group.items.map(({ href, label }) => ({ href, label })),
-              )}
-            />
+            <DepartmentBreadcrumb departmentName={current?.name ?? ''} pages={pages} />
           </AppShell.Breadcrumb>
           <AppShell.DeptSwitcher label={current?.name ?? 'Bộ phận'}>
             <Link href="/hub" className={SWITCHER_LINK_CLASS}>
