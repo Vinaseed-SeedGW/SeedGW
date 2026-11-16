@@ -49,7 +49,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | Ngày | Việc | Buổi |
 |---|---|---|
 | T2 16/11 | Kế hoạch demo, tài liệu chuyển máy chủ, phát APK cho nhóm thử | |
-| T3 17/11 | **M2** Hoàn thiện màn check-in. Nhóm thử bắt đầu đi thật | 1 |
+| T2 16/11 | **M2** Hoàn thiện màn check-in. Làm sớm 1 ngày | 1 |
 | T2 16/11 | **G1a** Nhập nhân viên thật, ghép đại lý. Đã xong, sớm 2 ngày | 0,5 |
 | T4 18/11 chiều đến T5 19/11 | **M6** App 4 tab | 1,5 |
 | T2 16/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa, Đại lý gần tôi. Làm sớm sau chuyến đi thử | 1 |
@@ -59,7 +59,9 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | T5 26/11 | **DM1** Tổng duyệt demo | 1 |
 | T6 27/11 | **Demo** | |
 
-- [ ] **M2. Hoàn thiện màn check-in** (1 buổi): giờ trên ảnh theo giờ máy chủ, tên nhân viên trên ảnh, font và màu theo BRAND, cảnh báo khi vuốt tắt app, câu hỏi quyền tiếng Việt còn sót.
+- [x] **M2. Hoàn thiện màn check-in** (xong 16/11, sớm 1 ngày): giờ trên ảnh theo giờ máy chủ (đo lệch giờ mỗi lần gọi máy chủ, mất mạng dùng lần đo trước), font UTM Neo Sans Intel 400 và 700 trong app, nhắc không vuốt tắt app khi đang ghi và báo đoạn hành trình bị đứt khi app iOS bị tắt. Bỏ tên nhân viên trên ảnh theo yêu cầu 16/11 (lượt check-in đã gắn tài khoản).
+  - Hộp thoại quyền của iOS hiện tiếng Việt cần build lại app (đã khai báo trong `app.json`), làm cùng lần build có lời đồng ý vị trí.
+  - Thêm 16/11: lời đồng ý chia sẻ vị trí khi bắt đầu dùng web và app, đang chờ duyệt câu chữ.
 - [x] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (xong 16/11): file 316 tài khoản theo mẫu hệ thống cũ, bỏ 10 tài khoản test, khách và 15 tài khoản kế toán dùng chung, nhập 291 người vào máy chủ thử với vai trò Cán bộ nhân viên, mật khẩu tạm phải đổi lần đầu. Tạo 3 đơn vị con của SSC chưa có: Chi nhánh Lâm Hà `SS-LH`, Phòng Sản xuất `SS-SX`, Chi nhánh Campuchia `SS-CPC` (mã tạm). Ghép theo tên được 9.464 đại lý, còn 2.615 chờ gán (74 tên phụ trách cũ không có trong danh sách, 2 cặp trùng tên). Tài khoản mẫu giữ lại cho buổi demo.
   - Còn thiếu: chức danh, ngày vào làm, quản lý trực tiếp (file không có); vai trò Quản trị đơn vị gán tay khi cần.
 - [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang và phiên bản ở tab Tôi. Tab Tuyến tạm hiện đại lý tôi phụ trách, phần tuyến theo ngày làm ở S8.
@@ -72,7 +74,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
-**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4 đã xong, còn 6,5).
+**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4, M2 đã xong, còn 5,5).
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
