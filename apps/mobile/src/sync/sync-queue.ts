@@ -94,6 +94,7 @@ async function sendCheckIn(item: QueuedCheckIn): Promise<string | null> {
         note: item.note ?? '',
         addressOnPhoto: item.address,
         dealerId: item.placeKind === 'DEALER' ? item.dealerId : null,
+        farReason: item.placeKind === 'DEALER' ? item.farReason : null,
       },
     });
     if (!result.ok) {

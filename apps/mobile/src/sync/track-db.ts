@@ -47,6 +47,7 @@ type PhotoRow = {
   place_name: string | null;
   note: string | null;
   dealer_id: string | null;
+  far_reason: string | null;
 };
 
 export type PhotoSummary = {
@@ -71,6 +72,8 @@ export type PhotoRecord = {
   note: string | null;
   /** Đại lý chọn từ danh mục trên máy chủ (A7). Bản thử chưa đăng nhập thì null. */
   dealerId: string | null;
+  /** Lý do khi chụp xa đại lý quá bán kính (M4). */
+  farReason: string | null;
 };
 
 export type TrackPoint = {
@@ -151,6 +154,7 @@ function getDb(): SQLiteDatabase {
     'client_id',
     'sync_error',
     'dealer_id',
+    'far_reason',
   ]) {
     if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
   }
@@ -319,16 +323,23 @@ export function insertPhoto(photo: {
 /** Lưu nơi check-in và đưa vào hàng chờ gửi. Ảnh nháp chưa lưu thì không gửi, không xuất. */
 export function updatePhotoPlace(
   id: number,
-  place: { kind: PlaceKind; name: string; note: string; dealerId: string | null },
+  place: {
+    kind: PlaceKind;
+    name: string;
+    note: string;
+    dealerId: string | null;
+    farReason: string | null;
+  },
 ): void {
   getDb().runSync(
-    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?,
+    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?, far_reason = ?,
        sync_status = CASE WHEN sync_status = 'draft' THEN 'pending' ELSE sync_status END
      WHERE id = ?`,
     place.kind,
     place.name.trim() || null,
     place.note.trim() || null,
     place.kind === 'DEALER' ? place.dealerId : null,
+    place.kind === 'DEALER' ? place.farReason?.trim() || null : null,
     id,
   );
 }
@@ -381,6 +392,7 @@ export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
       placeName: row.place_name,
       note: row.note,
       dealerId: row.dealer_id,
+      farReason: row.far_reason,
     }));
 }
 
@@ -508,6 +520,7 @@ export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
       placeName: row.place_name,
       note: row.note,
       dealerId: row.dealer_id,
+      farReason: row.far_reason,
       clientId: row.client_id,
       status: row.sync_status,
     }));

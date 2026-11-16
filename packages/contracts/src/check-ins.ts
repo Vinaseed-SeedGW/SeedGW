@@ -67,13 +67,21 @@ export const CHECK_IN_PLACE_KIND_LABEL: Record<CheckInPlaceKind, string> = {
   OTHER: 'Điểm khác',
 };
 
-export const checkInFlag = z.enum(['MOCKED_LOCATION', 'POOR_ACCURACY', 'CLOCK_SKEW']);
+export const checkInFlag = z.enum([
+  'MOCKED_LOCATION',
+  'POOR_ACCURACY',
+  'CLOCK_SKEW',
+  'FAR_FROM_DEALER',
+  'STREET_MISMATCH',
+]);
 export type CheckInFlag = z.infer<typeof checkInFlag>;
 
 export const CHECK_IN_FLAG_LABEL: Record<CheckInFlag, string> = {
   MOCKED_LOCATION: 'Vị trí từ ứng dụng giả lập',
   POOR_ACCURACY: 'Sai số GPS lớn',
   CLOCK_SKEW: 'Giờ trên máy lệch giờ máy chủ',
+  FAR_FROM_DEALER: 'Xa đại lý',
+  STREET_MISMATCH: 'Khác phố với địa chỉ đại lý',
 };
 
 const latitude = z.number().min(-90).max(90);
@@ -94,6 +102,8 @@ export const createCheckInInput = z
     addressOnPhoto: z.string().trim().max(500).nullable().default(null),
     // Đại lý chọn từ danh mục (A7). App bản thử chưa có danh mục thì không gửi.
     dealerId: z.uuid().nullable().default(null),
+    // Lý do khi app thấy vị trí chụp xa toạ độ đại lý quá bán kính (M4). Máy chủ vẫn tự tính lại khoảng cách.
+    farReason: z.string().trim().max(500).nullable().default(null),
   })
   .refine((value) => value.placeKind === 'DEALER' || value.note.length > 0, {
     path: ['note'],
@@ -159,6 +169,8 @@ export const checkInRow = z.object({
   roadDistanceKm: z.number().nullable(),
   gpsDistanceKm: z.number().nullable(),
   isDistanceEstimated: z.boolean(),
+  dealerDistanceM: z.number().nullable(),
+  farReason: z.string().nullable(),
   flags: z.array(checkInFlag),
   photoUrl: z.string().nullable(),
 });

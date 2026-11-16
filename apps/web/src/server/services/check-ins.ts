@@ -7,6 +7,7 @@ import {
   type TrackPointsBatchInput,
   type TrackSessionInput,
 } from '@dms/contracts/check-ins';
+import { isSameStreet, PROPOSAL_MAX_ACCURACY_M } from '@dms/contracts/dealer-locations';
 import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@dms/contracts/format';
 import {
   cumulativeAt,
@@ -20,7 +21,8 @@ import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
 import { reverseGeocode } from '@/server/integrations/vietmap';
 import { DomainError } from './domain-error';
-import { resolveCheckInDealer } from './mobile-dealers';
+import { resolveCheckInDealer, type CheckInDealer } from './mobile-dealers';
+import { readSystemSettings } from './settings';
 
 // Cờ nghi vấn chỉ để quản lý xem, không bao giờ chặn ghi nhận check-in (CLAUDE.md).
 const POOR_ACCURACY_FLAG_M = 100;
@@ -40,6 +42,41 @@ export function checkInFlags(
     flags.push('CLOCK_SKEW');
   }
   return flags;
+}
+
+/**
+ * Kiểm tra đúng đại lý (M4). Đại lý có toạ độ đã duyệt thì so khoảng cách với bán kính trong Tham số;
+ * chưa có toạ độ thì so tên phố trong địa chỉ lúc chụp với địa chỉ trong danh mục. Chỉ gắn cờ, không chặn.
+ */
+export function dealerCheck(
+  dealer: Pick<CheckInDealer, 'lat' | 'lng' | 'address'> | null,
+  point: { lat: number; lng: number },
+  address: string | null,
+  radiusM: number,
+): { flags: CheckInFlag[]; distanceM: number | null } {
+  if (!dealer) return { flags: [], distanceM: null };
+  if (dealer.lat !== null && dealer.lng !== null) {
+    const distanceM = Math.round(distanceMeters(point, { lat: dealer.lat, lng: dealer.lng }));
+    return { flags: distanceM > radiusM ? ['FAR_FROM_DEALER'] : [], distanceM };
+  }
+  return {
+    flags: isSameStreet(address, dealer.address) === false ? ['STREET_MISMATCH'] : [],
+    distanceM: null,
+  };
+}
+
+/** Lần check-in tại đại lý chưa có toạ độ, vị trí đủ tin cậy thì đề xuất toạ độ cho Quản trị đơn vị duyệt. */
+export function shouldProposeLocation(
+  dealer: Pick<CheckInDealer, 'lat' | 'lng'> | null,
+  input: Pick<CreateCheckInInput, 'isMocked' | 'accuracyM'>,
+): boolean {
+  return (
+    dealer !== null &&
+    (dealer.lat === null || dealer.lng === null) &&
+    !input.isMocked &&
+    input.accuracyM !== null &&
+    input.accuracyM <= PROPOSAL_MAX_ACCURACY_M
+  );
 }
 
 /** Độ lệch giờ máy so với giờ máy chủ, đo bằng giờ máy lúc gửi (không phải lúc chụp, vì có thể gửi trễ). */
@@ -72,6 +109,12 @@ export async function saveCheckIn(
     };
   }
 
+  const [dealer, settings] = await Promise.all([
+    resolveCheckInDealer(user, input),
+    readSystemSettings(),
+  ]);
+  const check = dealerCheck(dealer, input, input.addressOnPhoto, settings.values.checkInRadiusM);
+
   const saved = await db.checkIn
     .create({
       data: {
@@ -88,8 +131,10 @@ export async function saveCheckIn(
         placeName: input.placeName,
         note: input.note,
         addressOnPhoto: input.addressOnPhoto,
-        dealerId: await resolveCheckInDealer(user, input.dealerId),
-        flags: checkInFlags(input, clockSkewMs),
+        dealerId: dealer?.id ?? null,
+        dealerDistanceM: check.distanceM,
+        farReason: input.farReason || null,
+        flags: [...checkInFlags(input, clockSkewMs), ...check.flags],
       },
       select: { id: true },
     })
@@ -99,15 +144,38 @@ export async function saveCheckIn(
         where: { clientId: input.clientId },
         select: { id: true, userId: true },
       });
-      if (again?.userId === user.id) return { id: again.id };
+      if (again?.userId === user.id) return { id: again.id, duplicate: true };
       throw error;
     });
+
+  if (!('duplicate' in saved) && dealer && shouldProposeLocation(dealer, input)) {
+    await db.dealerLocationProposal
+      .create({
+        data: {
+          dealerId: dealer.id,
+          orgUnitId: dealer.orgUnitId,
+          checkInId: saved.id,
+          proposedById: user.id,
+          lat: input.lat,
+          lng: input.lng,
+          accuracyM: input.accuracyM,
+        },
+      })
+      // Đại lý đã có đề xuất chờ duyệt (khoá duy nhất có điều kiện): giữ đề xuất cũ.
+      .catch((error: unknown) => {
+        if (!isUniqueViolation(error)) throw error;
+      });
+  }
 
   return {
     receipt: { id: saved.id, serverTime: new Date().toISOString(), hasPhoto: false },
     created: true,
     id: saved.id,
   };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
 }
 
 function isJpeg(bytes: Buffer): boolean {
@@ -260,13 +328,35 @@ export async function fillMissingAddresses(userId: string, limit = 5): Promise<v
     where: { userId, address: null, addressAttempts: { lt: MAX_ADDRESS_ATTEMPTS } },
     orderBy: { capturedAt: 'desc' },
     take: limit,
-    select: { id: true, lat: true, lng: true },
+    select: {
+      id: true,
+      lat: true,
+      lng: true,
+      flags: true,
+      dealer: { select: { address: true, lat: true, lng: true } },
+    },
   });
   for (const checkIn of pending) {
     const outcome = await reverseGeocode(checkIn.lat, checkIn.lng);
+    if (!outcome.ok) {
+      await db.checkIn.update({
+        where: { id: checkIn.id },
+        data: { addressAttempts: { increment: 1 } },
+      });
+      continue;
+    }
+    // So lại tên phố bằng địa chỉ máy chủ lấy, không chỉ tin địa chỉ app in lên ảnh.
+    const flags = checkIn.flags.filter((flag) => flag !== 'STREET_MISMATCH');
+    if (
+      checkIn.dealer &&
+      checkIn.dealer.lat === null &&
+      isSameStreet(outcome.address, checkIn.dealer.address) === false
+    ) {
+      flags.push('STREET_MISMATCH');
+    }
     await db.checkIn.update({
       where: { id: checkIn.id },
-      data: outcome.ok ? { address: outcome.address } : { addressAttempts: { increment: 1 } },
+      data: { address: outcome.address, flags },
     });
   }
 }

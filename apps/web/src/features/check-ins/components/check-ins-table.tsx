@@ -100,8 +100,14 @@ function columns(onViewPhoto: (row: CheckInRow) => void): ColumnDef<CheckInRow>[
               className="mt-1 mr-1 inline-block rounded-sm bg-warning-soft px-1.5 text-sm"
             >
               {CHECK_IN_FLAG_LABEL[flag]}
+              {flag === 'FAR_FROM_DEALER' && row.original.dealerDistanceM !== null
+                ? `, cách ${formatNumber(row.original.dealerDistanceM)} m`
+                : ''}
             </span>
           ))}
+          {row.original.farReason ? (
+            <span className="block text-sm">Lý do: {row.original.farReason}</span>
+          ) : null}
         </>
       ),
     },

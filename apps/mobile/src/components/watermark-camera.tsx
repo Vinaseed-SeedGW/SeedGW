@@ -30,6 +30,7 @@ import { FILTER } from '@dms/contracts/track-distance';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { serverEnabled } from '../api/session';
+import { checkInRadiusM, type DealerChoice } from '../api/dealers';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
 
@@ -88,12 +89,14 @@ function useLiveAddress(point: GeoPoint | null, precise: boolean): string {
 }
 
 type Props = {
+  /** Đại lý chọn sẵn từ màn Đại lý gần tôi (M4). Không có thì chọn sau khi chụp như cũ. */
+  presetDealer?: DealerChoice | null;
   onClose: () => void;
   /** Gọi sau khi ảnh đã in thông tin và lưu vào máy. */
   onSaved: (sizeBytes: number) => void;
 };
 
-export function WatermarkCamera({ onClose, onSaved }: Props) {
+export function WatermarkCamera({ presetDealer = null, onClose, onSaved }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [shot, setShot] = useState<Shot | null>(null);
 
@@ -109,7 +112,13 @@ export function WatermarkCamera({ onClose, onSaved }: Props) {
   }
   if (shot) {
     return (
-      <Review shot={shot} onRetake={() => setShot(null)} onClose={onClose} onSaved={onSaved} />
+      <Review
+        shot={shot}
+        presetDealer={presetDealer}
+        onRetake={() => setShot(null)}
+        onClose={onClose}
+        onSaved={onSaved}
+      />
     );
   }
   return <Viewfinder onShot={setShot} onClose={onClose} />;
@@ -256,11 +265,13 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
 
 function Review({
   shot,
+  presetDealer,
   onRetake,
   onClose,
   onSaved,
 }: {
   shot: Shot;
+  presetDealer: DealerChoice | null;
   onRetake: () => void;
   onClose: () => void;
   onSaved: (sizeBytes: number) => void;
@@ -273,10 +284,20 @@ function Review({
   const [photoId, setPhotoId] = useState<number | null>(null);
   const [place, setPlace] = useState<PlaceDraft>({
     kind: 'DEALER',
-    name: '',
+    name: presetDealer?.name ?? '',
     note: '',
-    dealerId: null,
+    dealer: presetDealer,
+    farReason: '',
   });
+  const dealerPoint =
+    place.kind === 'DEALER' && place.dealer?.lat != null && place.dealer.lng != null
+      ? { lat: place.dealer.lat, lng: place.dealer.lng }
+      : null;
+  const dealerDistanceM = dealerPoint
+    ? Math.round(distanceMeters(shot.location, dealerPoint))
+    : null;
+  const radiusM = checkInRadiusM();
+  const isFar = dealerDistanceM !== null && dealerDistanceM > radiusM;
   const started = useRef(false);
 
   async function compose() {
@@ -320,7 +341,18 @@ function Review({
       setFormError('Nhập ghi chú khi không check-in tại đại lý.');
       return;
     }
-    updatePhotoPlace(photoId, place);
+    // Check-in xa đại lý vẫn được lưu, chỉ bắt nhập lý do (IA, luồng Check-in bước 2).
+    if (isFar && !place.farReason.trim()) {
+      setFormError('Nhập lý do check-in xa đại lý.');
+      return;
+    }
+    updatePhotoPlace(photoId, {
+      kind: place.kind,
+      name: place.name,
+      note: place.note,
+      dealerId: place.kind === 'DEALER' ? (place.dealer?.id ?? null) : null,
+      farReason: isFar ? place.farReason : null,
+    });
     void syncNow();
     onClose();
   }
@@ -374,6 +406,7 @@ function Review({
             value={place}
             onChange={setPlace}
             point={{ lat: shot.location.lat, lng: shot.location.lng }}
+            far={isFar && dealerDistanceM !== null ? { distanceM: dealerDistanceM, radiusM } : null}
           />
         ) : null}
         {formError ? <Banner tone="danger" text={formError} /> : null}
@@ -386,7 +419,13 @@ function Review({
   );
 }
 
-type PlaceDraft = { kind: PlaceKind; name: string; note: string; dealerId: string | null };
+type PlaceDraft = {
+  kind: PlaceKind;
+  name: string;
+  note: string;
+  dealer: DealerChoice | null;
+  farReason: string;
+};
 
 const PLACE_KINDS: { kind: PlaceKind; label: string; nameLabel: string }[] = [
   { kind: 'DEALER', label: 'Đại lý', nameLabel: 'Tên đại lý' },
@@ -402,14 +441,16 @@ function PlaceForm({
   value,
   onChange,
   point,
+  far,
 }: {
   value: PlaceDraft;
   onChange: (next: PlaceDraft) => void;
   point: { lat: number; lng: number };
+  far: { distanceM: number; radiusM: number } | null;
 }) {
   const current = PLACE_KINDS.find((item) => item.kind === value.kind) ?? PLACE_KINDS[0];
   const usePicker = value.kind === 'DEALER' && serverEnabled();
-  const selectedDealer = value.dealerId ? { id: value.dealerId, name: value.name } : null;
+  const selectedDealer = value.dealer;
   return (
     <View style={styles.form}>
       <Text style={styles.formLabel}>Nơi check-in</Text>
@@ -426,7 +467,7 @@ function PlaceForm({
                   ...value,
                   kind: item.kind,
                   // Đổi loại điểm thì bỏ đại lý đã chọn để không gửi nhầm.
-                  ...(item.kind !== 'DEALER' && value.dealerId ? { dealerId: null, name: '' } : {}),
+                  ...(item.kind !== 'DEALER' && value.dealer ? { dealer: null, name: '' } : {}),
                 })
               }
               style={[styles.chip, selected && styles.chipSelected]}
@@ -443,10 +484,24 @@ function PlaceForm({
         <DealerPicker
           point={point}
           selected={selectedDealer}
-          onSelect={(dealer) =>
-            onChange({ ...value, dealerId: dealer?.id ?? null, name: dealer?.name ?? '' })
-          }
+          onSelect={(dealer) => onChange({ ...value, dealer, name: dealer?.name ?? '' })}
         />
+      ) : null}
+      {far ? (
+        <>
+          <Banner
+            tone="warning"
+            text={`Vị trí chụp cách đại lý khoảng ${far.distanceM} m, xa hơn bán kính ${far.radiusM} m. Check-in vẫn được lưu và gắn cờ.`}
+          />
+          <Text style={styles.formLabel}>Lý do check-in xa đại lý (bắt buộc)</Text>
+          <TextInput
+            value={value.farReason}
+            onChangeText={(farReason) => onChange({ ...value, farReason })}
+            accessibilityLabel="Lý do check-in xa đại lý"
+            style={[styles.input, styles.inputMultiline]}
+            multiline
+          />
+        </>
       ) : null}
       {usePicker && selectedDealer ? null : (
         <>
@@ -455,7 +510,7 @@ function PlaceForm({
           ) : null}
           <TextInput
             value={value.name}
-            onChangeText={(name) => onChange({ ...value, name, dealerId: null })}
+            onChangeText={(name) => onChange({ ...value, name, dealer: null })}
             accessibilityLabel={current?.nameLabel}
             style={styles.input}
             autoCapitalize="words"

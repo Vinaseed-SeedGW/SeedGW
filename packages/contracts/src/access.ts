@@ -29,6 +29,7 @@ export const PERMISSIONS = [
   { code: 'admin.org-unit.assign', name: 'Đổi Trưởng đơn vị' },
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },
   { code: 'admin.dealer.manage', name: 'Quản lý danh mục Đại lý' },
+  { code: 'admin.dealer-location.approve', name: 'Duyệt toạ độ Đại lý' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
@@ -88,6 +89,11 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/quan-tri/vai-tro', permission: 'admin.role.read', department: 'quan-tri' },
   { path: '/quan-tri/co-cau-to-chuc', permission: 'admin.org-unit.read', department: 'quan-tri' },
   { path: '/quan-tri/dai-ly', permission: 'admin.dealer.read', department: 'quan-tri' },
+  {
+    path: '/quan-tri/dai-ly/duyet-toa-do',
+    permission: 'admin.dealer-location.approve',
+    department: 'quan-tri',
+  },
   {
     path: '/quan-tri/dai-ly/nhap-excel',
     permission: 'admin.dealer.manage',
@@ -258,6 +264,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'admin.org-unit.read',
       'admin.org-unit.assign',
       'admin.dealer.read',
+      'admin.dealer-location.approve',
     ],
   },
   {

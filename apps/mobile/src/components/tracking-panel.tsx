@@ -69,11 +69,13 @@ function readSnapshot(): Snapshot {
 type Props = {
   control: TrackingControl;
   onOpenCamera: () => void;
+  /** Cách check-in thứ hai: chọn đại lý gần trước rồi chụp (M4). Null khi chưa đăng nhập máy chủ. */
+  onOpenNearby: (() => void) | null;
   /** Có khi app nối máy chủ và đã đăng nhập. Null là chế độ bản thử, dữ liệu chỉ trên máy. */
   account: { user: MobileProfile; sync: SyncControl } | null;
 };
 
-export function TrackingPanel({ control, onOpenCamera, account }: Props) {
+export function TrackingPanel({ control, onOpenCamera, onOpenNearby, account }: Props) {
   const { state, actions } = control;
   const [snapshot, setSnapshot] = useState<Snapshot>(readSnapshot);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -159,6 +161,7 @@ export function TrackingPanel({ control, onOpenCamera, account }: Props) {
 
       <View style={styles.actions}>
         <Button label="Chụp ảnh check-in" onPress={onOpenCamera} />
+        {onOpenNearby ? <Button label="Đại lý gần tôi" onPress={onOpenNearby} /> : null}
         {state.tracking ? (
           <Button label="Kết thúc ngày" onPress={() => void actions.stop()} variant="ghost" />
         ) : (

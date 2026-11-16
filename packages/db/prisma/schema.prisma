@@ -17,19 +17,20 @@ enum DataScope {
 }
 
 model OrgUnit {
-  id        String    @id @default(uuid()) @db.Uuid
-  code      String    @unique
-  name      String
-  parentId  String?   @map("parent_id") @db.Uuid
-  parent    OrgUnit?  @relation("org_unit_tree", fields: [parentId], references: [id])
-  children  OrgUnit[] @relation("org_unit_tree")
-  managerId String?   @map("manager_id") @db.Uuid
-  manager   User?     @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
-  users     User[]    @relation("org_unit_members")
-  checkIns  CheckIn[]
-  dealers   Dealer[]
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id                      String                   @id @default(uuid()) @db.Uuid
+  code                    String                   @unique
+  name                    String
+  parentId                String?                  @map("parent_id") @db.Uuid
+  parent                  OrgUnit?                 @relation("org_unit_tree", fields: [parentId], references: [id])
+  children                OrgUnit[]                @relation("org_unit_tree")
+  managerId               String?                  @map("manager_id") @db.Uuid
+  manager                 User?                    @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  users                   User[]                   @relation("org_unit_members")
+  checkIns                CheckIn[]
+  dealers                 Dealer[]
+  dealerLocationProposals DealerLocationProposal[]
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
 
   @@map("org_units")
 }
@@ -43,42 +44,44 @@ enum MobileDeviceStatus {
 }
 
 model User {
-  id                     String                 @id @default(uuid()) @db.Uuid
-  employeeCode           String                 @unique @map("employee_code")
-  fullName               String                 @map("full_name")
-  passwordHash           String                 @map("password_hash")
-  isActive               Boolean                @default(true) @map("is_active")
+  id                     String                   @id @default(uuid()) @db.Uuid
+  employeeCode           String                   @unique @map("employee_code")
+  fullName               String                   @map("full_name")
+  passwordHash           String                   @map("password_hash")
+  isActive               Boolean                  @default(true) @map("is_active")
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
-  searchText             String?                @default(dbgenerated()) @map("search_text")
+  searchText             String?                  @default(dbgenerated()) @map("search_text")
   phone                  String?
   email                  String?
-  jobTitle               String?                @map("job_title")
-  hiredAt                DateTime?              @map("hired_at") @db.Date
-  orgUnitId              String?                @map("org_unit_id") @db.Uuid
-  orgUnit                OrgUnit?               @relation("org_unit_members", fields: [orgUnitId], references: [id])
-  managerId              String?                @map("manager_id") @db.Uuid
-  manager                User?                  @relation("user_manager", fields: [managerId], references: [id], onDelete: SetNull)
-  directReports          User[]                 @relation("user_manager")
-  mustChangePassword     Boolean                @default(false) @map("must_change_password")
-  failedLoginCount       Int                    @default(0) @map("failed_login_count")
-  failedLoginStartedAt   DateTime?              @map("failed_login_started_at")
-  loginLockedUntil       DateTime?              @map("login_locked_until")
+  jobTitle               String?                  @map("job_title")
+  hiredAt                DateTime?                @map("hired_at") @db.Date
+  orgUnitId              String?                  @map("org_unit_id") @db.Uuid
+  orgUnit                OrgUnit?                 @relation("org_unit_members", fields: [orgUnitId], references: [id])
+  managerId              String?                  @map("manager_id") @db.Uuid
+  manager                User?                    @relation("user_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports          User[]                   @relation("user_manager")
+  mustChangePassword     Boolean                  @default(false) @map("must_change_password")
+  failedLoginCount       Int                      @default(0) @map("failed_login_count")
+  failedLoginStartedAt   DateTime?                @map("failed_login_started_at")
+  loginLockedUntil       DateTime?                @map("login_locked_until")
   // Tang len de thu hoi moi phien da cap, ke ca phien tren dien thoai.
-  sessionVersion         Int                    @default(0) @map("session_version")
-  managedUnits           OrgUnit[]              @relation("org_unit_manager")
+  sessionVersion         Int                      @default(0) @map("session_version")
+  managedUnits           OrgUnit[]                @relation("org_unit_manager")
   roles                  UserRole[]
-  auditLogs              AuditLog[]             @relation("audit_actor")
-  impersonatedAuditLogs  AuditLog[]             @relation("audit_impersonator")
+  auditLogs              AuditLog[]               @relation("audit_actor")
+  impersonatedAuditLogs  AuditLog[]               @relation("audit_impersonator")
   mobileDevices          MobileDevice[]
-  impersonationsStarted  ImpersonationSession[] @relation("impersonation_actor")
-  impersonationsReceived ImpersonationSession[] @relation("impersonation_target")
+  impersonationsStarted  ImpersonationSession[]   @relation("impersonation_actor")
+  impersonationsReceived ImpersonationSession[]   @relation("impersonation_target")
   mobileRefreshTokens    MobileRefreshToken[]
   checkIns               CheckIn[]
   trackPoints            TrackPoint[]
   trackSessions          TrackSession[]
-  assignedDealers        Dealer[]               @relation("dealer_assignee")
-  createdAt              DateTime               @default(now()) @map("created_at")
-  updatedAt              DateTime               @updatedAt @map("updated_at")
+  assignedDealers        Dealer[]                 @relation("dealer_assignee")
+  locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
+  locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
 
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "users_search_text_trgm_idx")
   @@index([managerId])
@@ -86,20 +89,20 @@ model User {
 }
 
 model MobileDevice {
-  id         String             @id @default(uuid()) @db.Uuid
-  userId     String             @map("user_id") @db.Uuid
-  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deviceKey  String             @map("device_key")
-  name       String
-  platform   String
-  status     MobileDeviceStatus @default(PENDING)
-  approvedAt DateTime?          @map("approved_at")
-  revokedAt  DateTime?          @map("revoked_at")
-  lastSeenAt DateTime?          @map("last_seen_at")
+  id            String               @id @default(uuid()) @db.Uuid
+  userId        String               @map("user_id") @db.Uuid
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceKey     String               @map("device_key")
+  name          String
+  platform      String
+  status        MobileDeviceStatus   @default(PENDING)
+  approvedAt    DateTime?            @map("approved_at")
+  revokedAt     DateTime?            @map("revoked_at")
+  lastSeenAt    DateTime?            @map("last_seen_at")
   refreshTokens MobileRefreshToken[]
-  checkIns   CheckIn[]
-  createdAt  DateTime           @default(now()) @map("created_at")
-  updatedAt  DateTime           @updatedAt @map("updated_at")
+  checkIns      CheckIn[]
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
 
   @@unique([userId, deviceKey])
   @@index([userId, status])
@@ -197,17 +200,17 @@ model UserRole {
 
 // Phien dang nhap app: luu bam cua refresh token, doi token moi lan lam moi.
 model MobileRefreshToken {
-  id        String       @id @default(uuid()) @db.Uuid
-  userId    String       @map("user_id") @db.Uuid
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deviceId  String       @map("device_id") @db.Uuid
-  device    MobileDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  tokenHash String       @unique @map("token_hash")
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId       String       @map("device_id") @db.Uuid
+  device         MobileDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  tokenHash      String       @unique @map("token_hash")
   // Doi mat khau, khoa tai khoan lam tang sessionVersion cua User, token cu khong dung duoc nua.
-  sessionVersion Int     @map("session_version")
-  expiresAt DateTime     @map("expires_at")
-  revokedAt DateTime?    @map("revoked_at")
-  createdAt DateTime     @default(now()) @map("created_at")
+  sessionVersion Int          @map("session_version")
+  expiresAt      DateTime     @map("expires_at")
+  revokedAt      DateTime?    @map("revoked_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
 
   @@index([userId])
   @@map("mobile_refresh_tokens")
@@ -222,39 +225,44 @@ enum CheckInPlaceKind {
 }
 
 model CheckIn {
-  id                  String           @id @default(uuid()) @db.Uuid
+  id                  String                  @id @default(uuid()) @db.Uuid
   // Ma app tao truoc khi gui, goi lai cung ma khong tao them dong.
-  clientId            String           @unique @map("client_id") @db.Uuid
-  userId              String           @map("user_id") @db.Uuid
-  user                User             @relation(fields: [userId], references: [id])
+  clientId            String                  @unique @map("client_id") @db.Uuid
+  userId              String                  @map("user_id") @db.Uuid
+  user                User                    @relation(fields: [userId], references: [id])
   // Don vi cua nhan vien tai thoi diem check-in, doi don vi sau nay khong lam doi bao cao cu.
-  orgUnitId           String?          @map("org_unit_id") @db.Uuid
-  orgUnit             OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  deviceId            String?          @map("device_id") @db.Uuid
-  device              MobileDevice?    @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  orgUnitId           String?                 @map("org_unit_id") @db.Uuid
+  orgUnit             OrgUnit?                @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  deviceId            String?                 @map("device_id") @db.Uuid
+  device              MobileDevice?           @relation(fields: [deviceId], references: [id], onDelete: SetNull)
   // Có khi check-in tại đại lý chọn từ danh mục (A7). placeName vẫn giữ tên lúc check-in.
-  dealerId            String?          @map("dealer_id") @db.Uuid
-  dealer              Dealer?          @relation(fields: [dealerId], references: [id], onDelete: SetNull)
-  capturedAt          DateTime         @map("captured_at")
-  receivedAt          DateTime         @default(now()) @map("received_at")
+  dealerId            String?                 @map("dealer_id") @db.Uuid
+  dealer              Dealer?                 @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  capturedAt          DateTime                @map("captured_at")
+  receivedAt          DateTime                @default(now()) @map("received_at")
   lat                 Float
   lng                 Float
-  accuracyM           Float?           @map("accuracy_m")
-  isMocked            Boolean          @map("is_mocked")
-  placeKind           CheckInPlaceKind @map("place_kind")
-  placeName           String           @map("place_name")
-  note                String           @default("")
+  accuracyM           Float?                  @map("accuracy_m")
+  isMocked            Boolean                 @map("is_mocked")
+  placeKind           CheckInPlaceKind        @map("place_kind")
+  placeName           String                  @map("place_name")
+  note                String                  @default("")
   address             String?
-  addressOnPhoto      String?          @map("address_on_photo")
-  addressAttempts     Int              @default(0) @map("address_attempts")
-  photoKey            String?          @map("photo_key")
-  photoBytes          Int?             @map("photo_bytes")
-  gpsDistanceKm       Float?           @map("gps_distance_km")
-  roadDistanceKm      Float?           @map("road_distance_km")
-  isDistanceEstimated Boolean          @default(false) @map("is_distance_estimated")
-  flags               String[]         @default([])
-  createdAt           DateTime         @default(now()) @map("created_at")
-  updatedAt           DateTime         @updatedAt @map("updated_at")
+  addressOnPhoto      String?                 @map("address_on_photo")
+  addressAttempts     Int                     @default(0) @map("address_attempts")
+  photoKey            String?                 @map("photo_key")
+  photoBytes          Int?                    @map("photo_bytes")
+  gpsDistanceKm       Float?                  @map("gps_distance_km")
+  roadDistanceKm      Float?                  @map("road_distance_km")
+  isDistanceEstimated Boolean                 @default(false) @map("is_distance_estimated")
+  flags               String[]                @default([])
+  // Khoang cach toi toa do dai ly da duyet (M4), null khi dai ly chua co toa do.
+  dealerDistanceM     Float?                  @map("dealer_distance_m")
+  // Ly do nhan vien nhap khi check-in xa dai ly qua ban kinh trong Tham so.
+  farReason           String?                 @map("far_reason")
+  locationProposal    DealerLocationProposal?
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
 
   @@index([userId, capturedAt(sort: Desc)])
   @@index([orgUnitId, capturedAt(sort: Desc)])
@@ -312,44 +320,82 @@ enum DealerStatus {
 
 // Danh muc dai ly (A7). code la ma khach hang tren FAST, legacyCode la ma DMS cu.
 model Dealer {
-  id                 String       @id @default(uuid()) @db.Uuid
-  code               String?      @unique
-  legacyCode         String?      @unique @map("legacy_code")
+  id                 String                   @id @default(uuid()) @db.Uuid
+  code               String?                  @unique
+  legacyCode         String?                  @unique @map("legacy_code")
   name               String
   level              Int
-  parentId           String?      @map("parent_id") @db.Uuid
-  parent             Dealer?      @relation("dealer_tree", fields: [parentId], references: [id], onDelete: SetNull)
-  children           Dealer[]     @relation("dealer_tree")
-  taxCode            String?      @map("tax_code")
-  status             DealerStatus @default(ACTIVE)
+  parentId           String?                  @map("parent_id") @db.Uuid
+  parent             Dealer?                  @relation("dealer_tree", fields: [parentId], references: [id], onDelete: SetNull)
+  children           Dealer[]                 @relation("dealer_tree")
+  taxCode            String?                  @map("tax_code")
+  status             DealerStatus             @default(ACTIVE)
   phone              String?
   // So dien thoai goc khi khong dung dinh dang, de nguoi dung sua lai.
-  phoneRaw           String?      @map("phone_raw")
-  ownerName          String?      @map("owner_name")
-  ownerPhone         String?      @map("owner_phone")
+  phoneRaw           String?                  @map("phone_raw")
+  ownerName          String?                  @map("owner_name")
+  ownerPhone         String?                  @map("owner_phone")
   address            String
-  provinceName       String?      @map("province_name")
+  provinceName       String?                  @map("province_name")
   // Tinh, huyen, xa cu (truoc 01/07/2025) dung nguyen van tu DMS cu de tham khao.
-  legacyAdminArea    String?      @map("legacy_admin_area")
+  legacyAdminArea    String?                  @map("legacy_admin_area")
   lat                Float?
   lng                Float?
-  locatedAt          DateTime?    @map("located_at")
-  orgUnitId          String?      @map("org_unit_id") @db.Uuid
-  orgUnit            OrgUnit?     @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  assignedUserId     String?      @map("assigned_user_id") @db.Uuid
-  assignedUser       User?        @relation("dealer_assignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  locatedAt          DateTime?                @map("located_at")
+  orgUnitId          String?                  @map("org_unit_id") @db.Uuid
+  orgUnit            OrgUnit?                 @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  assignedUserId     String?                  @map("assigned_user_id") @db.Uuid
+  assignedUser       User?                    @relation("dealer_assignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
   // Ten don vi va nguoi phu trach ghi tren DMS cu, de ghep lai khi doi co cau hoac nhap them tai khoan.
-  legacyOrgUnitName  String?      @map("legacy_org_unit_name")
-  legacyAssigneeName String?      @map("legacy_assignee_name")
+  legacyOrgUnitName  String?                  @map("legacy_org_unit_name")
+  legacyAssigneeName String?                  @map("legacy_assignee_name")
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
-  searchText         String?      @default(dbgenerated()) @map("search_text")
+  searchText         String?                  @default(dbgenerated()) @map("search_text")
   checkIns           CheckIn[]
-  createdAt          DateTime     @default(now()) @map("created_at")
-  updatedAt          DateTime     @updatedAt @map("updated_at")
+  locationProposals  DealerLocationProposal[]
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
 
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "dealers_search_text_trgm_idx")
   @@index([orgUnitId])
   @@index([assignedUserId])
   @@index([parentId])
   @@map("dealers")
+}
+
+enum DealerLocationProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("dealer_location_proposal_status")
+}
+
+// De xuat toa do dai ly tu lan check-in dau tai dai ly chua co toa do (M4), Quan tri don vi duyet.
+// Moi dai ly chi co mot de xuat cho duyet, rang buoc nay viet bang SQL (unique index co dieu kien).
+model DealerLocationProposal {
+  id           String                       @id @default(uuid()) @db.Uuid
+  dealerId     String                       @map("dealer_id") @db.Uuid
+  dealer       Dealer                       @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  // Don vi phu trach dai ly luc de xuat, de Quan tri don vi thay de xuat trong pham vi cua minh.
+  orgUnitId    String?                      @map("org_unit_id") @db.Uuid
+  orgUnit      OrgUnit?                     @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  checkInId    String                       @unique @map("check_in_id") @db.Uuid
+  checkIn      CheckIn                      @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  proposedById String                       @map("proposed_by_id") @db.Uuid
+  proposedBy   User                         @relation("dealer_location_proposer", fields: [proposedById], references: [id], onDelete: Cascade)
+  lat          Float
+  lng          Float
+  accuracyM    Float?                       @map("accuracy_m")
+  status       DealerLocationProposalStatus @default(PENDING)
+  reviewedById String?                      @map("reviewed_by_id") @db.Uuid
+  reviewedBy   User?                        @relation("dealer_location_reviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?                    @map("reviewed_at")
+  reviewNote   String                       @default("") @map("review_note")
+  createdAt    DateTime                     @default(now()) @map("created_at")
+  updatedAt    DateTime                     @updatedAt @map("updated_at")
+
+  @@index([status, orgUnitId, createdAt(sort: Desc)])
+  @@index([dealerId])
+  @@map("dealer_location_proposals")
 }

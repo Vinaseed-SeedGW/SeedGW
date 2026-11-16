@@ -76,18 +76,61 @@ export async function listMobileDealers(
       name: dealer.name,
       address: dealer.address,
       level: dealer.level as DealerLevel,
+      lat: dealer.lat,
+      lng: dealer.lng,
       distanceM,
     }),
   );
 }
 
-/** Đại lý gửi kèm check-in phải nằm trong phạm vi của nhân viên, sai thì bỏ, không chặn check-in. */
+const CHECK_IN_DEALER_SELECT = {
+  id: true,
+  address: true,
+  lat: true,
+  lng: true,
+  orgUnitId: true,
+} as const;
+
+export type CheckInDealer = {
+  id: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  orgUnitId: string | null;
+};
+
+/**
+ * Đại lý của lượt check-in, chỉ trong phạm vi của nhân viên; sai phạm vi thì bỏ, không chặn check-in.
+ * Không chọn từ danh sách (mất mạng lúc tìm) mà gõ đúng tên một đại lý mình phụ trách thì tự gắn.
+ */
 export async function resolveCheckInDealer(
   user: MobileUser,
-  dealerId: string | null,
-): Promise<string | null> {
-  if (!dealerId) return null;
+  input: { dealerId: string | null; placeKind: string; placeName: string },
+): Promise<CheckInDealer | null> {
+  if (input.placeKind !== 'DEALER') return null;
   const scoped = await mobileScopedDb(user);
-  const dealer = await scoped.dealer.findUnique({ where: { id: dealerId }, select: { id: true } });
-  return dealer?.id ?? null;
+  if (input.dealerId) {
+    return scoped.dealer.findUnique({
+      where: { id: input.dealerId },
+      select: CHECK_IN_DEALER_SELECT,
+    });
+  }
+  const name = normalizeSearchText(input.placeName);
+  if (name.length < 3) return null;
+  const candidates = await scoped.dealer.findMany({
+    where: { status: 'ACTIVE', searchText: { contains: escapeLikePattern(name) } },
+    take: 10,
+    select: { ...CHECK_IN_DEALER_SELECT, name: true },
+  });
+  const exact = candidates.filter((dealer) => normalizeSearchText(dealer.name) === name);
+  // Trùng tên nhiều đại lý thì không đoán, để quản lý xem tên gõ tay.
+  const [only] = exact;
+  if (exact.length !== 1 || !only) return null;
+  return {
+    id: only.id,
+    address: only.address,
+    lat: only.lat,
+    lng: only.lng,
+    orgUnitId: only.orgUnitId,
+  };
 }

@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   MapPin,
+  MapPinCheck,
   Network,
   Plug,
   Route,
@@ -62,7 +63,10 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
     },
     {
       label: 'Danh mục',
-      items: [{ label: 'Đại lý', href: '/quan-tri/dai-ly', icon: Store }],
+      items: [
+        { label: 'Đại lý', href: '/quan-tri/dai-ly', icon: Store },
+        { label: 'Duyệt toạ độ', href: '/quan-tri/dai-ly/duyet-toa-do', icon: MapPinCheck },
+      ],
     },
     {
       label: 'Quy định',

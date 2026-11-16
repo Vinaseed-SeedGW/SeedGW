@@ -44,6 +44,8 @@ export const CHECK_IN_ROW_SELECT = {
   roadDistanceKm: true,
   gpsDistanceKm: true,
   isDistanceEstimated: true,
+  dealerDistanceM: true,
+  farReason: true,
   flags: true,
   photoKey: true,
   orgUnit: { select: { name: true } },
@@ -73,6 +75,8 @@ export function toCheckInRow(record: CheckInRecord, now = Date.now()): CheckInRo
     roadDistanceKm: record.roadDistanceKm,
     gpsDistanceKm: record.gpsDistanceKm,
     isDistanceEstimated: record.isDistanceEstimated,
+    dealerDistanceM: record.dealerDistanceM,
+    farReason: record.farReason,
     flags: record.flags.flatMap((flag) => {
       const parsed = checkInFlag.safeParse(flag);
       return parsed.success ? [parsed.data] : [];
@@ -121,6 +125,10 @@ function noteText(row: CheckInRow): string {
   const parts = [row.placeKind === 'OTHER' ? `Điểm khác: ${row.placeName}` : '', row.note];
   if (row.isDistanceEstimated) parts.push('Km ước tính do thiếu vết GPS');
   for (const flag of row.flags) parts.push(CHECK_IN_FLAG_LABEL[flag]);
+  if (row.flags.includes('FAR_FROM_DEALER') && row.dealerDistanceM !== null) {
+    parts.push(`Cách đại lý ${Math.round(row.dealerDistanceM)} m`);
+  }
+  if (row.farReason) parts.push(`Lý do: ${row.farReason}`);
   return parts.filter(Boolean).join('. ');
 }
 

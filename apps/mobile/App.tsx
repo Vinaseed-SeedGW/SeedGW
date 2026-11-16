@@ -7,7 +7,9 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import type { DealerChoice } from './src/api/dealers';
 import { serverEnabled } from './src/api/session';
+import { NearbyDealers } from './src/components/nearby-dealers';
 import { LoginScreen } from './src/components/login-screen';
 import { TrackingPanel } from './src/components/tracking-panel';
 import { useTracking } from './src/components/use-tracking';
@@ -41,12 +43,26 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const control = useTracking();
   const sync = useAutoSync(signedIn);
   const { session } = useSession();
-  const [screen, setScreen] = useState<'tracking' | 'camera'>('tracking');
+  const [screen, setScreen] = useState<'tracking' | 'camera' | 'nearby'>('tracking');
+  const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
 
+  if (screen === 'nearby') {
+    return (
+      <NearbyDealers
+        onClose={() => setScreen('tracking')}
+        onPick={(dealer) => {
+          setPresetDealer(dealer);
+          setScreen('camera');
+        }}
+      />
+    );
+  }
   if (screen === 'camera') {
     return (
       <WatermarkCamera
+        presetDealer={presetDealer}
         onClose={() => {
+          setPresetDealer(null);
           setScreen('tracking');
           sync.actions.refreshCounts();
         }}
@@ -58,6 +74,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
     <TrackingPanel
       control={control}
       onOpenCamera={() => setScreen('camera')}
+      onOpenNearby={session ? () => setScreen('nearby') : null}
       account={session ? { user: session.user, sync } : null}
     />
   );

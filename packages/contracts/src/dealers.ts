@@ -305,9 +305,19 @@ export const mobileDealerOption = z.object({
   name: z.string(),
   address: z.string(),
   level: dealerLevel,
+  // Toa do da duyet (M4), app dung de tinh khoang cach luc check-in va hoi ly do khi xa.
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
   distanceM: z.number().nullable(),
 });
 export type MobileDealerOption = z.infer<typeof mobileDealerOption>;
+
+export const mobileDealersResult = z.object({
+  items: z.array(mobileDealerOption),
+  // Bán kính check-in hợp lệ trong Tham số, app hỏi lý do khi chụp xa đại lý hơn mức này.
+  radiusM: z.number().int().positive(),
+});
+export type MobileDealersResult = z.infer<typeof mobileDealersResult>;
 
 export type DealerOption = { value: string; label: string };
 
