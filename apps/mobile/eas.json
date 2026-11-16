@@ -14,6 +14,21 @@
         "simulator": false
       },
       "channel": "thu-nghiem"
+    },
+    "testflight": {
+      "distribution": "store",
+      "environment": "preview",
+      "ios": {
+        "autoIncrement": true
+      },
+      "channel": "thu-nghiem"
+    }
+  },
+  "submit": {
+    "testflight": {
+      "ios": {
+        "appName": "DMS Vinaseed"
+      }
     }
   }
 }

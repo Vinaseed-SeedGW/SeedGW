@@ -123,7 +123,7 @@ docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build
 & "$HOME\tools\cloudflared\cloudflared.exe" tunnel --no-autoupdate --url http://127.0.0.1:8080
 ```
 
-Lệnh cuối in ra địa chỉ dạng `https://<bốn-từ>.trycloudflare.com`. Đây là **tunnel tạm**: mỗi lần chạy lại (tắt máy, khởi động lại) địa chỉ đổi. Khi đổi:
+Lệnh cuối in ra địa chỉ dạng `https://<bốn-từ>.trycloudflare.com`. Đây là **tunnel tạm**: mỗi lần chạy lại (tắt máy, khởi động lại) địa chỉ đổi. Cloudflare cũng có thể tự huỷ tunnel tạm khi máy vẫn bật (log báo `Tunnel not found`, ngày 16/11/2026 sau khoảng 2 ngày chạy), khi đó chạy lại lệnh trên. Kiểm tra `https://<địa-chỉ>/api/health` trả 200 trước khi phát cho người thử. Khi đổi:
 
 ```powershell
 cd apps/mobile
