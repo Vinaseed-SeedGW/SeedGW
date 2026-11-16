@@ -6,6 +6,8 @@ Cập nhật 14/11/2026: Trao đổi chỉ còn giữa CBNV và quản trị, g�
 
 **Bản v6, 16/11/2026: mốc demo 27/11/2026.** Bạn trình bày cho đồng nghiệp và Giám đốc Phòng ĐMST&CĐS. Giai đoạn 1 đổi thành "Chuẩn bị demo"; các việc không cần cho buổi demo dời sang giai đoạn 2 và 3; mốc hoàn thành chung giữ 19/3/2027.
 
+Cập nhật 16/11 chiều: thêm G1a (nhập nhân viên thật, bạn gửi danh sách 16 đến 17/11) và M9a (bản iPhone qua TestFlight cho người xem demo); H0 Hỗ trợ bản demo dời sang giai đoạn 3 để đủ chỗ. Chuyến thử Hòa Bình trong ngày dùng làm dữ liệu chính cho bản đồ và báo cáo.
+
 ## Cách đọc
 
 - Mỗi task là một phần làm xong là chạy được, kiểm tra được (database, máy chủ, giao diện, quyền).
@@ -48,20 +50,24 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 |---|---|---|
 | T2 16/11 | Kế hoạch demo, tài liệu chuyển máy chủ, phát APK cho nhóm thử | |
 | T3 17/11 | **M2** Hoàn thiện màn check-in. Nhóm thử bắt đầu đi thật | 1 |
-| T4 18/11 đến T5 19/11 sáng | **M6** App 4 tab | 1,5 |
-| T5 19/11 chiều đến T6 20/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa | 1 |
-| T2 23/11 | **V2b** Bản đồ hành trình trên web | 1 |
-| T3 24/11 đến T4 25/11 sáng | **K0** Dashboard check-in bản đầu | 1,5 |
-| T4 25/11 chiều | **H0** Hỗ trợ bản demo (nếu kịp, không kịp thì dùng để sửa lỗi) | 1 |
+| T4 18/11 sáng | **G1a** Nhập nhân viên thật, ghép đại lý (khi đã có danh sách) | 0,5 |
+| T4 18/11 chiều đến T5 19/11 | **M6** App 4 tab | 1,5 |
+| T6 20/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa | 1 |
+| T2 23/11 sáng | **M9a** Bản iPhone qua TestFlight cho người xem demo | 0,5 |
+| T2 23/11 chiều đến T3 24/11 sáng | **V2b** Bản đồ hành trình trên web | 1 |
+| T3 24/11 chiều đến T4 25/11 | **K0** Dashboard check-in bản đầu | 1,5 |
 | T5 26/11 | **DM1** Tổng duyệt demo | 1 |
 | T6 27/11 | **Demo** | |
 
 - [ ] **M2. Hoàn thiện màn check-in** (1 buổi): giờ trên ảnh theo giờ máy chủ, tên nhân viên trên ảnh, font và màu theo BRAND, cảnh báo khi vuốt tắt app, câu hỏi quyền tiếng Việt còn sót.
+- [ ] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (0,5 buổi): nhập danh sách bằng Excel ở trang Tài khoản (có cột Chức danh, vai trò mặc định Cán bộ nhân viên) vào máy chủ thử, bấm Ghép nhân viên theo tên cho 12.087 đại lý đang chờ gán. Tài khoản mẫu giữ lại cho buổi demo.
+  - Cần: file danh sách nhân viên (mã, họ tên, đơn vị, chức danh; số điện thoại, email nếu có).
 - [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang và phiên bản ở tab Tôi. Tab Tuyến tạm hiện đại lý tôi phụ trách, phần tuyến theo ngày làm ở S8.
 - [ ] **M4. Toạ độ đại lý từ check-in** (1 buổi): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt; check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ.
 - [ ] **V2b. Bản đồ hành trình** (1 buổi): bản đồ một ngày của một nhân viên bằng `leaflet` (đã duyệt): vết đi, các điểm check-in có ảnh; lọc theo đơn vị. Job xoá dữ liệu quá hạn dời sang D5.
 - [ ] **K0. Dashboard check-in bản đầu** (1,5 buổi): `/kinh-doanh/dashboard` theo IA §3, chỉ phần không cần FAST: lượt ghé thăm, độ phủ đại lý, **đại lý lâu chưa ghé thăm** theo mốc từng cấp (có danh sách), km di chuyển; lọc kỳ và đơn vị; phạm vi theo vai trò. Thực bán và chỉ tiêu thêm ở K4.
-- [ ] **H0. Hỗ trợ bản demo** (1 buổi, nếu kịp): nhân viên gửi yêu cầu qua nút nổi, Quản trị đơn vị xem và trả lời ở `/quan-tri/ho-tro`, chuyển lên Quản trị hệ thống. Chưa cập nhật tức thì, chưa đính kèm ảnh; phần còn lại ở giai đoạn 3.
+- [ ] **M9a. Bản iPhone qua TestFlight** (0,5 buổi): build iOS bản phát hành, đẩy lên App Store Connect, mời người xem demo làm **người thử nội bộ** (tối đa 100 người trong nhóm App Store Connect, không cần Apple duyệt, không cần bật Chế độ nhà phát triển, không cần UDID). Người thử cài app TestFlight rồi nhận lời mời qua email.
+  - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
 **Cộng giai đoạn 1: 9 buổi** (P1 đã xong, còn 8).
@@ -74,7 +80,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 4. **App check-in** (5 phút, làm trực tiếp): đăng nhập, chọn đại lý, chụp ảnh có giờ và địa chỉ, ghi hành trình, lịch sử và km, xuất Excel. Mất mạng vẫn check-in được.
 5. **Web, báo cáo và bản đồ** (4 phút): lượt check-in vừa làm hiện trên web trong 1 phút; bản đồ hành trình; xuất Excel đúng mẫu.
 6. **Dashboard** (2 phút): lượt ghé thăm, độ phủ, đại lý lâu chưa ghé thăm, km.
-7. **Hỗ trợ** (1 phút, nếu có H0): nhân viên gửi yêu cầu, quản trị nhận.
+7. **Hỗ trợ** (30 giây): chỉ nút nổi Hỗ trợ trên web và trang Quản trị › Hỗ trợ; phần gửi và trả lời làm ở giai đoạn 3.
 8. **Lộ trình** (1 phút): FAST 2 chiều, chỉ tiêu, phát hành app, lên máy chủ IT, dùng thật từ 1/3/2027.
 
 ## Giai đoạn 2: Hoàn thiện check-in và thị trường (30/11 đến 14/12/2026)
@@ -95,16 +101,16 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 
 ## Giai đoạn 3: Hỗ trợ: yêu cầu gửi quản trị (15/12 đến 25/12/2026)
 
-Thay cho CSKH, chỉ trao đổi giữa CBNV và quản trị, không nhắn tin giữa nhân viên với nhau. Không còn là bộ phận trên Hub (quyết định 30). Không phụ thuộc bên ngoài nên làm trước FAST. Chi tiết ở mục "Kế hoạch module Hỗ trợ" phía dưới. Phần gửi và trả lời cơ bản đã làm ở H0 nếu kịp.
+Thay cho CSKH, chỉ trao đổi giữa CBNV và quản trị, không nhắn tin giữa nhân viên với nhau. Không còn là bộ phận trên Hub (quyết định 30). Không phụ thuộc bên ngoài nên làm trước FAST. Chi tiết ở mục "Kế hoạch module Hỗ trợ" phía dưới. 
 
 - [ ] **T1. Nền dữ liệu và cập nhật tức thì** (1,5 buổi)
-- [ ] **T2. Hỗ trợ trên web, phần còn lại sau H0** (1 buổi)
+- [ ] **T2. Hỗ trợ trên web** (2 buổi): nhân viên gửi yêu cầu qua nút nổi, Quản trị đơn vị trả lời ở `/quan-tri/ho-tro`, chuyển lên Quản trị hệ thống (phần H0 cũ), thêm ảnh đính kèm, lọc, trạng thái.
 - [ ] **T3. Màn hình Hỗ trợ trên app** (2 buổi)
 - [ ] **T4. Thời hạn xử lý, nhắc, thống kê** (1 buổi)
 - [ ] **T5. Lưu trữ 18 tháng, giới hạn tệp, nhật ký** (0,5 buổi)
-- [ ] **Dự phòng** (3 buổi): dùng cho FAST nếu chậm, nếu không thì sửa lỗi sau đợt thử.
+- [ ] **Dự phòng** (2 buổi): dùng cho FAST nếu chậm, nếu không thì sửa lỗi sau đợt thử.
 
-**Cộng giai đoạn 3: 6 buổi và 3 buổi dự phòng.**
+**Cộng giai đoạn 3: 7 buổi và 2 buổi dự phòng.**
 
 ## Giai đoạn 4: FAST: đại lý 2 chiều, công nợ, Thực bán (28/12/2026 đến 12/1/2027)
 
@@ -192,16 +198,16 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 
 | Giai đoạn | Thời gian | Buổi làm | Kết quả |
 |---|---|---|---|
-| 1. Chuẩn bị demo | 16/11 đến 27/11/2026 | 9 | **Demo 27/11**: app check-in, báo cáo, bản đồ, dashboard check-in, Hỗ trợ bản đầu |
+| 1. Chuẩn bị demo | 16/11 đến 27/11/2026 | 9 | **Demo 27/11**: app check-in Android và iPhone, nhân viên thật, báo cáo, bản đồ, dashboard check-in |
 | 2. Hoàn thiện check-in và thị trường | 30/11 đến 14/12/2026 | 11 | Km theo đường đi, cờ nghi vấn, khách hàng, tuyến, đề xuất đại lý mới, thông báo |
-| 3. Hỗ trợ | 15/12 đến 25/12/2026 | 6 + 3 dự phòng | Hỗ trợ đầy đủ trên web và app |
+| 3. Hỗ trợ | 15/12 đến 25/12/2026 | 7 + 2 dự phòng | Hỗ trợ đầy đủ trên web và app |
 | 4. FAST | 28/12/2026 đến 12/1/2027 | 10 | Đại lý 2 chiều, nút Đồng bộ FAST, công nợ, Thực bán |
 | 5. Dashboard và chỉ tiêu | 13/1 đến 22/1/2027 | 7 | Thực bán và chỉ tiêu trên dashboard, báo cáo, Tổng quan điều hành |
 | 6. Hoàn thiện | 25/1 đến 5/2/2027 | 9 | Hiệu năng, bảo mật, phát hành app, lên máy chủ IT |
 | 7. Nghiệm thu và đưa vào dùng | 15/2 đến 19/3/2027 | | 3 đợt, toàn bộ người dùng |
-| **Tổng** | **16/11/2026 đến 19/3/2027, khoảng 18 tuần** | **52 buổi + 3 dự phòng** | |
+| **Tổng** | **16/11/2026 đến 19/3/2027, khoảng 18 tuần** | **53 buổi + 2 dự phòng** | |
 
-**Dự kiến hoàn thành toàn bộ: 19/3/2027**, theo dõi sau khi dùng thật thêm 2 tuần tới 2/4/2027. Bản v6 kéo V2b, dashboard check-in và Hỗ trợ cơ bản lên trước demo, dời R4, V1b, M5, A9b ra sau; giữ nguyên mốc, 3 buổi dự phòng ở giai đoạn 3.
+**Dự kiến hoàn thành toàn bộ: 19/3/2027**, theo dõi sau khi dùng thật thêm 2 tuần tới 2/4/2027. Bản v6 kéo V2b, dashboard check-in, nhập nhân viên và TestFlight lên trước demo, dời R4, V1b, M5, A9b, H0 ra sau; giữ nguyên mốc, 2 buổi dự phòng ở giai đoạn 3.
 
 **Mốc có thể dùng sớm:** check-in và báo cáo ghé thăm đủ dùng cho một đơn vị khoảng 30 người từ khoảng 14/12/2026, nếu đưa lên máy chủ của IT sớm (F7 làm trước) và phát hành app bằng TestFlight hoặc file APK. Máy cá nhân chỉ đủ cho 2 đến 3 tài khoản thử.
 
@@ -215,9 +221,9 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 |---|---|---|
 | Bạn | Chọn 2 đến 3 người thử, cài APK, bắt đầu đi thật | 17/11/2026 |
 | Bạn | Chốt thời gian, phòng, máy chiếu, mạng cho buổi demo; ai có mặt | 24/11/2026 |
-| Bạn | Danh sách nhân viên (mã, họ tên, đơn vị, chức danh) | 20/11/2026 |
-| Bạn | Quyết định có mua tên miền riêng trên Cloudflare cho địa chỉ cố định (đã duyệt và tải `cloudflared` 2026.10.7 ngày 14/11) | 18/11/2026 |
-| Nhóm thử | UDID iPhone nếu muốn demo cả iPhone (cần build iOS) | 20/11/2026 |
+| Bạn | Danh sách nhân viên (mã, họ tên, đơn vị, chức danh), bạn gửi 16 đến 17/11 | 17/11/2026 |
+| Bạn | Địa chỉ cố định cho máy chủ thử: Vinaseed đã có `vinaseed.com.vn` nhưng tunnel có tên cần tên miền nằm trên Cloudflare. Chọn: giữ tunnel tạm tới demo, mua một tên miền riêng cho đợt thử, hay nhờ IT (để sau demo) | 18/11/2026 |
+| Bạn | Email Apple ID của người dùng iPhone trong buổi demo, có mặt để đăng nhập Apple khi build TestFlight | 20/11/2026 |
 | FAST và Kế toán | Tài liệu API đọc và ghi khách hàng, đọc công nợ, hoá đơn bán; chốt dải mã `DL` cho đại lý tạo từ DMS | 11/12/2026 |
 | IT | Bot Mattermost và kênh nhận thông báo | 18/12/2026 |
 | Lãnh đạo Kinh doanh | Lịch vụ, cách giao chỉ tiêu, mẫu chỉ tiêu đang dùng | 8/1/2027 |
@@ -229,7 +235,7 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 
 | Rủi ro | Ảnh hưởng | Cách giảm |
 |---|---|---|
-| Lịch tới demo chỉ còn 8 buổi | Không kịp đủ việc | Thứ tự cắt khi chậm: H0 trước, rồi phần lọc kỳ của K0. M2, M6, V2b, K0 là phần chính của buổi demo |
+| Lịch tới demo chỉ còn 8 buổi | Không kịp đủ việc | Thứ tự cắt khi chậm: phần lọc kỳ của K0 trước, rồi M4. M2, M6, V2b, K0 là phần chính của buổi demo |
 | Dữ liệu thật ít vì chỉ 2 đến 3 người đi 8 ngày | Dashboard và bản đồ thưa | Nhóm thử đi nhiều điểm mỗi ngày, có thể thêm người thử; nói rõ khi demo đây là dữ liệu đợt thử |
 | Mạng phòng họp chập chờn, tunnel đổi địa chỉ đúng ngày demo | Check-in trực tiếp không lên web | App vẫn check-in khi mất mạng rồi gửi sau; không khởi động lại máy từ 26/11; quay sẵn video luồng app ở DM1 |
 | Trình duyệt cảnh báo chứng chỉ khi mở `https://localhost` trước người xem | Mất điểm khi trình bày | Xử lý ở DM1: bạn cài chứng chỉ gốc của máy chủ thử vào máy trình chiếu, hoặc mở sẵn trang trước giờ demo |
