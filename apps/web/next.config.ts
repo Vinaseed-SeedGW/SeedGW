@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   // File đại lý xuất từ DMS cũ nặng khoảng 3 MB, giới hạn mặc định của Server Action là 1 MB.
   experimental: { serverActions: { bodySizeLimit: '15mb' } },
   serverExternalPackages: ['@prisma/client', 'argon2', 'exceljs'],
+  // Node 22 chon file require.mjs cua generator-function, async-function (exceljs keo vao) theo dieu kien
+  // module-sync, nhung buoc gom file cua Next bo sot cac file nay nen trang bao 500 tren ban Docker.
+  outputFileTracingIncludes: {
+    '/**': [
+      '../../node_modules/.pnpm/*/node_modules/generator-function/*',
+      '../../node_modules/.pnpm/*/node_modules/async-function/*',
+    ],
+  },
 };
 
 export default nextConfig;
