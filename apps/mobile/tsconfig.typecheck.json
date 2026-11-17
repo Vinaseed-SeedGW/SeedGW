@@ -1,0 +1,12 @@
+{
+  // Chi dung cho pnpm typecheck. Metro doc tsconfig.json va ap paths khi dong goi, nen khong dat paths o do.
+  // Thu vien trong node_modules/.pnpm (react-native-view-shot) co the doc nham @types/react cua web khi pnpm
+  // keo len thu muc an; ghim ve ban cua app de kieu React chi co mot ban.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"]
+    }
+  }
+}
