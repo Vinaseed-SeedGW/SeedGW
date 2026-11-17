@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { MAX_PHOTO_BYTES } from '@dms/contracts/check-ins';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { saveCheckInPhoto } from '@/server/services/check-ins';
+import { readMyCheckInPhoto } from '@/server/services/mobile-history';
 
 type Context = { params: Promise<{ clientId: string }> };
 
@@ -21,4 +22,15 @@ export const PUT = mobileRoute(async (request: Request, { params }: Context) => 
   }
   await saveCheckInPhoto(user, clientId.data, bytes);
   return NextResponse.json({ ok: true });
+});
+
+// Xem lại ảnh của chính mình ở tab Lịch sử (M6). Ảnh giữ 45 ngày.
+export const GET = mobileRoute(async (request: Request, { params }: Context) => {
+  const user = await requireMobileUser(request);
+  const clientId = z.uuid().safeParse((await params).clientId);
+  if (!clientId.success) return mobileError('VALIDATION', 'Mã check-in không hợp lệ');
+  const bytes = await readMyCheckInPhoto(user, clientId.data);
+  return new NextResponse(new Uint8Array(bytes), {
+    headers: { 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=86400' },
+  });
 });

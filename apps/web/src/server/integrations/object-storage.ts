@@ -151,6 +151,14 @@ export async function putObject(key: string, body: Buffer, contentType: string):
   if (!response.ok) throw new Error(`Không lưu được ảnh (${response.status})`);
 }
 
+/** Đọc ảnh qua máy chủ web, dùng cho app (MinIO không mở ra Internet qua tunnel). Không có thì null. */
+export async function getObject(key: string): Promise<Buffer | null> {
+  const response = await s3Request('GET', objectPath(key));
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Không đọc được ảnh (${response.status})`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
 /** Link xem ảnh có hạn, trình duyệt tải thẳng từ MinIO, không đi qua máy chủ web. */
 export function presignGetUrl(key: string, expiresSeconds = 15 * 60, now = new Date()): string {
   const url = new URL(`${PUBLIC_ENDPOINT}${objectPath(key)}`);

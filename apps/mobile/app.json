@@ -5,6 +5,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/images/app-icon.png",
     "ios": {
       "bundleIdentifier": "vn.vinaseed.dms",
       "buildNumber": "1",
@@ -17,6 +18,10 @@
     },
     "android": {
       "package": "vn.vinaseed.dms",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/app-icon-foreground.png",
+        "backgroundColor": "#005b36"
+      },
       "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "plugins": [

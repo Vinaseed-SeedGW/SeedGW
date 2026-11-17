@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from './text';
 import * as Location from 'expo-location';
 import type { DealerChoice } from '../api/dealers';
+import { startOfVnDay } from '../sync/geo';
+import { readLocalHistory } from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
 
-const VISIBLE_RESULTS = 20;
+const VISIBLE_RESULTS = 30;
+const DAY_MS = 86_400_000;
 
 type Point = { lat: number; lng: number; accuracy: number | null };
 
@@ -58,15 +61,23 @@ function useCurrentPoint() {
 
 type Props = {
   onPick: (dealer: DealerChoice) => void;
-  onClose: () => void;
 };
 
 /**
- * Cách check-in thứ hai (M4): danh sách đại lý mình phụ trách, gần nhất lên đầu. Bấm một đại lý thì mở
- * máy ảnh với đại lý đó đã chọn sẵn. Đại lý chưa có toạ độ nằm cuối danh sách, xếp theo tên.
+ * Tab Tuyến (M6): đại lý mình phụ trách, gần nhất lên đầu, đánh dấu đại lý đã ghé hôm nay. Bấm một đại lý
+ * thì mở máy ảnh với đại lý đó đã chọn sẵn (cách check-in thứ hai, M4). Đại lý chưa có toạ độ nằm cuối,
+ * xếp theo tên. Đăng ký tuyến tuần hoặc ngày và nút Chỉ đường làm ở S8.
  */
-export function NearbyDealers({ onPick, onClose }: Props) {
+export function RouteTab({ onPick }: Props) {
   const { point, denied, refresh } = useCurrentPoint();
+  const visited = useMemo(() => {
+    const dayStart = startOfVnDay(Date.now());
+    return new Set(
+      readLocalHistory(dayStart, dayStart + DAY_MS).flatMap((row) =>
+        row.dealerId ? [row.dealerId] : [],
+      ),
+    );
+  }, []);
   const [query, setQuery] = useState('');
   // Làm tròn khoảng 10 m để vị trí nhích nhẹ không gọi lại máy chủ liên tục.
   const rounded = point
@@ -77,17 +88,23 @@ export function NearbyDealers({ onPick, onClose }: Props) {
   return (
     <View style={styles.fill}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Đại lý gần tôi</Text>
-        <Text style={styles.muted}>Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn.</Text>
+        <Text style={styles.title}>Đại lý tôi phụ trách</Text>
+        <Text style={styles.muted}>
+          Gần nhất lên đầu. Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn. Đăng ký tuyến
+          theo tuần hoặc theo ngày và chỉ đường Google Maps sẽ có ở bản sau.
+        </Text>
         {denied ? (
           <Text style={styles.danger}>
             Chưa có quyền vị trí. Mở Cài đặt và cho phép DMS dùng vị trí.
           </Text>
         ) : null}
         {!denied && !point ? <Text style={styles.muted}>Đang lấy vị trí</Text> : null}
-        {point?.accuracy ? (
-          <Text style={styles.muted}>Sai số vị trí khoảng {Math.round(point.accuracy)} m</Text>
-        ) : null}
+        <View style={styles.locationRow}>
+          <Text style={[styles.muted, styles.flex]}>
+            {point?.accuracy ? `Sai số vị trí khoảng ${Math.round(point.accuracy)} m` : ''}
+          </Text>
+          <Button label="Lấy lại vị trí" onPress={refresh} variant="ghost" />
+        </View>
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -100,12 +117,9 @@ export function NearbyDealers({ onPick, onClose }: Props) {
           search={search}
           limit={VISIBLE_RESULTS}
           onPick={(dealer) => onPick(toChoice(dealer))}
+          visitedIds={visited}
         />
       </ScrollView>
-      <View style={styles.controls}>
-        <Button label="Quay lại" onPress={onClose} variant="ghost" />
-        <Button label="Lấy lại vị trí" onPress={refresh} variant="ghost" />
-      </View>
     </View>
   );
 }
@@ -125,12 +139,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text,
   },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: SPACE.lg,
-    gap: SPACE.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.border,
-  },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
+  flex: { flex: 1 },
 });

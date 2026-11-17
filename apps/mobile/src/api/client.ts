@@ -94,6 +94,16 @@ async function refresh(session: MobileSession): Promise<MobileSession | null> {
   return refreshing;
 }
 
+/** Khoá truy cập còn hạn, dùng khi tải ảnh qua thẻ Image (không đi qua apiCall). */
+export async function freshAccessToken(): Promise<string | null> {
+  const session = await loadSession();
+  if (!session) return null;
+  if (Date.parse(session.accessExpiresAt) - Date.now() < 30_000) {
+    return (await refresh(session))?.accessToken ?? null;
+  }
+  return session.accessToken;
+}
+
 /** Gọi API có đăng nhập. Khoá truy cập hết hạn thì tự làm mới một lần rồi gọi lại. */
 export async function apiCall<T>(
   path: string,

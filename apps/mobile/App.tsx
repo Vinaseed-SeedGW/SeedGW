@@ -17,13 +17,18 @@ import type { DealerChoice } from './src/api/dealers';
 import { ConsentScreen } from './src/components/consent-screen';
 import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
-import { NearbyDealers } from './src/components/nearby-dealers';
+import { AppHeader } from './src/components/app-header';
+import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
-import { TrackingPanel } from './src/components/tracking-panel';
+import { MeTab } from './src/components/me-tab';
+import { RouteTab } from './src/components/route-tab';
+import { TabBar, TABS, type TabKey } from './src/components/tab-bar';
+import { TodayTab } from './src/components/today-tab';
 import { useTracking } from './src/components/use-tracking';
 import { useAutoSync, useSession } from './src/components/use-sync';
 import { WatermarkCamera } from './src/components/watermark-camera';
-import { COLORS, FONT_FAMILY } from './src/theme';
+import { Text } from './src/components/text';
+import { COLORS, FONT_FAMILY, SPACE } from './src/theme';
 
 // Có địa chỉ máy chủ thì phải đăng nhập (M1) và dữ liệu được gửi lên (M3, M12).
 // Chưa có máy chủ thì chạy như bản thử R3, dữ liệu chỉ nằm trên máy.
@@ -60,7 +65,8 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const control = useTracking();
   const sync = useAutoSync(signedIn);
   const { session } = useSession();
-  const [screen, setScreen] = useState<'tracking' | 'camera' | 'nearby'>('tracking');
+  const [tab, setTab] = useState<TabKey>('today');
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
 
@@ -108,38 +114,54 @@ function Main({ signedIn }: { signedIn: boolean }) {
     );
   }
 
-  if (screen === 'nearby') {
-    return (
-      <NearbyDealers
-        onClose={() => setScreen('tracking')}
-        onPick={(dealer) => {
-          setPresetDealer(dealer);
-          setScreen('camera');
-        }}
-      />
-    );
+  function openCamera(dealer: DealerChoice | null) {
+    setPresetDealer(dealer);
+    setCameraOpen(true);
   }
-  if (screen === 'camera') {
+
+  // Máy ảnh mở toàn màn hình, che thanh tiêu đề và thanh tab.
+  if (cameraOpen) {
     return (
       <WatermarkCamera
         presetDealer={presetDealer}
         onClose={() => {
           setPresetDealer(null);
-          setScreen('tracking');
+          setCameraOpen(false);
           sync.actions.refreshCounts();
         }}
         onSaved={() => void control.actions.startIfIdle()}
       />
     );
   }
+
+  const account = session ? { user: session.user, sync } : null;
   return (
-    <TrackingPanel
-      control={control}
-      onOpenCamera={() => setScreen('camera')}
-      onOpenNearby={session ? () => setScreen('nearby') : null}
-      account={session ? { user: session.user, sync } : null}
-      onWithdrawConsent={withdrawConsent}
-    />
+    <View style={styles.fill}>
+      <AppHeader title={TABS.find((item) => item.key === tab)?.label ?? ''} />
+      <View style={styles.fill}>
+        {tab === 'today' ? (
+          <TodayTab
+            control={control}
+            sync={account ? sync : null}
+            onOpenCamera={() => openCamera(null)}
+            onPickDealer={openCamera}
+            onOpenRoute={account ? () => setTab('route') : null}
+          />
+        ) : null}
+        {tab === 'route' ? (
+          account ? (
+            <RouteTab onPick={openCamera} />
+          ) : (
+            <Text style={styles.notice}>Cần đăng nhập máy chủ để xem đại lý phụ trách.</Text>
+          )
+        ) : null}
+        {tab === 'history' ? <HistoryTab /> : null}
+        {tab === 'me' ? (
+          <MeTab control={control} account={account} onWithdrawConsent={withdrawConsent} />
+        ) : null}
+      </View>
+      <TabBar active={tab} onChange={setTab} />
+    </View>
   );
 }
 
@@ -147,4 +169,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.surface },
   body: { flex: 1, paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0 },
   loading: { marginTop: 80 },
+  fill: { flex: 1 },
+  notice: { padding: SPACE.lg, fontSize: 15, color: COLORS.textMuted },
 });

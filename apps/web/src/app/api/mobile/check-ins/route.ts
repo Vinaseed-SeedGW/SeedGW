@@ -1,8 +1,12 @@
 import { after, NextResponse } from 'next/server';
 import { auditChanges } from '@dms/contracts/audit';
-import { CHECK_IN_PLACE_KIND_LABEL, createCheckInInput } from '@dms/contracts/check-ins';
+import {
+  CHECK_IN_PLACE_KIND_LABEL,
+  createCheckInInput,
+  mobileHistoryQuery,
+} from '@dms/contracts/check-ins';
 import { vietnamToday } from '@dms/contracts/format';
-import { assertMobileCan, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
+import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { writeAudit } from '@/server/services/audit';
 import {
@@ -11,6 +15,17 @@ import {
   recomputeDayDistances,
   saveCheckIn,
 } from '@/server/services/check-ins';
+import { listMyCheckIns } from '@/server/services/mobile-history';
+
+// Lịch sử check-in của chính nhân viên theo tháng (M6), giữ 18 tháng.
+export const GET = mobileRoute(async (request: Request) => {
+  const user = await requireMobileUser(request);
+  const parsed = mobileHistoryQuery.safeParse(
+    Object.fromEntries(new URL(request.url).searchParams),
+  );
+  if (!parsed.success) return mobileError('VALIDATION', 'Tháng không hợp lệ');
+  return NextResponse.json(await listMyCheckIns(user, parsed.data.month));
+});
 
 export const POST = mobileRoute(async (request: Request) => {
   const user = await requireMobileUser(request);

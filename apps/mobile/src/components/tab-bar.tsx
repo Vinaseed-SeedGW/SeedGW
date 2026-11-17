@@ -1,0 +1,64 @@
+import { Image, Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import tabHistory from '../../assets/images/tab-history.png';
+import tabMe from '../../assets/images/tab-me.png';
+import tabRoute from '../../assets/images/tab-route.png';
+import tabToday from '../../assets/images/tab-today.png';
+import { COLORS, FONT, SPACE } from '../theme';
+import { Text } from './text';
+
+export type TabKey = 'today' | 'route' | 'history' | 'me';
+
+export const TABS: { key: TabKey; label: string; icon: ImageSourcePropType }[] = [
+  { key: 'today', label: 'Hôm nay', icon: tabToday },
+  { key: 'route', label: 'Tuyến', icon: tabRoute },
+  { key: 'history', label: 'Lịch sử', icon: tabHistory },
+  { key: 'me', label: 'Tôi', icon: tabMe },
+];
+
+/** 4 tab ở đáy màn hình theo IA. Icon vẽ màu đen, tô lại theo tab đang chọn. */
+export function TabBar({ active, onChange }: { active: TabKey; onChange: (tab: TabKey) => void }) {
+  return (
+    <View style={styles.bar} accessibilityRole="tablist">
+      {TABS.map((tab) => {
+        const selected = tab.key === active;
+        const color = selected ? COLORS.brand : COLORS.textMuted;
+        return (
+          <Pressable
+            key={tab.key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            accessibilityLabel={tab.label}
+            onPress={() => onChange(tab.key)}
+            style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
+          >
+            <Image source={tab.icon} style={[styles.icon, { tintColor: color }]} />
+            <Text style={[styles.label, { color }, selected && styles.labelSelected]}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+  },
+  tab: {
+    flex: 1,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    paddingVertical: SPACE.xs,
+  },
+  pressed: { backgroundColor: COLORS.brandSoft },
+  icon: { width: 24, height: 24 },
+  label: { fontSize: 12 },
+  labelSelected: { fontWeight: FONT.bold },
+});

@@ -151,6 +151,38 @@ export const addressQuery = z.object({
 
 export const addressResult = z.object({ address: z.string().nullable() });
 
+// ---------- Lịch sử check-in của tôi trên app (M6) ----------
+
+export const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+export const mobileHistoryQuery = z.object({
+  month: z.string().regex(MONTH_PATTERN, 'Tháng có dạng yyyy-MM'),
+});
+
+export const mobileHistoryItem = z.object({
+  clientId: z.uuid(),
+  capturedAt: z.iso.datetime(),
+  placeKind: checkInPlaceKind,
+  placeName: z.string(),
+  note: z.string(),
+  farReason: z.string().nullable(),
+  address: z.string().nullable(),
+  gpsDistanceKm: z.number().nullable(),
+  isDistanceEstimated: z.boolean(),
+  flags: z.array(checkInFlag),
+  // Ảnh còn trong thời hạn lưu 45 ngày và đã gửi lên máy chủ.
+  hasPhoto: z.boolean(),
+});
+export type MobileHistoryItem = z.infer<typeof mobileHistoryItem>;
+
+export const mobileHistoryResult = z.object({
+  month: z.string(),
+  // Tháng sớm nhất còn dữ liệu theo thời hạn lưu 18 tháng, app không cho lùi quá tháng này.
+  earliestMonth: z.string(),
+  items: z.array(mobileHistoryItem),
+});
+export type MobileHistoryResult = z.infer<typeof mobileHistoryResult>;
+
 // ---------- Báo cáo ghé thăm trên web ----------
 
 export const checkInRow = z.object({

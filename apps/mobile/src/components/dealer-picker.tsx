@@ -143,10 +143,13 @@ export function DealerResults({
   search,
   limit,
   onPick,
+  visitedIds,
 }: {
   search: SearchState;
   limit: number;
   onPick: (dealer: MobileDealerOption) => void;
+  /** Đại lý đã check-in hôm nay, hiện nhãn Đã ghé. */
+  visitedIds?: ReadonlySet<string>;
 }) {
   return (
     <>
@@ -180,6 +183,7 @@ export function DealerResults({
               .filter(Boolean)
               .join(', ')}
           </Text>
+          {visitedIds?.has(dealer.id) ? <Text style={styles.visited}>Đã ghé hôm nay</Text> : null}
         </Pressable>
       ))}
     </>
@@ -206,6 +210,7 @@ const styles = StyleSheet.create({
   },
   pressed: { backgroundColor: COLORS.brandSoft },
   optionHead: { flexDirection: 'row', justifyContent: 'space-between', gap: SPACE.sm },
+  visited: { fontSize: 13, fontWeight: FONT.bold, color: COLORS.brand },
   optionName: { flex: 1, fontSize: 15, fontWeight: FONT.bold, color: COLORS.text },
   distance: { fontSize: 15, fontWeight: FONT.bold, color: COLORS.brand },
   muted: { fontSize: 13, color: COLORS.textMuted },

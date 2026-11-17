@@ -542,6 +542,39 @@ export type PhotoSyncStatus = 'legacy' | 'draft' | 'pending' | 'row_synced' | 's
 
 export type QueuedCheckIn = PhotoRecord & { clientId: string; status: PhotoSyncStatus };
 
+/** Lượt check-in đã lưu trên máy trong khoảng thời gian, cho tab Lịch sử (M6). Không gồm ảnh nháp. */
+export type LocalHistoryRow = PhotoRecord & {
+  clientId: string | null;
+  status: PhotoSyncStatus;
+};
+
+export function readLocalHistory(from: number, to: number): LocalHistoryRow[] {
+  return getDb()
+    .getAllSync<PhotoRow & { client_id: string | null; sync_status: PhotoSyncStatus }>(
+      "SELECT * FROM photos WHERE taken_at >= ? AND taken_at < ? AND sync_status != 'draft' ORDER BY taken_at",
+      from,
+      to,
+    )
+    .map((row) => ({
+      id: row.id,
+      takenAt: row.taken_at,
+      lat: row.lat,
+      lng: row.lng,
+      accuracy: row.accuracy,
+      mocked: row.mocked === 1,
+      // Danh sách không cần ảnh; xem ảnh thì đọc riêng bằng getPhotoDataUri.
+      dataUri: '',
+      address: row.address,
+      placeKind: row.place_kind,
+      placeName: row.place_name,
+      note: row.note,
+      dealerId: row.dealer_id,
+      farReason: row.far_reason,
+      clientId: row.client_id,
+      status: row.sync_status,
+    }));
+}
+
 export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
   return getDb()
     .getAllSync<PhotoRow & { client_id: string; sync_status: PhotoSyncStatus }>(
