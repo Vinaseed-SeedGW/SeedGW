@@ -50,6 +50,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - **Kinh doanh** `/kinh-doanh` (chuyển tới trang đích theo vai trò)
   - Tổng quan
     - Dashboard `/kinh-doanh/dashboard`
+    - Cần duyệt* `/kinh-doanh/can-duyet` (tab: Chờ tôi duyệt · Đã xử lý · Tất cả trong phạm vi; chi tiết: `/kinh-doanh/can-duyet/[ma]`)
   - Đối tác
     - Chỉ tiêu* `/kinh-doanh/chi-tieu`
     - Đại lý `/kinh-doanh/dai-ly`
@@ -107,7 +108,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 ## 2. Navigation Model
 
 - **Cấp 0 — Hub**: 3 ô bộ phận (ẩn ô không có quyền) + lối vào Tổng quan điều hành (nếu có quyền).
-- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 7 trang chia 4 nhóm; Quản trị 9 trang chia 5 nhóm (thêm nhóm Tiếp nhận có trang Hỗ trợ). Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
+- **Điều hướng chính**: menu trái của từng bộ phận. Kinh doanh 8 trang chia 4 nhóm; Quản trị 9 trang chia 5 nhóm (thêm nhóm Tiếp nhận có trang Hỗ trợ). Nhóm là nhãn cố định, không thu gọn được, để người dùng luôn thấy đủ.
 - **Điều hướng phụ**: tab trong trang chi tiết. Breadcrumb từ cấp bộ phận.
 - **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
 - **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên nút nổi Hỗ trợ (trả lời chưa đọc, với nhân viên), trên Quản trị › Hỗ trợ (yêu cầu chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
@@ -226,12 +227,16 @@ Quy tắc tính:
 4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
 5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.
 
-### Giao chỉ tiêu và theo dõi
-1. Người có quyền tạo chỉ tiêu theo kỳ (tháng/vụ) tại `/kinh-doanh/chi-tieu`: nhập tay hoặc Excel.
-2. Phân bổ Miền → Vùng → Nhân viên.
-   - Tổng cấp con khác cấp cha → cảnh báo chênh lệch.
-3. Dashboard và app hiện % hoàn thành.
-4. Quản trị hệ thống thấy đơn vị dưới chỉ tiêu trong "Cần chú ý" → bấm vào → Dashboard đã lọc vùng đó → danh sách đại lý lâu chưa ghé thăm.
+### Chỉ tiêu tháng tự đăng ký và phê duyệt (K3a, A10b, 17/11/2026)
+1. NVKD (và Quản lý, Lãnh đạo đơn vị nếu muốn) đăng ký chỉ tiêu tháng ở `/kinh-doanh/chi-tieu` tab Chỉ tiêu của tôi hoặc trên app (thẻ Chỉ tiêu ở tab Hôm nay): lượt ghé thăm, số đại lý được ghé, Thực bán (kg). Chỉ đăng ký hoặc sửa được tháng này và tháng sau; tháng đã qua chỉ xem.
+2. Gửi duyệt tạo phiếu mã `CT00001`. Đơn vị bật Có cấp Quản lý và NVKD có Quản lý trực tiếp: phiếu qua Quản lý rồi Lãnh đạo đơn vị (Trưởng đơn vị). Không có thì lên thẳng Trưởng đơn vị. Lãnh đạo đơn vị tự đăng ký thì tự duyệt. Một người giữ cả hai bước thì bước sau tự qua.
+3. Người duyệt mở Cần duyệt (web hoặc tab Tôi trên app) → Duyệt, hoặc Trả lại kèm lý do 5 đến 500 ký tự. Trên web chọn nhiều phiếu để duyệt một lần.
+   - Trả lại: người gửi thấy lý do, sửa rồi gửi lại từ đầu (giữ mã phiếu, tăng lần gửi).
+   - Rút lại: người gửi rút được khi chưa ai duyệt.
+   - Đổi Trưởng đơn vị, Quản lý trực tiếp, Có cấp Quản lý hoặc khoá tài khoản người duyệt: phiếu đang chờ tự chuyển sang người duyệt mới, ghi vào nhật ký phiếu.
+4. Sửa chỉ tiêu đã duyệt tạo bản đề nghị mới, phải duyệt lại; trong lúc chờ, chỉ tiêu đã duyệt vẫn có hiệu lực.
+5. % hoàn thành tính theo chỉ tiêu đang hiệu lực và check-in trong tháng (lượt ghé thăm, số đại lý khác nhau); Thực bán có % khi nối FAST. Quản lý, Lãnh đạo xem chỉ tiêu nhân viên ở tab Trong phạm vi.
+6. Quản trị đơn vị chỉ xem tab Tất cả trong phạm vi của Cần duyệt để hỗ trợ, không duyệt.
 
 ## 6. Naming Conventions
 
