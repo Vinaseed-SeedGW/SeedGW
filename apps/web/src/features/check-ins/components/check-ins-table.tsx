@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Image as ImageIcon, MapPin } from 'lucide-react';
 import {
@@ -11,7 +12,12 @@ import {
   type ListCheckInsInput,
   type ListCheckInsResult,
 } from '@dms/contracts/check-ins';
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
+import {
+  formatDateTime,
+  formatNumber,
+  isoDateToDisplay,
+  vietnamToday,
+} from '@dms/contracts/format';
 import { DataTable, type ColumnDef } from '@dms/ui/data-table';
 import { exportCheckInsAction } from '@/server/actions/check-ins';
 import { CheckInPhotoDialog } from './check-in-photo-dialog';
@@ -28,6 +34,13 @@ const FLAG_OPTIONS = [{ value: '1', label: 'Chỉ dòng có cờ hoặc km ướ
 
 function mapsUrl(row: CheckInRow): string {
   return `https://www.google.com/maps/search/?api=1&query=${row.lat},${row.lng}`;
+}
+
+/** Mở tab Bản đồ đúng nhân viên và ngày của dòng (V2b). */
+function dayMapHref(row: CheckInRow): string {
+  const day = isoDateToDisplay(vietnamToday(new Date(row.capturedAt)));
+  const params = new URLSearchParams({ tab: 'ban-do', 'nhan-vien': row.employeeCode, ngay: day });
+  return `/kinh-doanh/check-in?${params.toString()}`;
 }
 
 function columns(onViewPhoto: (row: CheckInRow) => void): ColumnDef<CheckInRow>[] {
@@ -50,7 +63,14 @@ function columns(onViewPhoto: (row: CheckInRow) => void): ColumnDef<CheckInRow>[
       accessorKey: 'capturedAt',
       header: 'Thời gian',
       meta: { label: 'Thời gian' },
-      cell: ({ row }) => formatDateTime(row.original.capturedAt),
+      cell: ({ row }) => (
+        <>
+          {formatDateTime(row.original.capturedAt)}
+          <Link href={dayMapHref(row.original)} className="mt-0.5 block w-fit text-sm text-brand">
+            Xem hành trình
+          </Link>
+        </>
+      ),
     },
     {
       id: 'place',

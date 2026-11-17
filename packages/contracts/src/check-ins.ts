@@ -183,6 +183,88 @@ export const mobileHistoryResult = z.object({
 });
 export type MobileHistoryResult = z.infer<typeof mobileHistoryResult>;
 
+// ---------- Bản đồ hành trình một ngày trên web (V2b) ----------
+
+export const CHECK_IN_TABS = ['danh-sach', 'ban-do'] as const;
+export type CheckInTab = (typeof CHECK_IN_TABS)[number];
+
+export const checkInTabParam = z.object({
+  tab: z.enum(CHECK_IN_TABS).catch('danh-sach'),
+});
+
+export type DayMapInput = {
+  /** Mã nhân viên chọn ở bộ lọc; chưa chọn thì trang hiện hướng dẫn chọn. */
+  employeeCode: string | null;
+  orgUnitId: string | null;
+  day: string;
+};
+
+/** Đổi tham số tiếng Việt trên URL của tab Bản đồ. Mặc định xem hôm nay. */
+export function dayMapUrlParams(now: Date = new Date()) {
+  return z
+    .object({
+      'nhan-vien': z.string().trim().max(50).optional().catch(undefined),
+      'don-vi': z.uuid().optional().catch(undefined),
+      ngay: dateParam,
+    })
+    .transform((url): DayMapInput => {
+      const today = vietnamToday(now);
+      const earliest = earliestCheckInDate(today);
+      const day = url.ngay ?? today;
+      return {
+        employeeCode: url['nhan-vien'] || null,
+        orgUnitId: url['don-vi'] ?? null,
+        day: day < earliest ? earliest : day > today ? today : day,
+      };
+    });
+}
+
+export type LatLng = [number, number];
+
+export type DayMapCheckIn = {
+  id: string;
+  order: number;
+  capturedAt: string;
+  placeKind: CheckInPlaceKind;
+  placeName: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  accuracyM: number | null;
+  gpsDistanceKm: number | null;
+  isDistanceEstimated: boolean;
+  flags: CheckInFlag[];
+  farReason: string | null;
+  dealerDistanceM: number | null;
+  /** Toạ độ đã duyệt của đại lý, để vẽ đường nối khi bị cờ Xa đại lý. */
+  dealer: { name: string; lat: number; lng: number } | null;
+  photoUrl: string | null;
+};
+
+export type DayMapResult = {
+  employee: { code: string; name: string; orgUnitName: string | null };
+  day: string;
+  /** Vết đi đã lọc, tách thành từng đoạn liền; giữa hai đoạn là chỗ đứt. */
+  lines: LatLng[][];
+  /** Đoạn đứt (app tắt, mất GPS), vẽ nét đứt nối điểm cuối đoạn trước với điểm đầu đoạn sau. */
+  gaps: [LatLng, LatLng][];
+  start: { at: string; point: LatLng } | null;
+  end: { at: string; point: LatLng } | null;
+  /** Vết GPS giữ 45 ngày; quá hạn thì chỉ còn các điểm check-in. */
+  trackAvailable: boolean;
+  pointCount: number;
+  trackKm: number;
+  checkInKm: number;
+  checkIns: DayMapCheckIn[];
+};
+
+export type EmployeeOption = { code: string; name: string; orgUnitName: string | null };
+
+export type DayMapFilterOptions = {
+  orgUnits: { id: string; name: string }[];
+  employees: EmployeeOption[];
+};
+
 // ---------- Báo cáo ghé thăm trên web ----------
 
 export const checkInRow = z.object({
