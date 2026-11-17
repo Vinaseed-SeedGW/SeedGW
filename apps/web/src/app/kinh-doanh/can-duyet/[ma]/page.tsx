@@ -123,6 +123,12 @@ export default async function ApprovalDetailPage({ params }: PageProps) {
             </section>
           ) : null}
 
+          {approval.onBehalfOf ? (
+            <p className="mt-6 rounded-md bg-warning-soft px-3 py-2">
+              Phiếu đang chờ <b>{approval.onBehalfOf}</b> duyệt. Bạn là Quản trị hệ thống nên duyệt
+              hoặc trả lại thay được; nhật ký sẽ ghi rõ duyệt thay.
+            </p>
+          ) : null}
           {approval.canReview || approval.canWithdraw ? (
             <div className="mt-6 flex flex-wrap gap-2">
               {approval.canReview ? <ApprovalReviewButtons code={approval.code} /> : null}

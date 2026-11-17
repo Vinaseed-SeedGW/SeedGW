@@ -5,23 +5,28 @@ import { after } from 'next/server';
 import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@dms/contracts/approvals';
 import type { ActionResult } from '@dms/contracts/common';
 import { upsertSalesTargetInput } from '@dms/contracts/sales-targets';
+import { z } from 'zod';
 import { toActionError, validationError } from '@/server/auth/action-error';
-import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
+import { resolveSubmitter } from '@/server/auth/on-behalf';
 import { getClientIp, writeAuditMany } from '@/server/services/audit';
 import { submitSalesTarget } from '@/server/services/sales-targets';
 
+/** forUserId có khi Quản trị hệ thống đăng ký hoặc sửa thay chỉ tiêu của nhân viên. */
 export async function submitSalesTargetAction(
   raw: unknown,
+  rawForUserId: unknown = null,
 ): Promise<ActionResult<{ code: string; status: ApprovalStatus; selfApproved: boolean }>> {
   try {
     const user = await requireUser();
-    assertCan(user, 'sales.target.register');
+    const forUserId = z.uuid().nullable().safeParse(rawForUserId);
+    if (!forUserId.success) return validationError(forUserId.error);
+    const owner = await resolveSubmitter(user, forUserId.data, 'sales.target.register');
     const parsed = upsertSalesTargetInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
 
     const [outcome, ip] = await Promise.all([
-      submitSalesTarget(user.id, parsed.data),
+      submitSalesTarget(owner.id, parsed.data, new Date(), user.id),
       getClientIp(),
     ]);
     after(() =>
@@ -31,7 +36,7 @@ export async function submitSalesTargetAction(
           action: outcome.created ? 'sales-target.create' : 'sales-target.update',
           entityType: 'SalesTarget',
           entityId: outcome.targetId,
-          entityLabel: `${user.employeeCode} ${outcome.month}`,
+          entityLabel: `${owner.employeeCode} ${outcome.month}`,
           changes: outcome.changes,
           ip,
         },

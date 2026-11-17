@@ -24,7 +24,10 @@ import {
   type RoutePlanView,
   type SubmitRoutePlanInput,
   type TodayRoute,
+  ROUTE_DEALER_SEARCH_LIMIT,
+  type RouteDealerOption,
 } from '@dms/contracts/route-plans';
+import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
 import { db } from '@dms/db/client';
 import type { ScopedDb } from '@dms/db/scoped-client';
 import { applyApproved, isUniqueViolation, isWithdrawable, submitApproval } from './approvals';
@@ -74,6 +77,7 @@ export async function submitRoutePlan(
   scoped: ScopedDb,
   input: SubmitRoutePlanInput,
   now = new Date(),
+  actorId = userId,
 ): Promise<RoutePlanOutcome> {
   const [{ kind, orgUnitId }, hours] = await Promise.all([unitRouteKind(userId), deadlineHours()]);
   if (input.kind !== kind) {
@@ -175,6 +179,7 @@ export async function submitRoutePlan(
         isLate,
         snapshot: { kind, periodStart: input.periodStart, days: input.days, note: input.note },
         now,
+        actorId,
       });
       if (submitted.selfApproved) await applyApproved(tx, 'ROUTE_PLAN', plan.id, now);
 
@@ -568,4 +573,37 @@ export async function readRouteApprovalView(
     approved:
       view.approved && plan.approvedRevision !== plan.currentRevision ? view.approved : null,
   };
+}
+
+/** Tìm đại lý đang hoạt động trong phạm vi của người bấm, tìm không dấu theo tên, mã, số điện thoại. */
+export async function searchRouteDealers(
+  scoped: ScopedDb,
+  q: string,
+): Promise<RouteDealerOption[]> {
+  const search = normalizeSearchText(q);
+  const rows = await scoped.dealer.findMany({
+    where: {
+      status: 'ACTIVE',
+      ...(search ? { searchText: { contains: escapeLikePattern(search) } } : {}),
+    },
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    take: ROUTE_DEALER_SEARCH_LIMIT,
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      legacyCode: true,
+      address: true,
+      lat: true,
+      lng: true,
+    },
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    code: row.code ?? row.legacyCode,
+    address: row.address,
+    lat: row.lat,
+    lng: row.lng,
+  }));
 }

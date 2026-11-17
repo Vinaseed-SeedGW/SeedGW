@@ -9,6 +9,7 @@ export async function mobileApprovalViewer(user: MobileUser): Promise<ApprovalVi
     id: user.id,
     canRead: user.permissions.has('sales.approval.read'),
     canReview: user.permissions.has('sales.approval.review'),
+    canOverride: user.permissions.has('sales.approval.override'),
     scoped: await mobileScopedDb(user),
   };
 }

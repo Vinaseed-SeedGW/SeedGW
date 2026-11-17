@@ -51,6 +51,7 @@ export async function submitSalesTarget(
   userId: string,
   input: UpsertSalesTargetInput,
   now = new Date(),
+  actorId = userId,
 ): Promise<SalesTargetOutcome> {
   if (!isEditableTargetMonth(input.month, now.getTime())) {
     throw new DomainError(
@@ -106,6 +107,7 @@ export async function submitSalesTarget(
         isLate: false,
         snapshot: { month: input.month, ...values } satisfies SalesTargetSnapshot,
         now,
+        actorId,
       });
       if (submitted.selfApproved) await applyApproved(tx, 'SALES_TARGET', target.id, now);
 
@@ -332,6 +334,7 @@ export async function listScopeTargets(
       const request = requests.get(row.id);
       return {
         id: row.id,
+        userId: row.userId,
         userName: row.user.fullName,
         userCode: row.user.employeeCode,
         orgUnitName: row.orgUnit?.name ?? null,

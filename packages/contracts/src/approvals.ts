@@ -249,6 +249,8 @@ export type ApprovalActionItem = z.infer<typeof approvalActionItem>;
 
 export const approvalDetail = approvalRow.extend({
   canReview: z.boolean(),
+  /** Có khi Quản trị hệ thống duyệt thay: tên người đang được giao duyệt. */
+  onBehalfOf: z.string().nullable(),
   canWithdraw: z.boolean(),
   actions: z.array(approvalActionItem),
 });

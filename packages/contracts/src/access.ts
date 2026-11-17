@@ -7,6 +7,7 @@ export const PERMISSIONS = [
   { code: 'sales.dashboard.read', name: 'Xem Dashboard Kinh doanh' },
   { code: 'sales.approval.read', name: 'Xem phiếu Tuyến và Chỉ tiêu' },
   { code: 'sales.approval.review', name: 'Duyệt Tuyến và Chỉ tiêu' },
+  { code: 'sales.approval.override', name: 'Duyệt thay, sửa thay Tuyến và Chỉ tiêu' },
   { code: 'sales.target.read', name: 'Xem Chỉ tiêu' },
   { code: 'sales.target.register', name: 'Đăng ký Chỉ tiêu tháng của mình' },
   { code: 'sales.dealer.read', name: 'Xem Đại lý' },
@@ -283,6 +284,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       ...codesInModule('sales').filter(
         (code) =>
           code !== 'sales.approval.review' &&
+          code !== 'sales.approval.override' &&
           code !== 'sales.target.register' &&
           code !== 'sales.route.register',
       ),

@@ -69,6 +69,16 @@ export default async function RoutePlansPage({ searchParams }: PageProps) {
         </Suspense>
       ) : (
         <Suspense key={JSON.stringify(input)} fallback={<DataTableSkeleton columns={4} rows={6} />}>
+          {can(user, 'sales.approval.override') ? (
+            <p className="mt-4">
+              <Link
+                href="/kinh-doanh/tuyen-vieng-tham/dang-ky"
+                className="inline-flex h-9.5 items-center rounded-md border border-border bg-surface px-4 font-bold hover:bg-brand-soft"
+              >
+                Đăng ký tuyến thay nhân viên
+              </Link>
+            </p>
+          ) : null}
           <ScopeResults input={input} />
         </Suspense>
       )}

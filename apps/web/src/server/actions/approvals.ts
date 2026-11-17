@@ -57,7 +57,13 @@ export async function approveApprovalAction(raw: unknown): Promise<ActionResult<
     if (!parsed.success) return validationError(parsed.error);
 
     const [outcome, ip] = await Promise.all([
-      approveRequest(user.id, parsed.data.code, parsed.data.note),
+      approveRequest(
+        user.id,
+        parsed.data.code,
+        parsed.data.note,
+        new Date(),
+        can(user, 'sales.approval.override'),
+      ),
       getClientIp(),
     ]);
     audit(user, 'approval.approve', [outcome], ip);
@@ -76,7 +82,13 @@ export async function returnApprovalAction(raw: unknown): Promise<ActionResult<{
     if (!parsed.success) return validationError(parsed.error);
 
     const [outcome, ip] = await Promise.all([
-      returnRequest(user.id, parsed.data.code, parsed.data.reason),
+      returnRequest(
+        user.id,
+        parsed.data.code,
+        parsed.data.reason,
+        new Date(),
+        can(user, 'sales.approval.override'),
+      ),
       getClientIp(),
     ]);
     audit(user, 'approval.return', [outcome], ip);
@@ -130,7 +142,7 @@ export async function withdrawApprovalAction(
     if (!parsed.success) return validationError(parsed.error);
 
     const [outcome, ip] = await Promise.all([
-      withdrawRequest(user.id, parsed.data.code),
+      withdrawRequest(user.id, parsed.data.code, new Date(), can(user, 'sales.approval.override')),
       getClientIp(),
     ]);
     audit(user, 'approval.withdraw', [outcome], ip);

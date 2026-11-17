@@ -31,6 +31,8 @@ export type ApprovalViewer = {
   id: string;
   canRead: boolean;
   canReview: boolean;
+  /** Quản trị hệ thống: duyệt thay, trả lại thay, rút lại thay mọi phiếu đang chờ. */
+  canOverride: boolean;
   scoped: ScopedDb;
 };
 
@@ -127,6 +129,8 @@ export type SubmitApprovalInput = {
   isLate: boolean;
   snapshot: Prisma.InputJsonValue;
   now: Date;
+  /** Người bấm gửi; khác người đứng tên phiếu khi Quản trị hệ thống gửi thay. */
+  actorId?: string;
 };
 
 export type SubmitApprovalResult = {
@@ -207,8 +211,10 @@ export async function submitApproval(
   const actions: Prisma.ApprovalActionCreateManyInput[] = [
     {
       requestId: request.id,
-      actorId: input.submitterId,
+      actorId: input.actorId ?? input.submitterId,
       action: 'SUBMIT',
+      note:
+        input.actorId && input.actorId !== input.submitterId ? 'Quản trị hệ thống gửi thay' : '',
       snapshot: input.snapshot,
       createdAt: input.now,
     },
@@ -288,12 +294,26 @@ const DECISION_SELECT = {
   currentApproverId: true,
   managerApproverId: true,
   leaderApproverId: true,
+  currentApprover: { select: { fullName: true } },
 } satisfies Prisma.ApprovalRequestSelect;
 
 async function findForDecision(tx: Tx, code: string) {
   const request = await tx.approvalRequest.findUnique({ where: { code }, select: DECISION_SELECT });
   if (!request) throw new DomainError('NOT_FOUND', 'Không tìm thấy phiếu');
   return request;
+}
+
+/** Ghi chú khi Quản trị hệ thống làm thay người đang được giao duyệt. */
+function onBehalfNote(
+  verb: string,
+  assignee: string | null,
+  actorId: string,
+  request: { currentApprover: { fullName: string } | null },
+  text: string,
+): string {
+  if (assignee === actorId) return text;
+  const who = request.currentApprover?.fullName ?? 'người duyệt';
+  return text ? `${verb} ${who}: ${text}` : `${verb} ${who}`;
 }
 
 function statusChange(before: ApprovalStatus, after: ApprovalStatus): AuditChanges {
@@ -312,21 +332,25 @@ export async function approveRequest(
   code: string,
   note: string,
   now = new Date(),
+  override = false,
 ): Promise<ApprovalOutcome> {
   return db.$transaction(async (tx) => {
     const request = await findForDecision(tx, code);
     if (!PENDING.includes(request.status)) throw new DomainError('CONFLICT', STALE_MESSAGE);
-    if (request.currentApproverId !== actorId) {
+    const assignee = request.currentApproverId;
+    if (assignee !== actorId && !override) {
       throw new DomainError('FORBIDDEN', 'Phiếu này không chờ bạn duyệt');
     }
+    const fullNote = onBehalfNote('Duyệt thay', assignee, actorId, request, note);
 
     const atManagerStep = request.status === 'PENDING_MANAGER';
-    const autoPass = atManagerStep && request.leaderApproverId === actorId;
+    // Duyệt thay đi đúng như người đang được giao bấm duyệt.
+    const autoPass = atManagerStep && request.leaderApproverId === assignee;
     const finalStep = !atManagerStep || autoPass;
     const nextStatus: ApprovalStatus = finalStep ? 'APPROVED' : 'PENDING_LEADER';
 
     const updated = await tx.approvalRequest.updateMany({
-      where: { id: request.id, status: request.status, currentApproverId: actorId },
+      where: { id: request.id, status: request.status, currentApproverId: assignee },
       data: {
         status: nextStatus,
         currentApproverId: finalStep ? null : request.leaderApproverId,
@@ -341,7 +365,7 @@ export async function approveRequest(
         actorId,
         action: 'APPROVE',
         step: atManagerStep ? 'MANAGER' : 'LEADER',
-        note,
+        note: fullNote,
         createdAt: now,
       },
     ];
@@ -366,7 +390,7 @@ export async function approveRequest(
       status: nextStatus,
       changes: auditChanges(
         { status: APPROVAL_STATUS_LABEL[request.status] },
-        { status: APPROVAL_STATUS_LABEL[nextStatus], note: note || null },
+        { status: APPROVAL_STATUS_LABEL[nextStatus], note: fullNote || null },
       ),
     };
   });
@@ -378,15 +402,18 @@ export async function returnRequest(
   code: string,
   reason: string,
   now = new Date(),
+  override = false,
 ): Promise<ApprovalOutcome> {
   return db.$transaction(async (tx) => {
     const request = await findForDecision(tx, code);
     if (!PENDING.includes(request.status)) throw new DomainError('CONFLICT', STALE_MESSAGE);
-    if (request.currentApproverId !== actorId) {
+    const assignee = request.currentApproverId;
+    if (assignee !== actorId && !override) {
       throw new DomainError('FORBIDDEN', 'Phiếu này không chờ bạn duyệt');
     }
+    const fullReason = onBehalfNote('Trả lại thay', assignee, actorId, request, reason);
     const updated = await tx.approvalRequest.updateMany({
-      where: { id: request.id, status: request.status, currentApproverId: actorId },
+      where: { id: request.id, status: request.status, currentApproverId: assignee },
       data: { status: 'RETURNED', currentApproverId: null, decidedAt: now },
     });
     if (updated.count === 0) throw new DomainError('CONFLICT', STALE_MESSAGE);
@@ -396,7 +423,7 @@ export async function returnRequest(
         actorId,
         action: 'RETURN',
         step: request.status === 'PENDING_MANAGER' ? 'MANAGER' : 'LEADER',
-        note: reason,
+        note: fullReason,
         createdAt: now,
       },
     });
@@ -422,13 +449,14 @@ export function isWithdrawable(status: ApprovalStatus, managerApproverId: string
 }
 
 export async function withdrawRequest(
-  submitterId: string,
+  actorId: string,
   code: string,
   now = new Date(),
+  override = false,
 ): Promise<ApprovalOutcome> {
   return db.$transaction(async (tx) => {
     const request = await findForDecision(tx, code);
-    if (request.submittedById !== submitterId) {
+    if (request.submittedById !== actorId && !override) {
       throw new DomainError('FORBIDDEN', 'Chỉ người gửi được rút lại phiếu');
     }
     if (!isWithdrawable(request.status, request.managerApproverId)) {
@@ -440,14 +468,19 @@ export async function withdrawRequest(
     const updated = await tx.approvalRequest.updateMany({
       where: {
         id: request.id,
-        submittedById: submitterId,
         OR: [{ status: 'PENDING_MANAGER' }, { status: 'PENDING_LEADER', managerApproverId: null }],
       },
       data: { status: 'WITHDRAWN', currentApproverId: null, decidedAt: now },
     });
     if (updated.count === 0) throw new DomainError('CONFLICT', STALE_MESSAGE);
     await tx.approvalAction.create({
-      data: { requestId: request.id, actorId: submitterId, action: 'WITHDRAW', createdAt: now },
+      data: {
+        requestId: request.id,
+        actorId,
+        action: 'WITHDRAW',
+        note: request.submittedById === actorId ? '' : 'Quản trị hệ thống rút lại thay',
+        createdAt: now,
+      },
     });
     return {
       requestId: request.id,
@@ -769,13 +802,20 @@ export async function readApproval(viewer: ApprovalViewer, code: string): Promis
     viewer.canRead &&
     (await viewer.scoped.approvalRequest.count({ where: { id: record.id } })) > 0;
   if (!involved && !inScope) throw new DomainError('NOT_FOUND', 'Không tìm thấy phiếu');
+  const canReviewNow =
+    PENDING.includes(record.status) &&
+    ((viewer.canReview && record.currentApproverId === viewer.id) || viewer.canOverride);
 
   return {
     ...toRow(record),
-    canReview:
-      viewer.canReview && record.currentApproverId === viewer.id && PENDING.includes(record.status),
+    canReview: canReviewNow,
+    onBehalfOf:
+      canReviewNow && record.currentApproverId !== viewer.id
+        ? (record.currentApprover?.fullName ?? null)
+        : null,
     canWithdraw:
-      record.submittedById === viewer.id && isWithdrawable(record.status, record.managerApproverId),
+      (record.submittedById === viewer.id || viewer.canOverride) &&
+      isWithdrawable(record.status, record.managerApproverId),
     actions: record.actions.map((action) => ({
       id: action.id,
       actorId: action.actorId,

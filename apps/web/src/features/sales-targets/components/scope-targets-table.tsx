@@ -8,6 +8,7 @@ import {
 } from '@dms/contracts/sales-targets';
 import { DataTable, type ColumnDef } from '@dms/ui/data-table';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
+import { TargetOnBehalfCreateButton, TargetOnBehalfEditButton } from './target-form-sheet';
 
 const SECONDARY_COLUMN = 'max-md:hidden';
 
@@ -76,6 +77,34 @@ const COLUMNS: ColumnDef<SalesTargetRow>[] = [
   },
 ];
 
+type Option = { value: string; label: string };
+/** Có khi người xem là Quản trị hệ thống: đăng ký thay, sửa thay. */
+type OverrideTools = { employees: readonly Option[]; editableMonths: readonly Option[] };
+
+function overrideColumn(tools: OverrideTools): ColumnDef<SalesTargetRow> {
+  const editable = new Set(tools.editableMonths.map((item) => item.value));
+  return {
+    id: 'override',
+    header: 'Làm thay',
+    meta: { label: 'Làm thay' },
+    cell: ({ row }) => {
+      const status = row.original.approvalStatus;
+      if (!editable.has(row.original.month)) return null;
+      if (status === 'PENDING_MANAGER' || status === 'PENDING_LEADER') {
+        return <span className="text-sm text-text-muted">Rút lại ở Cần duyệt để sửa</span>;
+      }
+      return (
+        <TargetOnBehalfEditButton
+          forUserId={row.original.userId}
+          userLabel={`${row.original.userName} (${row.original.userCode})`}
+          month={row.original.month}
+          current={row.original.proposed}
+        />
+      );
+    },
+  };
+}
+
 function getId(row: SalesTargetRow) {
   return row.id;
 }
@@ -84,13 +113,15 @@ function getId(row: SalesTargetRow) {
 export function ScopeTargetsTable({
   data,
   months,
+  override,
 }: {
   data: ListSalesTargetsResult;
   months: ReadonlyArray<{ value: string; label: string }>;
+  override: OverrideTools | null;
 }) {
   return (
     <DataTable.Root
-      columns={COLUMNS}
+      columns={override ? [...COLUMNS, overrideColumn(override)] : COLUMNS}
       data={data.items}
       getRowId={getId}
       total={data.total}
@@ -107,6 +138,12 @@ export function ScopeTargetsTable({
             options={months}
           />
         </DataTable.Filters>
+        {override ? (
+          <TargetOnBehalfCreateButton
+            employees={override.employees}
+            months={override.editableMonths}
+          />
+        ) : null}
       </DataTable.Toolbar>
       <DataTable.Body emptyMessage="Chưa có nhân viên nào đăng ký chỉ tiêu tháng này." />
       <DataTable.Pagination itemLabel="nhân viên" />

@@ -35,10 +35,11 @@ export const POST = mobileRoute(async (request: Request, { params }: Context) =>
   const code = approvalCode.safeParse((await params).code);
   if (!code.success) return mobileError('VALIDATION', 'Mã phiếu không hợp lệ');
   const input = await readJson(request, mobileApprovalDecisionInput);
+  const override = user.permissions.has('sales.approval.override');
   const outcome =
     input.decision === 'APPROVE'
-      ? await approveRequest(user.id, code.data, input.note)
-      : await returnRequest(user.id, code.data, input.reason);
+      ? await approveRequest(user.id, code.data, input.note, new Date(), override)
+      : await returnRequest(user.id, code.data, input.reason, new Date(), override);
   const ip = clientIp(request);
   after(() =>
     auditMobileApproval(

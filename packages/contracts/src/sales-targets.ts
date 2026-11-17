@@ -75,6 +75,7 @@ export type MyTargetsResult = z.infer<typeof myTargetsResult>;
 
 export const salesTargetRow = z.object({
   id: z.uuid(),
+  userId: z.uuid(),
   userName: z.string(),
   userCode: z.string(),
   orgUnitName: z.string().nullable(),

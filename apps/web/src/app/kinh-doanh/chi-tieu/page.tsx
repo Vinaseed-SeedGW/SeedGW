@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import {
   currentVnMonth,
+  editableTargetMonths,
   formatMonthLabel,
   salesTargetsUrlParams,
   shiftMonth,
@@ -13,7 +14,11 @@ import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
 import { MyTargets } from '@/features/sales-targets/components/my-targets';
 import { ScopeTargetsTable } from '@/features/sales-targets/components/scope-targets-table';
 import { can, requirePermission } from '@/server/auth/can';
-import { getMyTargets, listSalesTargets } from '@/server/queries/sales-targets';
+import {
+  getMyTargets,
+  getOnBehalfEmployees,
+  listSalesTargets,
+} from '@/server/queries/sales-targets';
 
 export const metadata: Metadata = { title: 'Chỉ tiêu' };
 
@@ -71,7 +76,7 @@ export default async function SalesTargetsPage({ searchParams }: PageProps) {
         </Suspense>
       ) : (
         <Suspense key={JSON.stringify(input)} fallback={<DataTableSkeleton columns={5} rows={6} />}>
-          <ScopeResults input={input} />
+          <ScopeResults input={input} canOverride={can(user, 'sales.approval.override')} />
         </Suspense>
       )}
     </>
@@ -82,12 +87,31 @@ async function MyTargetResults({ canOpenApproval }: { canOpenApproval: boolean }
   return <MyTargets data={await getMyTargets()} canOpenApproval={canOpenApproval} />;
 }
 
-async function ScopeResults({ input }: { input: ListSalesTargetsInput }) {
-  const data = await listSalesTargets(input);
+async function ScopeResults({
+  input,
+  canOverride,
+}: {
+  input: ListSalesTargetsInput;
+  canOverride: boolean;
+}) {
+  const [data, employees] = await Promise.all([
+    listSalesTargets(input),
+    canOverride ? getOnBehalfEmployees() : null,
+  ]);
   const current = currentVnMonth();
   const months = [1, -1, -2, -3].map((delta) => {
     const value = shiftMonth(current, delta);
     return { value, label: formatMonthLabel(value) };
   });
-  return <ScopeTargetsTable data={data} months={months} />;
+  const editableMonths = editableTargetMonths().map((value) => ({
+    value,
+    label: formatMonthLabel(value),
+  }));
+  return (
+    <ScopeTargetsTable
+      data={data}
+      months={months}
+      override={employees ? { employees, editableMonths } : null}
+    />
+  );
 }

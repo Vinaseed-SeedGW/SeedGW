@@ -25,6 +25,7 @@ async function viewerOf(user: CurrentUser): Promise<ApprovalViewer> {
     id: user.id,
     canRead: can(user, 'sales.approval.read'),
     canReview: can(user, 'sales.approval.review'),
+    canOverride: can(user, 'sales.approval.override'),
     scoped: await getScopedDb(),
   };
 }

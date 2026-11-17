@@ -18,10 +18,9 @@ function PeriodCard({
 }) {
   const plan = period.plan;
   const days = plan?.approved ?? plan?.proposed ?? [];
-  const revisionPending =
-    plan?.approved !== null &&
-    plan?.approved !== undefined &&
-    (plan.approvalStatus === 'PENDING_MANAGER' || plan.approvalStatus === 'PENDING_LEADER');
+  const pending =
+    plan?.approvalStatus === 'PENDING_MANAGER' || plan?.approvalStatus === 'PENDING_LEADER';
+  const revisionPending = pending && plan?.approved != null;
   return (
     <section
       aria-labelledby={`tuyen-${period.periodStart}`}
@@ -78,9 +77,23 @@ function PeriodCard({
           {period.editable ? 'Chưa đăng ký tuyến kỳ này.' : 'Không có tuyến.'}
         </p>
       )}
-      {plan?.canWithdraw && plan.approvalCode ? (
-        <div className="mt-3">
-          <ApprovalWithdrawButton code={plan.approvalCode} />
+      {period.editable || (plan?.canWithdraw && plan.approvalCode) ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {period.editable && !pending ? (
+            <Link
+              href={`/kinh-doanh/tuyen-vieng-tham/dang-ky?ky=${period.periodStart}`}
+              className={
+                plan
+                  ? 'inline-flex h-9.5 items-center rounded-md border border-border bg-surface px-4 font-bold hover:bg-brand-soft'
+                  : 'inline-flex h-9.5 items-center rounded-md bg-brand px-4 font-bold text-primary-foreground hover:bg-brand-hover'
+              }
+            >
+              {plan ? 'Sửa tuyến' : 'Đăng ký tuyến'}
+            </Link>
+          ) : null}
+          {plan?.canWithdraw && plan.approvalCode ? (
+            <ApprovalWithdrawButton code={plan.approvalCode} />
+          ) : null}
         </div>
       ) : null}
     </section>
@@ -98,8 +111,8 @@ export function MyRoutes({
   return (
     <>
       <p className="mt-4 rounded-md bg-brand-soft px-3 py-2">
-        Đơn vị của bạn đăng ký tuyến <b>{ROUTE_KIND_LABEL[data.kind].toLowerCase()}</b>. Đăng ký và
-        sửa tuyến trên app Check-in, ở tab Tuyến.
+        Đơn vị của bạn đăng ký tuyến <b>{ROUTE_KIND_LABEL[data.kind].toLowerCase()}</b>. Đăng ký,
+        sửa tuyến ngay trên trang này hoặc trên app Check-in ở tab Tuyến.
       </p>
       <div className="mt-4 grid gap-4">
         {data.periods.map((period) => (

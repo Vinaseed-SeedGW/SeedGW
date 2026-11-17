@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
-import { ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
+import { editableRoutePeriods, ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { CompletionText, RouteDays } from '@/features/route-plans/components/route-days';
 import { can, requirePermission } from '@/server/auth/can';
@@ -57,6 +57,20 @@ export default async function RoutePlanPage({ params }: PageProps) {
         ) : null}
       </p>
       {plan.note ? <p className="mt-2">Ghi chú: {plan.note}</p> : null}
+      {can(user, 'sales.approval.override') &&
+      !pendingRevision &&
+      plan.approvalStatus !== 'PENDING_MANAGER' &&
+      plan.approvalStatus !== 'PENDING_LEADER' &&
+      editableRoutePeriods(plan.kind).includes(plan.periodStart) ? (
+        <p className="mt-3">
+          <Link
+            href={`/kinh-doanh/tuyen-vieng-tham/dang-ky?ky=${plan.periodStart}&nhan-vien=${plan.userCode}`}
+            className="inline-flex h-9.5 items-center rounded-md border border-border bg-surface px-4 font-bold hover:bg-brand-soft"
+          >
+            Sửa thay
+          </Link>
+        </p>
+      ) : null}
 
       {plan.approved ? (
         <section className="mt-5">

@@ -360,3 +360,17 @@ function squaredDistance(a: { lat: number; lng: number }, b: { lat: number; lng:
   const dLng = (a.lng - b.lng) * Math.cos(((a.lat + b.lat) / 2) * (Math.PI / 180));
   return dLat * dLat + dLng * dLng;
 }
+
+export const routeDealerSearchInput = z.object({ q: z.string().trim().max(100) });
+
+export const routeDealerOption = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  code: z.string().nullable(),
+  address: z.string(),
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
+});
+export type RouteDealerOption = z.infer<typeof routeDealerOption>;
+
+export const ROUTE_DEALER_SEARCH_LIMIT = 20;

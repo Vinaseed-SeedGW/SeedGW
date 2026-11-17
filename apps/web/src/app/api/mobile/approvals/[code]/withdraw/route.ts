@@ -18,7 +18,12 @@ export const POST = mobileRoute(async (request: Request, { params }: Context) =>
     .max(40)
     .safeParse((await params).code);
   if (!code.success) return mobileError('VALIDATION', 'Mã phiếu không hợp lệ');
-  const outcome = await withdrawRequest(user.id, code.data);
+  const outcome = await withdrawRequest(
+    user.id,
+    code.data,
+    new Date(),
+    user.permissions.has('sales.approval.override'),
+  );
   const ip = clientIp(request);
   after(() => auditMobileApproval(user, 'approval.withdraw', [outcome], ip));
   return NextResponse.json(
