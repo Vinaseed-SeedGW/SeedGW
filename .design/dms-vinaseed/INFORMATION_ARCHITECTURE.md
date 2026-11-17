@@ -38,6 +38,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - Đăng nhập `/login`
   - Quên mật khẩu* `/quen-mat-khau`
   - Đổi mật khẩu lần đầu* `/doi-mat-khau`
+  - Đồng ý chia sẻ vị trí* `/dong-y-vi-tri` (sau đăng nhập, khi chưa đồng ý bản câu chữ hiện tại)
 - **Hub** `/hub`
 - **Tổng quan điều hành*** `/tong-quan`
 - Thông báo* `/thong-bao`
@@ -196,6 +197,7 @@ Quy tắc tính:
 ### Đăng nhập và vào việc
 1. Người dùng đăng nhập → tới Hub.
    - Lần đầu → đổi mật khẩu trước.
+   - Chưa đồng ý chia sẻ vị trí → trang đồng ý; Không đồng ý vẫn vào web, không hỏi lại trong phiên.
 2. Hub hiện ô bộ phận được phép và số việc chờ.
 3. Bấm ô → tới trang đích theo vai trò.
    - Từ link thông báo → bỏ qua Hub, tới thẳng đối tượng.
