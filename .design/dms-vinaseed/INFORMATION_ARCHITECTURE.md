@@ -58,7 +58,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Khách hàng `/kinh-doanh/khach-hang`
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
-    - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham`
+    - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham` (tab: Tuyến của tôi, Trong phạm vi; chi tiết: `/kinh-doanh/tuyen-vieng-tham/[id]`)
     - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem; tab Danh sách: ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, cờ nghi vấn; tab Bản đồ `?tab=ban-do&nhan-vien=&ngay=`: hành trình một nhân viên một ngày)
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
@@ -226,6 +226,14 @@ Quy tắc tính:
 3. Máy chủ lấy địa chỉ và tính km từ điểm check-in trước trong cùng ngày, theo đường đi thực tế và theo GPS.
 4. Nhân viên xem lịch sử của mình trên app; quản lý xem nhân viên mình quản lý ở Báo cáo ghé thăm.
 5. Lọc theo ngày, nhân viên, đơn vị → xuất Excel → kế toán đơn vị dùng để tính công.
+
+### Tuyến theo tuần hoặc theo ngày (S8, 17/11/2026)
+1. Quản trị đơn vị chọn Kiểu tuyến của đơn vị ở Cơ cấu tổ chức (nút Trưởng đơn vị, kiểu tuyến): Theo tuần (mặc định) hoặc Theo ngày.
+2. NVKD mở tab Tuyến trên app → Đăng ký, xem tuyến → chọn kỳ (tuần này, tuần sau; hoặc hôm nay tới 7 ngày tới) → thêm đại lý mình phụ trách cho từng ngày, tối đa 30 điểm → sắp thứ tự bằng Lên, Xuống hoặc Sắp theo đường gần nhất → Lưu nháp trên máy hoặc Gửi duyệt.
+   - Nộp sau hạn ở Tham số (tuyến tuần: giờ đặt sẵn ngày thứ Sáu tuần trước; tuyến ngày: hôm trước) vẫn nhận, phiếu gắn nhãn Nộp muộn.
+3. Phiếu mã `TV00001` đi luồng duyệt chung (Quản lý nếu có, rồi Lãnh đạo đơn vị). Sửa tuyến đã duyệt phải duyệt lại, tuyến cũ vẫn hiệu lực trong lúc chờ.
+4. Tuyến đã duyệt hiện ở đầu tab Tuyến và mục Điểm cần thăm ở tab Hôm nay: điểm theo thứ tự, Đã ghé khi có check-in tại đại lý trong ngày, nút Check-in và Chỉ đường mở Google Maps (khoảng 10 điểm mỗi đường dẫn, đại lý chưa có toạ độ dùng địa chỉ). Check-in ngoài tuyến vẫn ghi nhận.
+5. Web: Tuyến của tôi để xem và rút lại; Trong phạm vi lọc theo tuần, xem tỉ lệ hoàn thành (điểm đã ghé trên điểm trong kế hoạch tới hôm nay).
 
 ### Chỉ tiêu tháng tự đăng ký và phê duyệt (K3a, A10b, 17/11/2026)
 1. NVKD (và Quản lý, Lãnh đạo đơn vị nếu muốn) đăng ký chỉ tiêu tháng ở `/kinh-doanh/chi-tieu` tab Chỉ tiêu của tôi hoặc trên app (thẻ Chỉ tiêu ở tab Hôm nay): lượt ghé thăm, số đại lý được ghé, Thực bán (kg). Chỉ đăng ký hoặc sửa được tháng này và tháng sau; tháng đã qua chỉ xem.
