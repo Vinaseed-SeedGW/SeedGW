@@ -148,6 +148,18 @@ export async function saveCheckIn(
       throw error;
     });
 
+  // Lần ghé gần nhất của đại lý cho dashboard (K0). Lượt gửi trễ, cũ hơn lượt đã có thì không ghi đè.
+  if (!('duplicate' in saved) && dealer) {
+    const capturedAt = new Date(input.capturedAt);
+    await db.dealer.updateMany({
+      where: {
+        id: dealer.id,
+        OR: [{ lastVisitedAt: null }, { lastVisitedAt: { lt: capturedAt } }],
+      },
+      data: { lastVisitedAt: capturedAt },
+    });
+  }
+
   if (!('duplicate' in saved) && dealer && shouldProposeLocation(dealer, input)) {
     await db.dealerLocationProposal
       .create({

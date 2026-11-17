@@ -9,16 +9,46 @@ import {
   type DealerFilter,
   type DealerLevel,
   type UpdateDealerInput,
+  type VisitCutoffs,
+  visitCutoffs,
 } from '@dms/contracts/dealers';
 import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
 import { db } from '@dms/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { DomainError } from './domain-error';
+import { readSystemSettings } from './settings';
 
-export function dealerWhere(filter: DealerFilter): Prisma.DealerWhereInput {
+/** Mốc quá hạn chưa ghé lại theo cấp đại lý, đọc từ Tham số (K0). */
+export async function loadVisitCutoffs(now = new Date()): Promise<VisitCutoffs> {
+  const { values } = await readSystemSettings();
+  return visitCutoffs(
+    {
+      level1: values.dealerUnvisitedDaysLevel1,
+      level2: values.dealerUnvisitedDaysLevel2,
+      level3: values.dealerUnvisitedDaysLevel3,
+    },
+    now,
+  );
+}
+
+function visitWhere(visit: DealerFilter['visit'], cutoffs: VisitCutoffs): Prisma.DealerWhereInput {
+  if (visit === 'NEVER') return { lastVisitedAt: null };
+  if (visit === 'OVERDUE') {
+    return {
+      OR: ([1, 2, 3] as const).map((level) => ({
+        level,
+        lastVisitedAt: { lt: cutoffs[level] },
+      })),
+    };
+  }
+  return {};
+}
+
+export function dealerWhere(filter: DealerFilter, cutoffs: VisitCutoffs): Prisma.DealerWhereInput {
   const search = filter.q ? normalizeSearchText(filter.q) : '';
   return {
+    ...visitWhere(filter.visit, cutoffs),
     ...(search ? { searchText: { contains: escapeLikePattern(search) } } : {}),
     ...(filter.level ? { level: filter.level } : {}),
     ...(filter.status ? { status: filter.status } : {}),
@@ -179,7 +209,9 @@ export async function updateDealer(
 }
 
 async function targetWhere(input: { filter: DealerFilter; ids: string[] }) {
-  return input.ids.length > 0 ? { id: { in: input.ids } } : dealerWhere(input.filter);
+  return input.ids.length > 0
+    ? { id: { in: input.ids } }
+    : dealerWhere(input.filter, await loadVisitCutoffs());
 }
 
 /** Gán nhân viên cho các dòng đã chọn, hoặc mọi đại lý khớp bộ lọc. Phạm vi dữ liệu áp trong truy vấn. */

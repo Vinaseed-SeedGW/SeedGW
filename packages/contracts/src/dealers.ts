@@ -85,8 +85,24 @@ export const dealerSummary = z.object({
   assignedUserName: z.string().nullable(),
   legacyAssigneeName: z.string().nullable(),
   hasLocation: z.boolean(),
+  lastVisitedAt: z.iso.datetime().nullable(),
 });
 export type DealerSummary = z.infer<typeof dealerSummary>;
+
+// Lọc theo lần ghé (K0): quá mốc chưa ghé lại theo cấp (mốc ở Tham số), hoặc chưa ghé lần nào.
+export const dealerVisitFilter = z.enum(['OVERDUE', 'NEVER']);
+export type DealerVisitFilter = z.infer<typeof dealerVisitFilter>;
+
+/** Mốc ngày cho từng cấp: đại lý đã ghé, lần gần nhất trước mốc này là quá mốc chưa ghé lại. */
+export type VisitCutoffs = Record<DealerLevel, Date>;
+
+export function visitCutoffs(
+  days: { level1: number; level2: number; level3: number },
+  now: Date = new Date(),
+): VisitCutoffs {
+  const before = (count: number) => new Date(now.getTime() - count * 86_400_000);
+  return { 1: before(days.level1), 2: before(days.level2), 3: before(days.level3) };
+}
 
 export const DEALER_ASSIGNEE_UNASSIGNED = 'chua-gan';
 
@@ -100,6 +116,7 @@ export const listDealersInput = z.object({
   orgUnitId: z.uuid().optional(),
   unassignedOnly: z.boolean().default(false),
   missingLocationOnly: z.boolean().default(false),
+  visit: dealerVisitFilter.optional(),
   sort: dealerSort.default(DEFAULT_DEALER_SORT),
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(MAX_PAGE_SIZE).default(20),
@@ -122,6 +139,7 @@ export const dealersUrlParams = z
     'don-vi': z.uuid().optional().catch(undefined),
     'nhan-vien': z.enum([DEALER_ASSIGNEE_UNASSIGNED]).optional().catch(undefined),
     'toa-do': z.enum(['chua-co']).optional().catch(undefined),
+    'ghe-tham': z.enum(['qua-moc', 'chua-ghe']).optional().catch(undefined),
     'sap-xep': dealerSort.catch(DEFAULT_DEALER_SORT),
     trang: z.coerce.number().int().positive().max(1_000_000).catch(1),
   })
@@ -137,6 +155,12 @@ export const dealersUrlParams = z
     orgUnitId: url['don-vi'],
     unassignedOnly: url['nhan-vien'] === DEALER_ASSIGNEE_UNASSIGNED,
     missingLocationOnly: url['toa-do'] === 'chua-co',
+    visit:
+      url['ghe-tham'] === 'qua-moc'
+        ? 'OVERDUE'
+        : url['ghe-tham'] === 'chua-ghe'
+          ? 'NEVER'
+          : undefined,
     sort: url['sap-xep'],
     page: url.trang,
     pageSize: DEALER_PAGE_SIZE,

@@ -13,7 +13,7 @@ import {
   type DealerSummary,
   type ListDealersResult,
 } from '@dms/contracts/dealers';
-import { formatNumber } from '@dms/contracts/format';
+import { formatDate, formatNumber } from '@dms/contracts/format';
 import { DataTable, selectionColumn, useDataTable, type ColumnDef } from '@dms/ui/data-table';
 import { exportDealersAction } from '@/server/actions/dealers';
 import { DealerBulkDialog, type BulkMode } from './dealer-bulk-dialog';
@@ -30,6 +30,12 @@ const STATUS_OPTIONS = [
 ];
 const ASSIGNEE_OPTIONS = [{ value: DEALER_ASSIGNEE_UNASSIGNED, label: 'Chưa gán nhân viên' }];
 const LOCATION_OPTIONS = [{ value: 'chua-co', label: 'Chưa có toạ độ' }];
+
+// Mốc quá hạn theo cấp đại lý đặt ở Tham số (K0).
+const VISIT_OPTIONS = [
+  { value: 'qua-moc', label: 'Quá mốc chưa ghé lại' },
+  { value: 'chua-ghe', label: 'Chưa ghé lần nào' },
+];
 
 function columns(basePath: string): ColumnDef<DealerSummary>[] {
   return [
@@ -98,6 +104,17 @@ function columns(basePath: string): ColumnDef<DealerSummary>[] {
       cell: ({ row }) =>
         row.original.hasLocation ? 'Đã có' : <span className="text-text-muted">Chưa có</span>,
     },
+    {
+      id: 'lastVisitedAt',
+      header: 'Lần ghé gần nhất',
+      meta: { label: 'Lần ghé gần nhất', className: SECONDARY_COLUMN },
+      cell: ({ row }) =>
+        row.original.lastVisitedAt ? (
+          formatDate(row.original.lastVisitedAt)
+        ) : (
+          <span className="text-text-muted">Chưa ghé</span>
+        ),
+    },
   ];
 }
 
@@ -155,6 +172,12 @@ export function DealersTable({ data, filter, basePath, orgUnitFilter, editOption
             label="Lọc theo toạ độ"
             allLabel="Có và chưa có toạ độ"
             options={LOCATION_OPTIONS}
+          />
+          <DataTable.SelectFilter
+            param="ghe-tham"
+            label="Lọc theo lần ghé thăm"
+            allLabel="Mọi lần ghé thăm"
+            options={VISIT_OPTIONS}
           />
         </DataTable.Filters>
         <DataTable.Columns />

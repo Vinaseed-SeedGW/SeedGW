@@ -33,6 +33,7 @@ import {
   bulkAssignDealers,
   bulkMoveDealers,
   dealerWhere,
+  loadVisitCutoffs,
   updateDealer,
 } from '@/server/services/dealers';
 import { buildWorkbookBase64, type ExcelColumn } from '@/server/services/excel';
@@ -226,7 +227,7 @@ export async function exportDealersAction(
     const where =
       parsed.data.ids.length > 0
         ? { id: { in: parsed.data.ids } }
-        : dealerWhere(parsed.data.filter);
+        : dealerWhere(parsed.data.filter, await loadVisitCutoffs());
     const total = await scoped.dealer.count({ where });
     if (total > MAX_EXPORT_ROWS) {
       return {

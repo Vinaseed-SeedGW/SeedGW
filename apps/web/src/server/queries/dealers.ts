@@ -16,7 +16,7 @@ import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { buildOrgUnitLabels } from '@/server/queries/users';
 import { CHECK_IN_ROW_SELECT, toCheckInRow } from '@/server/services/check-in-report';
-import { dealerWhere } from '@/server/services/dealers';
+import { dealerWhere, loadVisitCutoffs } from '@/server/services/dealers';
 
 // Một hồ sơ, hai lối vào (IA §1): Kinh doanh dùng quyền sales.dealer.read, Quản trị dùng admin.dealer.read.
 export type DealerEntry = Extract<PermissionCode, 'sales.dealer.read' | 'admin.dealer.read'>;
@@ -32,6 +32,7 @@ const SUMMARY_SELECT = {
   provinceName: true,
   lat: true,
   legacyAssigneeName: true,
+  lastVisitedAt: true,
   orgUnit: { select: { name: true } },
   assignedUser: { select: { fullName: true } },
 } satisfies Prisma.DealerSelect;
@@ -52,6 +53,7 @@ function toSummary(row: SummaryRecord): DealerSummary {
     assignedUserName: row.assignedUser?.fullName ?? null,
     legacyAssigneeName: row.legacyAssigneeName,
     hasLocation: row.lat !== null,
+    lastVisitedAt: row.lastVisitedAt?.toISOString() ?? null,
   };
 }
 
@@ -71,7 +73,7 @@ export async function listDealers(
   const [user, scoped] = await Promise.all([requireUser(), getScopedDb()]);
   assertCan(user, entry);
 
-  const where = dealerWhere(input);
+  const where = dealerWhere(input, await loadVisitCutoffs());
   const [rows, total] = await Promise.all([
     scoped.dealer.findMany({
       where,
