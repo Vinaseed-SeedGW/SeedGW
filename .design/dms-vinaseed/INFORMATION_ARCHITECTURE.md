@@ -86,10 +86,10 @@ Trang có dấu `*` là bổ sung so với plan trước.
 ### Site Map app điện thoại
 
 - Đăng nhập / Đăng ký thiết bị
-- Tab **Hôm nay**: nút Check-in (mở máy ảnh trong app) · điểm cần thăm · chỉ tiêu tháng của tôi · số check-in chờ gửi
-- Tab **Tuyến**: đại lý hôm nay / gần tôi → Check-in · Thêm đại lý
-- Tab **Lịch sử**: check-in của tôi theo ngày, ảnh, ghi chú, km từng chặng, tổng km trong ngày, nút Kết thúc ngày
-- Tab **Tôi**: hồ sơ, thiết bị, thông báo, đăng xuất
+- Tab **Hôm nay**: nút Check-in (mở máy ảnh trong app) · Đại lý gần tôi · trạng thái ghi hành trình kèm nút Kết thúc ngày · điểm cần thăm (tuyến đã duyệt, chưa có tuyến thì đại lý gần nhất chưa ghé) · chỉ tiêu tháng của tôi (K3a) · số check-in chờ gửi
+- Tab **Tuyến**: tuyến đã duyệt hôm nay, nút Chỉ đường mở Google Maps (S8) · đăng ký tuyến tuần hoặc ngày, gửi duyệt (S8) · đại lý tôi phụ trách, gần tôi → Check-in · Thêm đại lý (M10)
+- Tab **Lịch sử**: toàn bộ check-in của tôi (18 tháng, ảnh 45 ngày) theo tháng và ngày, ảnh, ghi chú, km từng chặng, tổng km trong ngày, xuất Excel. Có mạng lấy từ máy chủ, mất mạng lấy trên máy, lượt chưa gửi gắn nhãn Chờ gửi
+- Tab **Tôi**: hồ sơ, thiết bị, Hỗ trợ, quyền vị trí, rút lại đồng ý chia sẻ vị trí, đăng xuất, thông tin kỹ thuật, chân trang. Quản lý và Lãnh đạo đơn vị có thêm mục Cần duyệt (A10b)
 
 ### Quy tắc "một hồ sơ, nhiều lối vào"
 

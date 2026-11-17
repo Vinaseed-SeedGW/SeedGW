@@ -64,7 +64,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Thêm 17/11: lời đồng ý chia sẻ vị trí (câu chữ đã duyệt, phiên bản `2026-11-17`). Web hỏi ở `/dong-y-vi-tri` sau đăng nhập, Không đồng ý thì không hỏi lại trong phiên; app hỏi trước khi check-in, có nút Rút lại đồng ý (chuyển sang tab Tôi ở M6). Lưu ở bảng `user_consents`, ghi nhật ký.
 - [x] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (xong 16/11): file 316 tài khoản theo mẫu hệ thống cũ, bỏ 10 tài khoản test, khách và 15 tài khoản kế toán dùng chung, nhập 291 người vào máy chủ thử với vai trò Cán bộ nhân viên, mật khẩu tạm phải đổi lần đầu. Tạo 3 đơn vị con của SSC chưa có: Chi nhánh Lâm Hà `SS-LH`, Phòng Sản xuất `SS-SX`, Chi nhánh Campuchia `SS-CPC` (mã tạm). Ghép theo tên được 9.464 đại lý, còn 2.615 chờ gán (74 tên phụ trách cũ không có trong danh sách, 2 cặp trùng tên). Tài khoản mẫu giữ lại cho buổi demo.
   - Còn thiếu: chức danh, ngày vào làm, quản lý trực tiếp (file không có); vai trò Quản trị đơn vị gán tay khi cần.
-- [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (1,5 buổi): lịch sử check-in của tôi, km từng chặng và tổng km, chân trang và phiên bản ở tab Tôi. Tab Tuyến tạm hiện đại lý tôi phụ trách, phần tuyến theo ngày làm ở S8.
+- [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (2 buổi, kế hoạch duyệt 17/11): thanh tiêu đề xanh logo trắng cỡ M, thanh tab đáy có icon. Hôm nay: Check-in, Đại lý gần tôi, trạng thái ghi kèm Kết thúc ngày, số lượt và km hôm nay, chờ gửi, đại lý gần nhất chưa ghé. Lịch sử: toàn bộ check-in của tôi trong 18 tháng (ảnh 45 ngày), có mạng lấy máy chủ, mất mạng lấy trên máy, lượt chưa gửi gắn Chờ gửi; km từng chặng, tổng km, xuất Excel. Tôi: thông tin, Hỗ trợ tạm, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. Tuyến: đại lý tôi phụ trách, gần nhất lên đầu.
 - [x] **M4. Toạ độ đại lý từ check-in** (làm 16/11, sớm 4 ngày): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt ở `/quan-tri/dai-ly/duyet-toa-do` (quyền `admin.dealer-location.approve`); check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ Xa đại lý.
   - Thêm sau chuyến đi thử 16/11: cách check-in thứ hai **Đại lý gần tôi** trên app; đại lý chưa có toạ độ thì so tên phố lúc chụp với địa chỉ danh mục, khác phố gắn cờ; gõ tên tay đúng tên đại lý mình phụ trách thì máy chủ tự gắn; app tự tìm lại đại lý khi mất mạng.
   - Chưa làm: ước tính toạ độ hàng loạt từ địa chỉ qua Vietmap (chờ duyệt dùng lượt gọi).
@@ -96,12 +96,15 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 - [ ] **A9b. Tham số check-in** (0,5 buổi): giờ tự dừng ghi hành trình, khoảng lọc điểm GPS, bán kính gộp chỗ dừng đưa vào trang Tham số.
 - [ ] **A7b. Hoàn thiện danh mục đại lý** (0,5 buổi): gộp đại lý trùng số điện thoại hoặc mã số thuế, chọn toạ độ trên bản đồ, sửa nhanh 2.578 số điện thoại sai dạng. Danh sách lâu chưa ghé thăm đã làm ở K0.
 - [ ] **S1. Khách hàng nông dân, hợp tác xã** (1,5 buổi): danh sách, hồ sơ, tạo, sửa; số điện thoại, cây trồng, diện tích, đại lý mua thường xuyên. Check-in loại Khách hàng chọn từ danh sách.
-- [ ] **S8. Tuyến và kế hoạch viếng thăm** (2 buổi): gán đại lý vào tuyến theo ngày trong tuần; Quản trị đơn vị lập kế hoạch tuần; app tab Tuyến hiện "Hôm nay cần thăm" và đại lý gần tôi.
+- [ ] **F3b. Năm vai trò** (1 buổi, quyết định 31): thêm Lãnh đạo đơn vị (Trưởng đơn vị) và Quản lý; ô "Có cấp Quản lý" trong cài đặt đơn vị; ô Quản lý trực tiếp trên tài khoản, nhập Excel; Quản lý chỉ thấy NVKD của mình.
+- [ ] **A10b. Phê duyệt Tuyến và Chỉ tiêu** (1,5 buổi): luồng NVKD, Quản lý (nếu đơn vị bật), Lãnh đạo đơn vị; duyệt hoặc trả lại kèm lý do, gửi lại; mục Cần duyệt trên web và app; nhật ký mọi bước.
+- [ ] **S8. Tuyến theo tuần hoặc theo ngày** (2,5 buổi, thay bản 2 buổi cũ): Quản trị đơn vị chọn kiểu tuyến cho đơn vị; NVKD đăng ký trên app (chọn đại lý, sắp thứ tự, nút sắp theo đường gần nhất), gửi duyệt qua A10b; hạn nộp ở Tham số, nộp muộn gắn nhãn; tuyến đã duyệt hiện ở tab Tuyến và Hôm nay, đánh dấu điểm đã ghé; nút Chỉ đường mở Google Maps theo thứ tự (khoảng 10 điểm mỗi đường dẫn, dài hơn chia đoạn; đại lý chưa có toạ độ dùng địa chỉ). Check-in ngoài tuyến không bị chặn.
+- [ ] **K3a. Chỉ tiêu tháng tự đăng ký** (1 buổi): NVKD tạo chỉ tiêu tháng (lượt ghé thăm, số đại lý được ghé, Thực bán kg), gửi duyệt qua A10b; % hoàn thành hiện ở tab Hôm nay (thay M11 ở giai đoạn 5, Thực bán có % khi nối FAST).
 - [ ] **M10. Đề xuất đại lý mới trên app** (1 buổi): nhân viên đề xuất tại chỗ (tên, điện thoại, địa chỉ, toạ độ, ảnh); Quản trị đơn vị duyệt; sau khi nối FAST thì đẩy sang FAST ở S10.
 - [ ] **M7. Thông báo đẩy** (1 buổi): kế hoạch tuyến mới, toạ độ đại lý đã duyệt, nhắc chưa check-in; dùng lại cho Hỗ trợ ở giai đoạn 3. Cần duyệt thư viện `expo-notifications`.
 - [ ] **Sửa lỗi sau demo và đợt thử** (1,5 buổi).
 
-**Cộng giai đoạn 2: 11 buổi.**
+**Cộng giai đoạn 2: 17 buổi** (thêm F3b, A10b, K3a và 0,5 buổi cho S8 theo quyết định 31; lịch các giai đoạn sau dời khoảng 1,5 tuần, xem lại ở bản kế hoạch v7).
 
 ## Giai đoạn 3: Hỗ trợ: yêu cầu gửi quản trị (15/12 đến 25/12/2026)
 
@@ -142,7 +145,7 @@ Chỉ số theo INFORMATION_ARCHITECTURE §3: lượt ghé thăm, độ phủ đ
 - [ ] **K4. Dashboard Kinh doanh** (1 buổi): thêm Thực bán, so chỉ tiêu, so cùng kỳ vào dashboard bản đầu K0.
 - [ ] **K5. Báo cáo Kinh doanh** (1,5 buổi): bảng số theo đại lý, nhân viên, đơn vị, kỳ; xuất Excel theo phạm vi.
 - [ ] **K6. Tổng quan điều hành** (1 buổi): dành cho Quản trị hệ thống và người được cấp quyền.
-- [ ] **M11. Chỉ tiêu của tôi trên app** (0,5 buổi).
+- [x] ~~**M11. Chỉ tiêu của tôi trên app**~~ gộp vào K3a (17/11).
 
 **Cộng giai đoạn 5: 7 buổi.**
 
