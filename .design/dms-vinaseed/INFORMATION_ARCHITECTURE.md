@@ -56,7 +56,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
     - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham`
-    - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem: danh sách, ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, bản đồ hành trình theo ngày, cờ nghi vấn)
+    - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem; tab Danh sách: ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, cờ nghi vấn; tab Bản đồ `?tab=ban-do&nhan-vien=&ngay=`: hành trình một nhân viên một ngày)
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
 
