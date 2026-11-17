@@ -58,7 +58,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Khách hàng `/kinh-doanh/khach-hang`
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
   - Thị trường
-    - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham` (tab: Tuyến của tôi, Trong phạm vi; chi tiết: `/kinh-doanh/tuyen-vieng-tham/[id]`)
+    - Tuyến viếng thăm `/kinh-doanh/tuyen-vieng-tham` (tab: Tuyến của tôi, Trong phạm vi; đăng ký, sửa: `/kinh-doanh/tuyen-vieng-tham/dang-ky?ky=&nhan-vien=`; chi tiết: `/kinh-doanh/tuyen-vieng-tham/[id]`)
     - Check-in `/kinh-doanh/check-in` (báo cáo ghé thăm, chỉ xem; tab Danh sách: ảnh, km theo đường đi và theo GPS, xuất Excel theo mẫu cự ly di chuyển, cờ nghi vấn; tab Bản đồ `?tab=ban-do&nhan-vien=&ngay=`: hành trình một nhân viên một ngày)
   - Đối soát
     - Báo cáo `/kinh-doanh/bao-cao`
@@ -233,7 +233,7 @@ Quy tắc tính:
    - Nộp sau hạn ở Tham số (tuyến tuần: giờ đặt sẵn ngày thứ Sáu tuần trước; tuyến ngày: hôm trước) vẫn nhận, phiếu gắn nhãn Nộp muộn.
 3. Phiếu mã `TV00001` đi luồng duyệt chung (Quản lý nếu có, rồi Lãnh đạo đơn vị). Sửa tuyến đã duyệt phải duyệt lại, tuyến cũ vẫn hiệu lực trong lúc chờ.
 4. Tuyến đã duyệt hiện ở đầu tab Tuyến và mục Điểm cần thăm ở tab Hôm nay: điểm theo thứ tự, Đã ghé khi có check-in tại đại lý trong ngày, nút Check-in và Chỉ đường mở Google Maps (khoảng 10 điểm mỗi đường dẫn, đại lý chưa có toạ độ dùng địa chỉ). Check-in ngoài tuyến vẫn ghi nhận.
-5. Web: Tuyến của tôi để xem và rút lại; Trong phạm vi lọc theo tuần, xem tỉ lệ hoàn thành (điểm đã ghé trên điểm trong kế hoạch tới hôm nay).
+5. Web (18/11): Tuyến của tôi có nút Đăng ký tuyến, Sửa tuyến mở trang đăng ký giống app (chọn ngày, tìm đại lý, Lên, Xuống, Sắp theo đường gần nhất, Gửi duyệt) và nút rút lại; Trong phạm vi lọc theo tuần, xem tỉ lệ hoàn thành (điểm đã ghé trên điểm trong kế hoạch tới hôm nay).
 
 ### Chỉ tiêu tháng tự đăng ký và phê duyệt (K3a, A10b, 17/11/2026)
 1. NVKD (và Quản lý, Lãnh đạo đơn vị nếu muốn) đăng ký chỉ tiêu tháng ở `/kinh-doanh/chi-tieu` tab Chỉ tiêu của tôi hoặc trên app (thẻ Chỉ tiêu ở tab Hôm nay): lượt ghé thăm, số đại lý được ghé, Thực bán (kg). Chỉ đăng ký hoặc sửa được tháng này và tháng sau; tháng đã qua chỉ xem.
@@ -245,6 +245,7 @@ Quy tắc tính:
 4. Sửa chỉ tiêu đã duyệt tạo bản đề nghị mới, phải duyệt lại; trong lúc chờ, chỉ tiêu đã duyệt vẫn có hiệu lực.
 5. % hoàn thành tính theo chỉ tiêu đang hiệu lực và check-in trong tháng (lượt ghé thăm, số đại lý khác nhau); Thực bán có % khi nối FAST. Quản lý, Lãnh đạo xem chỉ tiêu nhân viên ở tab Trong phạm vi.
 6. Quản trị đơn vị chỉ xem tab Tất cả trong phạm vi của Cần duyệt để hỗ trợ, không duyệt.
+7. Quản trị hệ thống làm thay được mọi bước (18/11, quyền `sales.approval.override`): duyệt thay, trả lại thay, rút lại thay mọi phiếu đang chờ (mở phiếu từ tab Tất cả); đăng ký, sửa thay tuyến (nút Đăng ký tuyến thay nhân viên, Sửa thay) và chỉ tiêu (Đăng ký chỉ tiêu thay nhân viên, Sửa thay) của nhân viên. Phiếu đứng tên nhân viên, đi đúng luồng duyệt của nhân viên đó; nhật ký ghi rõ làm thay. Quản lý, Lãnh đạo đơn vị không sửa thay.
 
 ## 6. Naming Conventions
 
