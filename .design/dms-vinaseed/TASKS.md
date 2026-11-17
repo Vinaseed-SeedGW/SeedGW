@@ -55,7 +55,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | T2 16/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa, Đại lý gần tôi. Làm sớm sau chuyến đi thử | 1 |
 | T2 23/11 sáng | **M9a** Bản iPhone qua TestFlight cho người xem demo | 0,5 |
 | T3 17/11 | **V2b** Bản đồ hành trình trên web. Làm sớm 6 ngày | 1 |
-| T3 24/11 chiều đến T4 25/11 | **K0** Dashboard check-in bản đầu | 1,5 |
+| T3 17/11 | **K0** Dashboard check-in bản đầu. Làm sớm 7 ngày | 1,5 |
 | T5 26/11 | **DM1** Tổng duyệt demo | 1 |
 | T6 27/11 | **Demo** | |
 
@@ -70,12 +70,12 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Chưa làm: ước tính toạ độ hàng loạt từ địa chỉ qua Vietmap (chờ duyệt dùng lượt gọi).
 - [x] **V2b. Bản đồ hành trình** (xong 17/11, sớm 6 ngày): tab Bản đồ ở `/kinh-doanh/check-in?tab=ban-do&nhan-vien=&ngay=`, `leaflet` tự ghép (không react-leaflet): vết đi đã lọc, đoạn đứt nét đứt, điểm bắt đầu và kết thúc, điểm check-in đánh số có ảnh, đường nối tới toạ độ đại lý khi bị cờ Xa đại lý; tóm tắt ngày, danh sách lượt; lọc đơn vị, nhân viên trong phạm vi; link Xem hành trình ở từng dòng. Job xoá dữ liệu quá hạn dời sang D5.
   - Bản đồ nền tạm OpenStreetMap: khoá Vietmap hiện chưa mở dịch vụ bản đồ (trả "Your request is limited"). Có gói thì đặt `MAP_TILE_URL`, `MAP_TILE_API_KEY`, không sửa code.
-- [ ] **K0. Dashboard check-in bản đầu** (1,5 buổi): `/kinh-doanh/dashboard` theo IA §3, chỉ phần không cần FAST: lượt ghé thăm, độ phủ đại lý, **đại lý lâu chưa ghé thăm** theo mốc từng cấp (có danh sách), km di chuyển; lọc kỳ và đơn vị; phạm vi theo vai trò. Thực bán và chỉ tiêu thêm ở K4.
+- [x] **K0. Dashboard check-in bản đầu** (xong 17/11, sớm 7 ngày): `/kinh-doanh/dashboard` theo IA §3, phần không cần FAST: lượt ghé thăm, độ phủ đại lý, nhân viên đã check-in hôm nay trên số NVKD, km theo GPS; lượt theo ngày (Recharts), theo loại điểm, km bình quân, cờ nghi vấn; đại lý quá mốc chưa ghé lại theo cấp (Tham số) và chưa ghé lần nào tách riêng, chưa có toạ độ, chưa gán, độ phủ theo cấp và đơn vị; xếp hạng nhân viên, nhân viên chưa check-in hôm nay (chỉ quản trị). Kỳ Hôm nay, 7 ngày, Tháng này (mặc định), Tháng trước, Tuỳ chọn; lọc đơn vị, nhân viên, cấp. Thêm cột `dealers.last_visited_at`, danh sách đại lý lọc được theo lần ghé thăm. Tính thẳng từ dữ liệu gốc, bảng tổng hợp ở K1.
 - [ ] **M9a. Bản iPhone qua TestFlight** (0,5 buổi): build iOS bản phát hành, đẩy lên App Store Connect, mời người xem demo làm **người thử nội bộ** (tối đa 100 người trong nhóm App Store Connect, không cần Apple duyệt, không cần bật Chế độ nhà phát triển, không cần UDID). Người thử cài app TestFlight rồi nhận lời mời qua email.
   - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
-**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4, M2, M6, V2b đã xong, còn 2,5: K0, M9a, DM1).
+**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4, M2, M6, V2b, K0 đã xong, còn 1,5: M9a, DM1).
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
