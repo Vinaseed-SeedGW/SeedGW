@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from './text';
 import type { MobileProfile } from '@dms/contracts/check-ins';
 import { logout } from '../api/client';
@@ -6,10 +6,15 @@ import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import type { SyncControl } from './use-sync';
 
-type Props = { user: MobileProfile; sync: SyncControl; onBeforeLogout: () => Promise<void> };
+type Props = {
+  user: MobileProfile;
+  sync: SyncControl;
+  onBeforeLogout: () => Promise<void>;
+  onWithdrawConsent: () => void;
+};
 
 /** Tài khoản và tình trạng gửi dữ liệu. Còn check-in chưa gửi thì không cho đăng xuất (M3). */
-export function AccountCard({ user, sync, onBeforeLogout }: Props) {
+export function AccountCard({ user, sync, onBeforeLogout, onWithdrawConsent }: Props) {
   const { pending, syncing, lastError } = sync.state;
 
   function confirmLogout() {
@@ -55,6 +60,9 @@ export function AccountCard({ user, sync, onBeforeLogout }: Props) {
         <Button label="Gửi ngay" onPress={() => void sync.actions.syncNow()} variant="ghost" />
         <Button label="Đăng xuất" onPress={confirmLogout} variant="ghost" />
       </View>
+      <Pressable accessibilityRole="button" onPress={onWithdrawConsent} style={styles.link}>
+        <Text style={styles.linkText}>Rút lại đồng ý chia sẻ vị trí</Text>
+      </Pressable>
     </View>
   );
 }
@@ -72,4 +80,6 @@ const styles = StyleSheet.create({
   status: { fontSize: 15, color: COLORS.text, marginTop: SPACE.xs },
   error: { fontSize: 14, color: COLORS.danger },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm, marginTop: SPACE.sm },
+  link: { minHeight: 44, justifyContent: 'center' },
+  linkText: { fontSize: 14, color: COLORS.textMuted },
 });

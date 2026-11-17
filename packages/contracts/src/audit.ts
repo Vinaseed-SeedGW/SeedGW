@@ -34,6 +34,8 @@ export const AUDIT_ACTION_LABEL = {
   'user.device-register': 'Đăng ký thiết bị trên app',
   'check-in.create': 'Check-in trên app',
   'check-in.link-dealer': 'Gắn đại lý cho check-in',
+  'consent.accept': 'Đồng ý chia sẻ vị trí',
+  'consent.withdraw': 'Rút lại đồng ý chia sẻ vị trí',
   'dealer.import': 'Nhập đại lý từ Excel',
   'dealer.update': 'Sửa đại lý',
   'dealer.assign': 'Gán nhân viên phụ trách đại lý',

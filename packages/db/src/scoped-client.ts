@@ -14,6 +14,7 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   Dealer: { ownerField: 'assignedUserId', orgUnitField: 'orgUnitId' },
   // Theo don vi phu trach dai ly luc de xuat, nhan vien chi thay de xuat cua minh.
   DealerLocationProposal: { ownerField: 'proposedById', orgUnitField: 'orgUnitId' },
+  UserConsent: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([

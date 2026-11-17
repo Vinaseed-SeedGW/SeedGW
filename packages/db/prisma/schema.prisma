@@ -80,6 +80,7 @@ model User {
   assignedDealers        Dealer[]                 @relation("dealer_assignee")
   locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
   locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
+  consents               UserConsent[]
   createdAt              DateTime                 @default(now()) @map("created_at")
   updatedAt              DateTime                 @updatedAt @map("updated_at")
 
@@ -398,4 +399,30 @@ model DealerLocationProposal {
   @@index([status, orgUnitId, createdAt(sort: Desc)])
   @@index([dealerId])
   @@map("dealer_location_proposals")
+}
+
+enum ConsentChannel {
+  WEB
+  APP
+
+  @@map("consent_channel")
+}
+
+// Loi dong y cua nguoi dung theo tung phien ban cau chu (17/11/2026: dong y chia se vi tri).
+// Rut lai thi ghi withdrawnAt, dong y lai thi xoa withdrawnAt va cap nhat acceptedAt.
+model UserConsent {
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String         @map("user_id") @db.Uuid
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  version     String
+  channel     ConsentChannel
+  acceptedAt  DateTime       @default(now()) @map("accepted_at")
+  withdrawnAt DateTime?      @map("withdrawn_at")
+  ip          String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@unique([userId, kind, version])
+  @@map("user_consents")
 }

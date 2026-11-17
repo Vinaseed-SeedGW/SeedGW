@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import brandBold from './assets/fonts/UTMNeoSansIntel-Bold.ttf';
 import brandRegular from './assets/fonts/UTMNeoSansIntel-Regular.ttf';
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   View,
 } from 'react-native';
+import { logout } from './src/api/client';
+import { loadConsentState, recordConsent, type ConsentState } from './src/api/consent';
 import type { DealerChoice } from './src/api/dealers';
+import { ConsentScreen } from './src/components/consent-screen';
+import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
 import { NearbyDealers } from './src/components/nearby-dealers';
 import { LoginScreen } from './src/components/login-screen';
@@ -57,6 +62,51 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const { session } = useSession();
   const [screen, setScreen] = useState<'tracking' | 'camera' | 'nearby'>('tracking');
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
+  const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadConsentState().then((state) => {
+      if (!cancelled) setConsent(state);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
+
+  if (consent === 'checking') {
+    return <ActivityIndicator style={styles.loading} color={COLORS.brand} />;
+  }
+  if (consent === 'needed') {
+    return (
+      <ConsentScreen
+        onAccept={() => {
+          setConsent('accepted');
+          void recordConsent('ACCEPT');
+        }}
+        onLogout={session ? () => void stopTracking('USER').then(logout) : null}
+      />
+    );
+  }
+
+  function withdrawConsent() {
+    Alert.alert(
+      'Rút lại đồng ý chia sẻ vị trí',
+      'App sẽ dừng ghi vị trí và bạn không check-in trên app được nữa cho tới khi đồng ý lại.',
+      [
+        { text: 'Không', style: 'cancel' },
+        {
+          text: 'Rút lại',
+          style: 'destructive',
+          onPress: () => {
+            void stopTracking('USER')
+              .then(() => recordConsent('WITHDRAW'))
+              .then(() => setConsent('needed'));
+          },
+        },
+      ],
+    );
+  }
 
   if (screen === 'nearby') {
     return (
@@ -88,6 +138,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
       onOpenCamera={() => setScreen('camera')}
       onOpenNearby={session ? () => setScreen('nearby') : null}
       account={session ? { user: session.user, sync } : null}
+      onWithdrawConsent={withdrawConsent}
     />
   );
 }

@@ -1,5 +1,6 @@
 import { MAX_TRACK_POINTS_PER_BATCH, type CheckInReceipt } from '@dms/contracts/check-ins';
 import { apiCall, type ApiFailure } from '../api/client';
+import { syncPendingConsent } from '../api/consent';
 import { loadSession, serverEnabled } from '../api/session';
 import {
   listQueuedCheckIns,
@@ -124,6 +125,8 @@ async function sendCheckIn(item: QueuedCheckIn): Promise<string | null> {
 
 async function runSync(): Promise<SyncReport> {
   const report: SyncReport = { ran: true, sentCheckIns: 0, sentPoints: 0, error: null };
+  // Lời đồng ý chia sẻ vị trí gửi đầu tiên; lỗi cũng không chặn gửi check-in.
+  const consentError = await syncPendingConsent();
   // Phiên ghi gửi trước để máy chủ biết không cộng km nối giữa hai phiên.
   report.error = await syncSessions();
   if (report.error) return report;
@@ -140,7 +143,7 @@ async function runSync(): Promise<SyncReport> {
 
   const points = await syncPoints();
   report.sentPoints = points.sent;
-  report.error = points.error;
+  report.error = points.error ?? consentError;
   return report;
 }
 

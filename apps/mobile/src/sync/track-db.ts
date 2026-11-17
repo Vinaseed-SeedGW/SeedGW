@@ -1,6 +1,7 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import type { LocationObject } from 'expo-location';
 import { newId } from '../api/session';
+import { LOCATION_CONSENT_VERSION } from '@dms/contracts/consents';
 import {
   filterTrack,
   segmentOf,
@@ -245,13 +246,35 @@ function setMeta(key: string, value: string): void {
   getDb().runSync('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', key, value);
 }
 
+/** Lúc đồng ý chia sẻ vị trí bản hiện tại. Đồng ý bản cũ (trước 17/11/2026) coi như chưa đồng ý. */
 export function getConsentAt(): number | null {
+  if (getMeta('consent_version') !== LOCATION_CONSENT_VERSION) return null;
   const value = getMeta('consent_at');
   return value ? Number(value) : null;
 }
 
 export function saveConsent(at: number): void {
-  setMeta('consent_at', String(at));
+  getDb().withTransactionSync(() => {
+    setMeta('consent_at', String(at));
+    setMeta('consent_version', LOCATION_CONSENT_VERSION);
+  });
+}
+
+export function clearConsent(): void {
+  getDb().runSync("DELETE FROM meta WHERE key IN ('consent_at', 'consent_version')");
+}
+
+export type ConsentAction = 'ACCEPT' | 'WITHDRAW';
+
+/** Đồng ý hoặc rút lại lúc mất mạng thì giữ lại để gửi lên máy chủ sau. */
+export function getPendingConsentAction(): ConsentAction | null {
+  const value = getMeta('consent_pending');
+  return value === 'ACCEPT' || value === 'WITHDRAW' ? value : null;
+}
+
+export function setPendingConsentAction(action: ConsentAction | null): void {
+  if (action) setMeta('consent_pending', action);
+  else getDb().runSync("DELETE FROM meta WHERE key = 'consent_pending'");
 }
 
 /** Độ lệch giờ máy so với giờ máy chủ lần đo gần nhất, dùng khi đang mất mạng (M2). */

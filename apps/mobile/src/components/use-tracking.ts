@@ -9,7 +9,7 @@ import {
   TRACKING_CONFIG,
   type StartResult,
 } from '../sync/background-tracking';
-import { getConsentAt, getLastPointAt, saveConsent } from '../sync/track-db';
+import { getConsentAt, getLastPointAt } from '../sync/track-db';
 
 // iOS dừng ghi vị trí khi người dùng vuốt tắt app. App mở lại từ đầu (không phải từ chạy nền)
 // trong lúc đang ghi mà điểm cuối đã cũ thì báo đoạn bị đứt, để người dùng biết và lần sau không tắt app.
@@ -57,15 +57,9 @@ function ask(title: string, message: string, confirmLabel: string): Promise<bool
   });
 }
 
-async function ensureConsent(): Promise<boolean> {
-  if (getConsentAt() !== null) return true;
-  const agreed = await ask(
-    'Đồng ý ghi vị trí',
-    `DMS ghi vị trí của bạn từ lượt check-in đầu tiên trong ngày tới khi bấm Kết thúc ngày hoặc tới ${TRACKING_CONFIG.autoStopHourVn}:00, để tính km giữa các điểm check-in. Vị trí chỉ dùng cho báo cáo ghé thăm, giữ 45 ngày rồi xoá. Ngoài khoảng thời gian này app không ghi vị trí.`,
-    'Đồng ý',
-  );
-  if (agreed) saveConsent(Date.now());
-  return agreed;
+// Lời đồng ý chia sẻ vị trí hỏi ở màn riêng trước khi vào app (consent-screen), ở đây chỉ kiểm tra lại.
+function ensureConsent(): boolean {
+  return getConsentAt() !== null;
 }
 
 export function useTracking() {
@@ -92,7 +86,7 @@ export function useTracking() {
 
   const start = useCallback(async () => {
     setMessage(null);
-    if (!(await ensureConsent())) {
+    if (!ensureConsent()) {
       setMessage(START_ERRORS.NO_CONSENT);
       return;
     }
