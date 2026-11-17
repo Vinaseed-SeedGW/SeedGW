@@ -28,6 +28,9 @@ model OrgUnit {
   manager                 User?                    @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
   // Co cap Quan ly (quyet dinh 31): bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
   hasManagerLevel         Boolean                  @default(false) @map("has_manager_level")
+  // S8: kiểu tuyến NVKD trong đơn vị đăng ký, mặc định theo tuần.
+  routeKind               RouteKind                @default(WEEKLY) @map("route_kind")
+  routePlans              RoutePlan[]
   users                   User[]                   @relation("org_unit_members")
   checkIns                CheckIn[]
   dealers                 Dealer[]
@@ -92,6 +95,7 @@ model User {
   leaderApprovals        ApprovalRequest[]        @relation("approval_leader_approver")
   approvalActions        ApprovalAction[]         @relation("approval_actor")
   monthlySalesTargets    MonthlySalesTarget[]
+  routePlans             RoutePlan[]
   createdAt              DateTime                 @default(now()) @map("created_at")
   updatedAt              DateTime                 @updatedAt @map("updated_at")
 
@@ -366,6 +370,7 @@ model Dealer {
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
   searchText         String?                  @default(dbgenerated()) @map("search_text")
   checkIns           CheckIn[]
+  routeStops         RoutePlanStop[]
   locationProposals  DealerLocationProposal[]
   createdAt          DateTime                 @default(now()) @map("created_at")
   updatedAt          DateTime                 @updatedAt @map("updated_at")
@@ -533,25 +538,70 @@ model ApprovalAction {
 
 // Chi tieu thang tu dang ky cua NVKD (K3a), duyet qua luong A10b.
 model MonthlySalesTarget {
-  id                   String   @id @default(uuid()) @db.Uuid
-  userId               String   @map("user_id") @db.Uuid
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orgUnitId            String?  @map("org_unit_id") @db.Uuid
-  orgUnit              OrgUnit? @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  month                String
-  visitCountTarget     Int      @map("visit_count_target")
-  dealerCoverageTarget Int      @map("dealer_coverage_target")
-  salesKgTarget        Float    @default(0) @map("sales_kg_target")
-  note                 String   @default("")
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @map("user_id") @db.Uuid
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgUnitId              String?   @map("org_unit_id") @db.Uuid
+  orgUnit                OrgUnit?  @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  month                  String
+  visitCountTarget       Int       @map("visit_count_target")
+  dealerCoverageTarget   Int       @map("dealer_coverage_target")
+  salesKgTarget          Float     @default(0) @map("sales_kg_target")
+  note                   String    @default("")
   // Ban dang hieu luc. Sua chi tieu da duyet thi cac cot tren la ban de nghi, cot approved giu nguyen den khi duyet xong.
   approvedVisitCount     Int?      @map("approved_visit_count")
   approvedDealerCoverage Int?      @map("approved_dealer_coverage")
   approvedSalesKg        Float?    @map("approved_sales_kg")
   approvedAt             DateTime? @map("approved_at")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   @@unique([userId, month])
   @@index([orgUnitId, month])
   @@map("monthly_sales_targets")
+}
+
+enum RouteKind {
+  WEEKLY
+  DAILY
+
+  @@map("route_kind")
+}
+
+// S8: tuyến của một người cho một kỳ (tuần bắt đầu thứ Hai, hoặc một ngày). Mỗi lần gửi tạo bản điểm mới
+// (revision); bản đã duyệt giữ nguyên tới khi bản sửa được duyệt.
+model RoutePlan {
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @map("user_id") @db.Uuid
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgUnitId        String?         @map("org_unit_id") @db.Uuid
+  orgUnit          OrgUnit?        @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  kind             RouteKind
+  periodStart      String          @map("period_start")
+  note             String          @default("")
+  currentRevision  Int             @default(0) @map("current_revision")
+  approvedRevision Int?            @map("approved_revision")
+  approvedAt       DateTime?       @map("approved_at")
+  stops            RoutePlanStop[]
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@unique([userId, kind, periodStart])
+  @@index([orgUnitId, periodStart])
+  @@map("route_plans")
+}
+
+model RoutePlanStop {
+  id       String    @id @default(uuid()) @db.Uuid
+  planId   String    @map("plan_id") @db.Uuid
+  plan     RoutePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  revision Int
+  day      String
+  position Int
+  dealerId String    @map("dealer_id") @db.Uuid
+  dealer   Dealer    @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, revision, day, position])
+  @@index([dealerId])
+  @@map("route_plan_stops")
 }

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { buildOrgTree, checkOrgUnitMove, flattenOrgTree } from '@dms/contracts/org-tree';
+import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@dms/contracts/route-plans';
 import {
   createOrgUnitInput,
   moveOrgUnitInput,
@@ -48,6 +49,7 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
       name: '',
       managerId: null,
       hasManagerLevel: false,
+      routeKind: 'WEEKLY',
     },
   });
 
@@ -73,6 +75,9 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
           label="Có cấp Quản lý"
           hint={MANAGER_LEVEL_HINT}
         />
+        <Form.Field name="routeKind" label="Kiểu tuyến" hint={ROUTE_KIND_HINT}>
+          <Form.ChoiceSelect options={ROUTE_KIND_OPTIONS} />
+        </Form.Field>
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Tạo đơn vị</Form.Submit>
@@ -92,6 +97,7 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
       name: unit.name,
       managerId: unit.managerId,
       hasManagerLevel: unit.hasManagerLevel,
+      routeKind: unit.routeKind,
     },
   });
 
@@ -117,6 +123,9 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
           label="Có cấp Quản lý"
           hint={MANAGER_LEVEL_HINT}
         />
+        <Form.Field name="routeKind" label="Kiểu tuyến" hint={ROUTE_KIND_HINT}>
+          <Form.ChoiceSelect options={ROUTE_KIND_OPTIONS} />
+        </Form.Field>
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Lưu</Form.Submit>

@@ -150,13 +150,39 @@ function Detail({ code, onBack }: { code: string; onBack: () => void }) {
                 {page.approval.submittedByName} ({page.approval.submittedByCode})
                 {page.approval.orgUnitName ? `, ${page.approval.orgUnitName}` : ''}
               </Text>
+              {page.route ? (
+                <>
+                  {page.approval.isLate ? <Text style={styles.late}>Nộp muộn</Text> : null}
+                  {page.route.proposed
+                    .filter((day) => day.stops.length > 0)
+                    .map((day) => (
+                      <View key={day.day} style={styles.log}>
+                        <Text style={styles.body}>
+                          {day.label}, {day.stops.length} điểm
+                        </Text>
+                        {day.stops.map((stop, index) => (
+                          <Text key={stop.dealerId} style={styles.muted}>
+                            {index + 1}. {stop.dealerName}
+                            {stop.lat === null ? ', chưa có toạ độ' : ''}
+                          </Text>
+                        ))}
+                      </View>
+                    ))}
+                  {page.route.approved ? (
+                    <Text style={styles.muted}>
+                      Đây là bản sửa; tuyến đã duyệt trước đó vẫn hiệu lực tới khi bản này được
+                      duyệt.
+                    </Text>
+                  ) : null}
+                </>
+              ) : null}
               {page.target ? (
                 <TargetValues
                   proposed={page.target.proposed}
                   approved={page.target.approved}
                   progress={page.target.progress}
                 />
-              ) : (
+              ) : page.route ? null : (
                 <Text style={styles.muted}>{page.approval.summaryText}</Text>
               )}
               {page.target?.proposed.note ? (
@@ -294,6 +320,15 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm, alignItems: 'center' },
+  late: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.warningSoft,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    fontSize: 13,
+    color: COLORS.text,
+    overflow: 'hidden',
+  },
   log: {
     paddingVertical: SPACE.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,

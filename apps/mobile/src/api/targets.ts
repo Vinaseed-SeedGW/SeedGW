@@ -4,6 +4,7 @@ import type {
   ListApprovalsResult,
   MobileApprovalDecisionInput,
 } from '@dms/contracts/approvals';
+import type { RouteApprovalView } from '@dms/contracts/route-plans';
 import type {
   MyTargetsResult,
   SalesTargetApprovalView,
@@ -60,7 +61,12 @@ export async function withdrawMyApproval(code: string): Promise<Loaded<MyTargets
 // ---------- Cần duyệt ----------
 
 export type MobileApprovalTab = Extract<ApprovalTab, 'cho-toi-duyet' | 'da-xu-ly'>;
-export type ApprovalPage = { approval: ApprovalDetail; target: SalesTargetApprovalView | null };
+export type ApprovalPage = {
+  approval: ApprovalDetail;
+  target: SalesTargetApprovalView | null;
+  /** Máy chủ trước S8 không trả trường này. */
+  route?: RouteApprovalView | null;
+};
 
 export async function listMyApprovals(
   tab: MobileApprovalTab,

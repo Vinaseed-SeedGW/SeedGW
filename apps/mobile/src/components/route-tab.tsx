@@ -8,6 +8,7 @@ import { readLocalHistory } from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
+import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
 
 const VISIBLE_RESULTS = 30;
 const DAY_MS = 86_400_000;
@@ -61,14 +62,18 @@ function useCurrentPoint() {
 
 type Props = {
   onPick: (dealer: DealerChoice) => void;
+  onOpenRoutes: () => void;
+  refreshKey: number;
 };
 
 /**
  * Tab Tuyến (M6): đại lý mình phụ trách, gần nhất lên đầu, đánh dấu đại lý đã ghé hôm nay. Bấm một đại lý
  * thì mở máy ảnh với đại lý đó đã chọn sẵn (cách check-in thứ hai, M4). Đại lý chưa có toạ độ nằm cuối,
- * xếp theo tên. Đăng ký tuyến tuần hoặc ngày và nút Chỉ đường làm ở S8.
+ * xếp theo tên. Phần trên là tuyến đã duyệt hôm nay và nút Chỉ đường Google Maps (S8).
  */
-export function RouteTab({ onPick }: Props) {
+export function RouteTab({ onPick, onOpenRoutes, refreshKey }: Props) {
+  const routes = useMyRoutes(refreshKey, true);
+  const localVisited = useLocalVisited(refreshKey);
   const { point, denied, refresh } = useCurrentPoint();
   const visited = useMemo(() => {
     const dayStart = startOfVnDay(Date.now());
@@ -88,10 +93,15 @@ export function RouteTab({ onPick }: Props) {
   return (
     <View style={styles.fill}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <TodayRouteSection
+          routes={routes}
+          visited={localVisited}
+          onPick={onPick}
+          onOpenRoutes={onOpenRoutes}
+        />
         <Text style={styles.title}>Đại lý tôi phụ trách</Text>
         <Text style={styles.muted}>
-          Gần nhất lên đầu. Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn. Đăng ký tuyến
-          theo tuần hoặc theo ngày và chỉ đường Google Maps sẽ có ở bản sau.
+          Gần nhất lên đầu. Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn.
         </Text>
         {denied ? (
           <Text style={styles.danger}>

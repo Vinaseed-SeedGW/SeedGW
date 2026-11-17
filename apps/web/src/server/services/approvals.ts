@@ -260,8 +260,20 @@ export async function applyApproved(
         approvedAt: now,
       },
     });
+    return;
   }
-  // ROUTE_PLAN: S8 bổ sung khi có bảng Tuyến.
+  // Tuyến (S8): bản vừa gửi thành bản hiệu lực, bỏ các bản cũ.
+  const plan = await tx.routePlan.findUniqueOrThrow({
+    where: { id: subjectId },
+    select: { currentRevision: true },
+  });
+  await tx.routePlan.update({
+    where: { id: subjectId },
+    data: { approvedRevision: plan.currentRevision, approvedAt: now },
+  });
+  await tx.routePlanStop.deleteMany({
+    where: { planId: subjectId, revision: { not: plan.currentRevision } },
+  });
 }
 
 // ---------- Duyệt, trả lại, rút lại ----------

@@ -74,12 +74,32 @@ const FAST_SYNC_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
+// S8 (17/11/2026): nộp sau giờ này vẫn nhận, phiếu gắn nhãn Nộp muộn.
+const ROUTE_SETTINGS = [
+  {
+    key: 'routeWeeklyDeadlineHour',
+    label: 'Hạn nộp tuyến tuần (giờ, ngày thứ Sáu tuần trước)',
+    min: 0,
+    max: 23,
+    defaultValue: 17,
+    hint: 'Ví dụ 17 là trước 17:00 thứ Sáu của tuần trước tuần đi tuyến.',
+  },
+  {
+    key: 'routeDailyDeadlineHour',
+    label: 'Hạn nộp tuyến ngày (giờ, ngày hôm trước)',
+    min: 0,
+    max: 23,
+    defaultValue: 17,
+  },
+] as const satisfies readonly SettingDefinition[];
+
 export const SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
+  { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
-const ALL_SETTINGS = [...SALES_SETTINGS, ...FAST_SYNC_SETTINGS];
+const ALL_SETTINGS = [...SALES_SETTINGS, ...ROUTE_SETTINGS, ...FAST_SYNC_SETTINGS];
 
 export type SettingKey = (typeof ALL_SETTINGS)[number]['key'];
 export type SystemSettings = Record<SettingKey, number>;

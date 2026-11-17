@@ -39,7 +39,7 @@ function AssignRowAction({ node }: { node: OrgNode }) {
       onFocus={preloadSheet}
       onClick={() => context.open(node)}
     >
-      Đổi Trưởng đơn vị
+      Trưởng đơn vị, kiểu tuyến
     </button>
   );
 }

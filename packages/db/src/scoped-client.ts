@@ -17,6 +17,7 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   UserConsent: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   ApprovalRequest: { ownerField: 'submittedById', orgUnitField: 'orgUnitId' },
   MonthlySalesTarget: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
+  RoutePlan: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([

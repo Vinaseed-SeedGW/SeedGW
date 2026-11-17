@@ -14,6 +14,7 @@ import {
   ApprovalWithdrawButton,
 } from '@/features/approvals/components/approval-decision';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
+import { RouteDays } from '@/features/route-plans/components/route-days';
 import { TargetCompare } from '@/features/sales-targets/components/target-compare';
 import { requirePermission } from '@/server/auth/can';
 import { getApprovalRequest } from '@/server/queries/approvals';
@@ -58,7 +59,7 @@ export default async function ApprovalDetailPage({ params }: PageProps) {
   const { ma } = await params;
   const data = await getApprovalRequest(decodeURIComponent(ma));
   if (!data) notFound();
-  const { approval, target } = data;
+  const { approval, target, route } = data;
 
   return (
     <>
@@ -98,6 +99,26 @@ export default async function ApprovalDetailPage({ params }: PageProps) {
                   <span className="text-text-muted">Ghi chú của người gửi: </span>
                   {target.proposed.note}
                 </p>
+              ) : null}
+            </section>
+          ) : null}
+
+          {route ? (
+            <section className="mt-6">
+              <h2 className="text-lg font-bold text-brand">Tuyến đề nghị</h2>
+              {approval.isLate ? (
+                <p className="mt-1">
+                  <span className="rounded-sm bg-warning-soft px-1.5 text-sm">Nộp muộn</span>
+                </p>
+              ) : null}
+              <RouteDays days={route.proposed} />
+              {route.approved ? (
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-bold text-brand">
+                    Xem tuyến đã duyệt đang có hiệu lực
+                  </summary>
+                  <RouteDays days={route.approved} />
+                </details>
               ) : null}
             </section>
           ) : null}

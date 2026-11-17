@@ -663,3 +663,16 @@ export function countPending(): PendingCounts {
     points: one('SELECT COUNT(*) AS n FROM track_points WHERE synced = 0'),
   };
 }
+
+/** Nháp tuyến trên máy (S8), theo kỳ; gửi duyệt xong thì xoá. */
+export function getRouteDraft(periodKey: string): string | null {
+  return getMeta(`route_draft:${periodKey}`);
+}
+
+export function saveRouteDraft(periodKey: string, json: string): void {
+  setMeta(`route_draft:${periodKey}`, json);
+}
+
+export function clearRouteDraft(periodKey: string): void {
+  getDb().runSync('DELETE FROM meta WHERE key = ?', `route_draft:${periodKey}`);
+}

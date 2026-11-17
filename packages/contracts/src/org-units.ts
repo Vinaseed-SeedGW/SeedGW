@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { routeKind, type RouteKind } from './route-plans';
 
 const orgUnitCode = z
   .string()
@@ -21,6 +22,7 @@ export const createOrgUnitInput = z.object({
   managerId,
   // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
   hasManagerLevel: z.boolean(),
+  routeKind,
 });
 export type CreateOrgUnitInput = z.infer<typeof createOrgUnitInput>;
 
@@ -31,6 +33,7 @@ export const updateOrgUnitInput = z.object({
   managerId,
   // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
   hasManagerLevel: z.boolean(),
+  routeKind,
 });
 export type UpdateOrgUnitInput = z.infer<typeof updateOrgUnitInput>;
 
@@ -40,7 +43,8 @@ export const moveOrgUnitInput = z.object({
 });
 export type MoveOrgUnitInput = z.infer<typeof moveOrgUnitInput>;
 
-export const assignOrgUnitManagerInput = z.object({ id: z.uuid(), managerId });
+// Quản trị đơn vị đổi Trưởng đơn vị và Kiểu tuyến của đơn vị trong phạm vi (S8).
+export const assignOrgUnitManagerInput = z.object({ id: z.uuid(), managerId, routeKind });
 export type AssignOrgUnitManagerInput = z.infer<typeof assignOrgUnitManagerInput>;
 
 export const deleteOrgUnitInput = z.object({ id: z.uuid() });
@@ -54,6 +58,7 @@ export type OrgUnitRow = {
   managerId: string | null;
   managerName: string | null;
   hasManagerLevel: boolean;
+  routeKind: RouteKind;
   memberCount: number;
 };
 

@@ -20,6 +20,7 @@ import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
+import { RoutesScreen } from './src/components/routes-screen';
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
 import { MeTab } from './src/components/me-tab';
@@ -73,7 +74,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
   // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
-  const [overlay, setOverlay] = useState<'targets' | 'approvals' | null>(null);
+  const [overlay, setOverlay] = useState<'targets' | 'approvals' | 'routes' | null>(null);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -160,12 +161,10 @@ function Main({ signedIn }: { signedIn: boolean }) {
   if (overlay && account) {
     return (
       <View style={styles.fill}>
-        <AppHeader title={overlay === 'targets' ? 'Chỉ tiêu' : 'Cần duyệt'} />
-        {overlay === 'targets' ? (
-          <TargetsScreen onClose={closeOverlay} />
-        ) : (
-          <ApprovalsScreen onClose={closeOverlay} />
-        )}
+        <AppHeader title={OVERLAY_TITLE[overlay]} />
+        {overlay === 'targets' ? <TargetsScreen onClose={closeOverlay} /> : null}
+        {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
+        {overlay === 'routes' ? <RoutesScreen onClose={closeOverlay} /> : null}
       </View>
     );
   }
@@ -186,7 +185,11 @@ function Main({ signedIn }: { signedIn: boolean }) {
         ) : null}
         {tab === 'route' ? (
           account ? (
-            <RouteTab onPick={openCamera} />
+            <RouteTab
+              onPick={openCamera}
+              onOpenRoutes={() => setOverlay('routes')}
+              refreshKey={refreshKey}
+            />
           ) : (
             <Text style={styles.notice}>Cần đăng nhập máy chủ để xem đại lý phụ trách.</Text>
           )
@@ -212,6 +215,8 @@ function Main({ signedIn }: { signedIn: boolean }) {
     </View>
   );
 }
+
+const OVERLAY_TITLE = { targets: 'Chỉ tiêu', approvals: 'Cần duyệt', routes: 'Tuyến' } as const;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.surface },

@@ -16,6 +16,7 @@ export const GET = mobileRoute(async (request: Request) => {
     canCheckIn: user.permissions.has('sales.check-in.create'),
     // K3a, A10b (17/11/2026). App cũ bỏ qua các trường này.
     canRegisterTarget: user.permissions.has('sales.target.register'),
+    canRegisterRoute: user.permissions.has('sales.route.register'),
     canReviewApprovals: canReview,
     pendingApprovalCount,
     serverTime: new Date().toISOString(),

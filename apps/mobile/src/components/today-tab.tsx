@@ -9,6 +9,7 @@ import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { distanceText, toChoice } from './dealer-picker';
 import { TargetCard } from './target-card';
+import { toDealerChoice, useMyRoutes } from './today-route';
 import { Text } from './text';
 import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
@@ -94,7 +95,16 @@ export function TodayTab({
   const { state, actions } = control;
   const [today, setToday] = useState<Today>(readToday);
   const reload = useCallback(() => setToday(readToday()), []);
-  const next = useNextDealer(today.visitedDealerIds, sync !== null);
+  // Có tuyến đã duyệt hôm nay thì Điểm cần thăm là điểm kế tiếp chưa ghé trong tuyến (S8).
+  const routes = useMyRoutes(refreshKey, sync !== null);
+  const routeStops = routes?.today?.stops ?? [];
+  const nextStop = routeStops.find(
+    (stop) => !stop.visited && !today.visitedDealerIds.has(stop.dealerId),
+  );
+  const routeDone =
+    routeStops.length -
+    routeStops.filter((stop) => !stop.visited && !today.visitedDealerIds.has(stop.dealerId)).length;
+  const next = useNextDealer(today.visitedDealerIds, sync !== null && routeStops.length === 0);
 
   useEffect(() => {
     const timer = setInterval(reload, REFRESH_MS);
@@ -149,7 +159,29 @@ export function TodayTab({
 
       {onOpenTargets ? <TargetCard refreshKey={refreshKey} onOpen={onOpenTargets} /> : null}
 
-      {next ? (
+      {routeStops.length > 0 ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            Tuyến hôm nay, đã ghé {routeDone} trên {routeStops.length} điểm
+          </Text>
+          {nextStop ? (
+            <>
+              <Text style={styles.dealerName}>{nextStop.dealerName}</Text>
+              <Text style={styles.muted} numberOfLines={2}>
+                Điểm cần thăm tiếp theo, {nextStop.address}
+              </Text>
+              <View style={styles.actions}>
+                <Button
+                  label="Check-in đại lý này"
+                  onPress={() => onPickDealer(toDealerChoice(nextStop))}
+                />
+              </View>
+            </>
+          ) : (
+            <Text style={styles.body}>Đã ghé hết các điểm trong tuyến hôm nay.</Text>
+          )}
+        </View>
+      ) : next ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Đại lý gần nhất chưa ghé hôm nay</Text>
           <Text style={styles.dealerName}>{next.name}</Text>

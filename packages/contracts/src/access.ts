@@ -14,6 +14,7 @@ export const PERMISSIONS = [
   { code: 'sales.dealer.update', name: 'Sửa Đại lý' },
   { code: 'sales.customer.read', name: 'Xem Khách hàng' },
   { code: 'sales.route.read', name: 'Xem Tuyến viếng thăm' },
+  { code: 'sales.route.register', name: 'Đăng ký Tuyến của mình' },
   { code: 'sales.check-in.read', name: 'Xem Check-in' },
   { code: 'sales.check-in.create', name: 'Check-in trên app' },
   { code: 'sales.report.read', name: 'Xem Báo cáo' },
@@ -280,7 +281,10 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     permissions: [
       // Quyet dinh 31: nguoi duyet chi la Quan ly va Lanh dao don vi; Quan tri don vi chi xem de ho tro.
       ...codesInModule('sales').filter(
-        (code) => code !== 'sales.approval.review' && code !== 'sales.target.register',
+        (code) =>
+          code !== 'sales.approval.review' &&
+          code !== 'sales.target.register' &&
+          code !== 'sales.route.register',
       ),
       ...codesInModule('support'),
       'admin.user.read',
@@ -307,6 +311,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.dealer.read',
       'sales.customer.read',
       'sales.route.read',
+      'sales.route.register',
       'sales.check-in.read',
       'sales.check-in.create',
       'sales.report.read',
@@ -329,6 +334,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.dealer.update',
       'sales.customer.read',
       'sales.route.read',
+      'sales.route.register',
       'sales.check-in.read',
       'sales.check-in.create',
       'sales.report.read',
@@ -348,6 +354,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.dealer.update',
       'sales.customer.read',
       'sales.route.read',
+      'sales.route.register',
       'sales.check-in.read',
       'sales.check-in.create',
       'support.request.create',

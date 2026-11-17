@@ -49,6 +49,8 @@ export const AUDIT_ACTION_LABEL = {
   'approval.reassign': 'Đổi người duyệt phiếu',
   'sales-target.create': 'Tạo chỉ tiêu tháng',
   'sales-target.update': 'Cập nhật chỉ tiêu tháng',
+  'route-plan.create': 'Đăng ký tuyến',
+  'route-plan.update': 'Sửa tuyến',
   'org-unit.create': 'Tạo đơn vị',
   'org-unit.update': 'Sửa đơn vị',
   'org-unit.move': 'Chuyển đơn vị',
@@ -85,6 +87,7 @@ export const AUDIT_ENTITY_LABEL = {
   Dealer: 'Đại lý',
   ApprovalRequest: 'Phiếu duyệt',
   SalesTarget: 'Chỉ tiêu tháng',
+  RoutePlan: 'Tuyến viếng thăm',
   Shift: 'Ca làm việc',
   ShiftAssignment: 'Gán ca',
   Holiday: 'Lịch nghỉ',
@@ -168,6 +171,8 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   approver: 'Người duyệt',
   step: 'Bước',
   note: 'Ghi chú',
+  routeKind: 'Kiểu tuyến',
+  stops: 'Điểm trong tuyến',
   ...SETTING_LABEL,
 };
 

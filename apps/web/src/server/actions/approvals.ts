@@ -11,7 +11,7 @@ import {
 import type { AuditAction } from '@dms/contracts/audit';
 import type { ActionResult } from '@dms/contracts/common';
 import { toActionError, validationError } from '@/server/auth/action-error';
-import { assertCan } from '@/server/auth/can';
+import { assertCan, can } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';
 import {
   approveRequest,
@@ -25,6 +25,7 @@ import { getClientIp, writeAuditMany } from '@/server/services/audit';
 function revalidateApprovals() {
   revalidatePath('/kinh-doanh/can-duyet', 'layout');
   revalidatePath('/kinh-doanh/chi-tieu');
+  revalidatePath('/kinh-doanh/tuyen-vieng-tham', 'layout');
 }
 
 function audit(
@@ -124,7 +125,7 @@ export async function withdrawApprovalAction(
 ): Promise<ActionResult<{ code: string }>> {
   try {
     const user = await requireUser();
-    assertCan(user, 'sales.target.register');
+    if (!can(user, 'sales.target.register')) assertCan(user, 'sales.route.register');
     const parsed = withdrawApprovalInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
 

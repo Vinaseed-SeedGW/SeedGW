@@ -9,6 +9,7 @@ import {
   type ManagerOption,
   type OrgUnitRow,
 } from '@dms/contracts/org-units';
+import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@dms/contracts/route-plans';
 import { Form } from '@dms/ui/form';
 import { FormSheet } from '@dms/ui/form-sheet';
 import { assignOrgUnitManagerAction } from '@/server/actions/org-units';
@@ -22,7 +23,7 @@ type AssignManagerSheetProps = {
 export function AssignManagerSheet({ unit, managerOptions, onClose }: AssignManagerSheetProps) {
   const form = useForm<AssignOrgUnitManagerInput>({
     resolver: zodResolver(assignOrgUnitManagerInput),
-    defaultValues: { id: unit.id, managerId: unit.managerId },
+    defaultValues: { id: unit.id, managerId: unit.managerId, routeKind: unit.routeKind },
   });
 
   // Giu Truong don vi hien tai trong danh sach du nguoi nay ngoai pham vi, neu khong se bi xoa am tham.
@@ -35,15 +36,18 @@ export function AssignManagerSheet({ unit, managerOptions, onClose }: AssignMana
   }, [unit, managerOptions]);
 
   return (
-    <FormSheet.Root title={`Đổi Trưởng đơn vị ${unit.name}`} onClose={onClose}>
+    <FormSheet.Root title={`Trưởng đơn vị, kiểu tuyến của ${unit.name}`} onClose={onClose}>
       <Form.Root
         form={form}
         action={assignOrgUnitManagerAction}
-        successMessage="Đã đổi Trưởng đơn vị"
+        successMessage="Đã lưu đơn vị"
         onSuccess={onClose}
       >
         <Form.Field name="managerId" label="Trưởng đơn vị">
           <Form.Select options={options} emptyLabel="Chưa chọn" />
+        </Form.Field>
+        <Form.Field name="routeKind" label="Kiểu tuyến" hint={ROUTE_KIND_HINT}>
+          <Form.ChoiceSelect options={ROUTE_KIND_OPTIONS} />
         </Form.Field>
         <Form.Error />
         <Form.Actions>

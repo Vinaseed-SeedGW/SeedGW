@@ -2,6 +2,7 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
 import { MAX_ORG_DEPTH, checkOrgUnitMove, orgDepth } from '@dms/contracts/org-tree';
+import { ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
 import type {
   AssignOrgUnitManagerInput,
   CreateOrgUnitInput,
@@ -104,6 +105,7 @@ export function createOrgUnit(input: CreateOrgUnitInput): Promise<OrgUnitOutcome
           parent: parent.name,
           manager: managerName,
           'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
+          routeKind: ROUTE_KIND_LABEL[input.routeKind],
           ...(grantedRole ? { 'Vai trò Trưởng đơn vị': `Gán ${grantedRole}` } : {}),
         },
       ),
@@ -119,6 +121,7 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
         code: true,
         name: true,
         hasManagerLevel: true,
+        routeKind: true,
         manager: { select: { fullName: true } },
       },
     });
@@ -131,12 +134,14 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
         name: current.name,
         manager: current.manager?.fullName ?? null,
         'Có cấp Quản lý': YES_NO(current.hasManagerLevel),
+        routeKind: ROUTE_KIND_LABEL[current.routeKind],
       },
       {
         code: input.code,
         name: input.name,
         manager: managerName,
         'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
+        routeKind: ROUTE_KIND_LABEL[input.routeKind],
       },
     );
 
@@ -148,6 +153,7 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
           name: input.name,
           managerId: input.managerId,
           hasManagerLevel: input.hasManagerLevel,
+          routeKind: input.routeKind,
         },
       });
     }
@@ -162,20 +168,28 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
 export async function assignOrgUnitManager({
   id,
   managerId,
+  routeKind,
 }: AssignOrgUnitManagerInput): Promise<OrgUnitOutcome> {
   const [assignableUnits, scoped, unit] = await Promise.all([
     getAssignableOrgUnitIds(),
     getScopedDb(),
     db.orgUnit.findUnique({
       where: { id },
-      select: { code: true, managerId: true, manager: { select: { fullName: true } } },
+      select: {
+        code: true,
+        managerId: true,
+        routeKind: true,
+        manager: { select: { fullName: true } },
+      },
     }),
   ]);
   if (!unit) throw new DomainError('NOT_FOUND', 'Không tìm thấy đơn vị này');
   if (assignableUnits && !assignableUnits.has(id)) {
     throw new DomainError('FORBIDDEN', 'Đơn vị này nằm ngoài phạm vi của bạn');
   }
-  if (managerId === unit.managerId) return { id, label: unit.code, changes: {} };
+  if (managerId === unit.managerId && routeKind === unit.routeKind) {
+    return { id, label: unit.code, changes: {} };
+  }
 
   const manager = managerId
     ? await scoped.user.findFirst({
@@ -190,16 +204,20 @@ export async function assignOrgUnitManager({
   }
 
   const grantedRole = await db.$transaction(async (tx) => {
-    await tx.orgUnit.update({ where: { id }, data: { managerId } });
-    return grantUnitLeaderRole(tx, managerId);
+    await tx.orgUnit.update({ where: { id }, data: { managerId, routeKind } });
+    return managerId === unit.managerId ? null : grantUnitLeaderRole(tx, managerId);
   });
   return {
     id,
     label: unit.code,
     changes: auditChanges(
-      { manager: unit.manager?.fullName ?? null },
+      { manager: unit.manager?.fullName ?? null, routeKind: ROUTE_KIND_LABEL[unit.routeKind] },
       {
-        manager: manager?.fullName ?? null,
+        manager:
+          managerId === unit.managerId
+            ? (unit.manager?.fullName ?? null)
+            : (manager?.fullName ?? null),
+        routeKind: ROUTE_KIND_LABEL[routeKind],
         ...(grantedRole ? { 'Vai trò Trưởng đơn vị': `Gán ${grantedRole}` } : {}),
       },
     ),
