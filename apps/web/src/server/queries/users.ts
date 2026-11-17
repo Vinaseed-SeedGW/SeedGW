@@ -92,6 +92,7 @@ export async function getUserDetail(id: string): Promise<UserDetail | null> {
           platform: true,
           status: true,
           lastSeenAt: true,
+          isRooted: true,
           createdAt: true,
         },
       },

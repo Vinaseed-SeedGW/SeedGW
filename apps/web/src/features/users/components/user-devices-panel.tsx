@@ -29,6 +29,11 @@ export function UserDevicesPanel({ devices }: { devices: UserDevice[] }) {
                   {formatDateTime(device.createdAt)}
                   {device.lastSeenAt ? `, dùng gần nhất ${formatDateTime(device.lastSeenAt)}` : ''}
                 </p>
+                {device.isRooted ? (
+                  <p className="mt-1 inline-block rounded-sm bg-warning-soft px-1.5 text-sm">
+                    Máy đã root hoặc jailbreak: check-in từ máy này được gắn cờ nghi vấn
+                  </p>
+                ) : null}
               </div>
               {device.status === 'PENDING' ? (
                 <button

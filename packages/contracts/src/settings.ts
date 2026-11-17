@@ -19,6 +19,14 @@ const SALES_SETTINGS = [
     hint: 'Ngoài bán kính này check-in vẫn được ghi nhận và gắn cờ.',
   },
   {
+    key: 'maxCheckInSpeedKmh',
+    label: 'Tốc độ tối đa hợp lý giữa hai lượt check-in (km/h)',
+    min: 20,
+    max: 300,
+    defaultValue: 120,
+    hint: 'Tính theo đường chim bay giữa hai lượt liền nhau trong ngày, bỏ qua hai lượt cách nhau dưới 2 km. Vượt mức này thì gắn cờ Di chuyển nhanh bất thường, không chặn check-in.',
+  },
+  {
     key: 'debtWarningPercent',
     label: 'Ngưỡng cảnh báo công nợ (%)',
     min: 1,

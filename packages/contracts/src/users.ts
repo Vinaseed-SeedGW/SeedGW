@@ -150,6 +150,8 @@ export type UserDevice = {
   platform: string;
   status: MobileDeviceStatus;
   lastSeenAt: string | null;
+  /** M5: null là app chưa báo (bản cũ). */
+  isRooted: boolean | null;
   createdAt: string;
 };
 

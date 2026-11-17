@@ -105,20 +105,23 @@ model User {
 }
 
 model MobileDevice {
-  id            String               @id @default(uuid()) @db.Uuid
-  userId        String               @map("user_id") @db.Uuid
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deviceKey     String               @map("device_key")
-  name          String
-  platform      String
-  status        MobileDeviceStatus   @default(PENDING)
-  approvedAt    DateTime?            @map("approved_at")
-  revokedAt     DateTime?            @map("revoked_at")
-  lastSeenAt    DateTime?            @map("last_seen_at")
-  refreshTokens MobileRefreshToken[]
-  checkIns      CheckIn[]
-  createdAt     DateTime             @default(now()) @map("created_at")
-  updatedAt     DateTime             @updatedAt @map("updated_at")
+  id                 String               @id @default(uuid()) @db.Uuid
+  userId             String               @map("user_id") @db.Uuid
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceKey          String               @map("device_key")
+  name               String
+  platform           String
+  status             MobileDeviceStatus   @default(PENDING)
+  approvedAt         DateTime?            @map("approved_at")
+  revokedAt          DateTime?            @map("revoked_at")
+  lastSeenAt         DateTime?            @map("last_seen_at")
+  // M5: app báo máy đã root hoặc jailbreak; null là chưa rõ (app cũ).
+  isRooted           Boolean?             @map("is_rooted")
+  integrityCheckedAt DateTime?            @map("integrity_checked_at")
+  refreshTokens      MobileRefreshToken[]
+  checkIns           CheckIn[]
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
 
   @@unique([userId, deviceKey])
   @@index([userId, status])

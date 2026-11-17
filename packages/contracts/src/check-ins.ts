@@ -73,6 +73,9 @@ export const checkInFlag = z.enum([
   'CLOCK_SKEW',
   'FAR_FROM_DEALER',
   'STREET_MISMATCH',
+  // M5 (18/11/2026).
+  'IMPOSSIBLE_SPEED',
+  'ROOTED_DEVICE',
 ]);
 export type CheckInFlag = z.infer<typeof checkInFlag>;
 
@@ -82,7 +85,13 @@ export const CHECK_IN_FLAG_LABEL: Record<CheckInFlag, string> = {
   CLOCK_SKEW: 'Giờ trên máy lệch giờ máy chủ',
   FAR_FROM_DEALER: 'Xa đại lý',
   STREET_MISMATCH: 'Khác phố với địa chỉ đại lý',
+  IMPOSSIBLE_SPEED: 'Di chuyển nhanh bất thường từ lượt trước',
+  ROOTED_DEVICE: 'Máy đã root hoặc jailbreak',
 };
+
+/** App tự kiểm tra máy (M5). App cũ không gửi thì coi là không rõ, không gắn cờ. */
+export const deviceIntegrity = z.enum(['OK', 'ROOTED', 'UNKNOWN']);
+export type DeviceIntegrity = z.infer<typeof deviceIntegrity>;
 
 const latitude = z.number().min(-90).max(90);
 const longitude = z.number().min(-180).max(180);
@@ -104,6 +113,7 @@ export const createCheckInInput = z
     dealerId: z.uuid().nullable().default(null),
     // Lý do khi app thấy vị trí chụp xa toạ độ đại lý quá bán kính (M4). Máy chủ vẫn tự tính lại khoảng cách.
     farReason: z.string().trim().max(500).nullable().default(null),
+    deviceIntegrity: deviceIntegrity.default('UNKNOWN'),
   })
   .refine((value) => value.placeKind === 'DEALER' || value.note.length > 0, {
     path: ['note'],

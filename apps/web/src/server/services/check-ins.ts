@@ -1,4 +1,5 @@
 import 'server-only';
+import { speedFlaggedIds } from '@dms/contracts/check-in-speed';
 import {
   CLOCK_SKEW_FLAG_MINUTES,
   type CheckInFlag,
@@ -31,11 +32,12 @@ const MAX_ADDRESS_ATTEMPTS = 5;
 const MISSING_TRACK_MIN_M = FILTER.gapMeters;
 
 export function checkInFlags(
-  input: Pick<CreateCheckInInput, 'isMocked' | 'accuracyM'>,
+  input: Pick<CreateCheckInInput, 'isMocked' | 'accuracyM' | 'deviceIntegrity'>,
   clockSkewMs: number | null,
 ): CheckInFlag[] {
   const flags: CheckInFlag[] = [];
   if (input.isMocked) flags.push('MOCKED_LOCATION');
+  if (input.deviceIntegrity === 'ROOTED') flags.push('ROOTED_DEVICE');
   if (input.accuracyM === null || input.accuracyM > POOR_ACCURACY_FLAG_M)
     flags.push('POOR_ACCURACY');
   if (clockSkewMs !== null && Math.abs(clockSkewMs) > CLOCK_SKEW_FLAG_MINUTES * 60_000) {
@@ -114,6 +116,14 @@ export async function saveCheckIn(
     readSystemSettings(),
   ]);
   const check = dealerCheck(dealer, input, input.addressOnPhoto, settings.values.checkInRadiusM);
+
+  // M5: lưu tình trạng máy app báo về để Quản trị thấy ở danh sách thiết bị. App cũ không gửi thì bỏ qua.
+  if (input.deviceIntegrity !== 'UNKNOWN') {
+    await db.mobileDevice.update({
+      where: { id: user.deviceId },
+      data: { isRooted: input.deviceIntegrity === 'ROOTED', integrityCheckedAt: new Date() },
+    });
+  }
 
   const saved = await db.checkIn
     .create({
@@ -287,10 +297,22 @@ export async function recomputeDayDistances(userId: string, day: string): Promis
         lng: true,
         gpsDistanceKm: true,
         isDistanceEstimated: true,
+        flags: true,
       },
     }),
   ]);
   if (checkIns.length === 0) return;
+  // M5: tính lại cờ tốc độ cho cả ngày, vì check-in mất mạng có thể tới muộn và chen vào giữa.
+  const settings = await readSystemSettings();
+  const tooFast = speedFlaggedIds(
+    checkIns.map((checkIn) => ({
+      id: checkIn.id,
+      capturedAt: checkIn.capturedAt.getTime(),
+      lat: checkIn.lat,
+      lng: checkIn.lng,
+    })),
+    settings.values.maxCheckInSpeedKmh,
+  );
 
   const starts = sessions.map((session) => session.startedAt.getTime());
   const track = filterTrack(
@@ -320,11 +342,19 @@ export async function recomputeDayDistances(userId: string, day: string): Promis
       }
     }
     const km = Math.round(meters) / 1000;
-    if (checkIn.gpsDistanceKm !== km || checkIn.isDistanceEstimated !== estimated) {
+    const hadSpeedFlag = checkIn.flags.includes('IMPOSSIBLE_SPEED');
+    const hasSpeedFlag = tooFast.has(checkIn.id);
+    if (
+      checkIn.gpsDistanceKm !== km ||
+      checkIn.isDistanceEstimated !== estimated ||
+      hadSpeedFlag !== hasSpeedFlag
+    ) {
+      const flags = checkIn.flags.filter((flag) => flag !== 'IMPOSSIBLE_SPEED');
+      if (hasSpeedFlag) flags.push('IMPOSSIBLE_SPEED');
       updates.push(
         db.checkIn.update({
           where: { id: checkIn.id },
-          data: { gpsDistanceKm: km, isDistanceEstimated: estimated },
+          data: { gpsDistanceKm: km, isDistanceEstimated: estimated, flags },
         }),
       );
     }
