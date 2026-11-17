@@ -27,7 +27,9 @@ Tài liệu này là **nguồn duy nhất** về cấu trúc trang, điều hư�
 
 | Vai trò | Việc thường xuyên nhất (giảm dần) | Trang dùng ~80% thời gian |
 |---|---|---|
-| Cán bộ nhân viên | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → gửi yêu cầu hỗ trợ khi vướng → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| Nhân viên kinh doanh | Check-in đại lý, khách hàng, điểm khác → xem tuyến hôm nay → gửi yêu cầu hỗ trợ khi vướng → xem chỉ tiêu của mình | **Hôm nay** (app điện thoại) |
+| Quản lý | Như NVKD → xem check-in, bản đồ, dashboard của nhóm (cấp dưới trực tiếp) → duyệt Tuyến, Chỉ tiêu của nhóm (A10b) | **Dashboard** |
+| Lãnh đạo đơn vị | Dashboard và Tổng quan của đơn vị → duyệt cuối Tuyến, Chỉ tiêu (A10b) → xem báo cáo | **Dashboard** |
 | Quản trị đơn vị | Xem báo cáo ghé thăm → duyệt toạ độ, đại lý mới → lập tuyến → xử lý yêu cầu hỗ trợ của đơn vị → tài khoản trong đơn vị | **Check-in** |
 | Quản trị hệ thống | Tài khoản, vai trò → danh mục đại lý, đồng bộ FAST → yêu cầu hỗ trợ được chuyển lên → tham số, kết nối | **Tài khoản** |
 
@@ -116,7 +118,9 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 
 | Vai trò | Kinh doanh | Quản trị | Hỗ trợ |
 |---|---|---|---|
-| Cán bộ nhân viên | Dashboard (số của tôi) | không có | Nút nổi ở mọi trang web, màn hình Hỗ trợ trên app |
+| Nhân viên kinh doanh | Dashboard (số của tôi) | không có | Nút nổi ở mọi trang web, màn hình Hỗ trợ trên app |
+| Quản lý | Dashboard (nhóm của tôi) | không có | Như NVKD |
+| Lãnh đạo đơn vị | Dashboard (đơn vị và đơn vị con) | không có | Như NVKD |
 | Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Trang Quản trị › Hỗ trợ |
 | Quản trị hệ thống | Dashboard | Tài khoản | Trang Quản trị › Hỗ trợ (yêu cầu được chuyển lên) |
 
@@ -236,7 +240,7 @@ Quy tắc tính:
 | Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 2: Kinh doanh, Quản trị |
 | Trao đổi giữa CBNV và quản trị | **Hỗ trợ**, mỗi lần gửi là một **Yêu cầu** | Loại: Hỏi đáp, Báo lỗi, Góp ý. Không gọi là "ticket" |
 | Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |
-| Ba vai trò | **Quản trị hệ thống**, **Quản trị đơn vị**, **Cán bộ nhân viên** | Chức danh là thông tin hồ sơ, không phải vai trò |
+| Năm vai trò (quyết định 31) | **Quản trị hệ thống**, **Quản trị đơn vị**, **Lãnh đạo đơn vị**, **Quản lý**, **Nhân viên kinh doanh** | Chức danh là thông tin hồ sơ, không phải vai trò. Lãnh đạo đơn vị là Trưởng đơn vị; Quản lý thấy cấp dưới trực tiếp (phạm vi "Nhóm của tôi") |
 | Miền/Vùng/Khu vực trong cơ cấu | **Đơn vị** | Không gọi là "bộ phận" |
 | Bên mua và nhận hoá đơn, có mã FAST | **Đại lý** | Có trường Loại: Cấp 1, Cấp 2, Tổ chức |
 | Mã KH trên FAST | **Mã đại lý** | Một mã duy nhất |
