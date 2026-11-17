@@ -51,7 +51,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 | T2 16/11 | Kế hoạch demo, tài liệu chuyển máy chủ, phát APK cho nhóm thử | |
 | T2 16/11 | **M2** Hoàn thiện màn check-in. Làm sớm 1 ngày | 1 |
 | T2 16/11 | **G1a** Nhập nhân viên thật, ghép đại lý. Đã xong, sớm 2 ngày | 0,5 |
-| T4 18/11 chiều đến T5 19/11 | **M6** App 4 tab | 1,5 |
+| T3 17/11 | **M6** App 4 tab. Làm sớm 1 ngày | 2 |
 | T2 16/11 | **M4** Toạ độ đại lý từ check-in, lý do khi check-in xa, Đại lý gần tôi. Làm sớm sau chuyến đi thử | 1 |
 | T2 23/11 sáng | **M9a** Bản iPhone qua TestFlight cho người xem demo | 0,5 |
 | T2 23/11 chiều đến T3 24/11 sáng | **V2b** Bản đồ hành trình trên web | 1 |
@@ -64,7 +64,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Thêm 17/11: lời đồng ý chia sẻ vị trí (câu chữ đã duyệt, phiên bản `2026-11-17`). Web hỏi ở `/dong-y-vi-tri` sau đăng nhập, Không đồng ý thì không hỏi lại trong phiên; app hỏi trước khi check-in, có nút Rút lại đồng ý (chuyển sang tab Tôi ở M6). Lưu ở bảng `user_consents`, ghi nhật ký.
 - [x] **G1a. Nhập tài khoản nhân viên thật và ghép đại lý** (xong 16/11): file 316 tài khoản theo mẫu hệ thống cũ, bỏ 10 tài khoản test, khách và 15 tài khoản kế toán dùng chung, nhập 291 người vào máy chủ thử với vai trò Cán bộ nhân viên, mật khẩu tạm phải đổi lần đầu. Tạo 3 đơn vị con của SSC chưa có: Chi nhánh Lâm Hà `SS-LH`, Phòng Sản xuất `SS-SX`, Chi nhánh Campuchia `SS-CPC` (mã tạm). Ghép theo tên được 9.464 đại lý, còn 2.615 chờ gán (74 tên phụ trách cũ không có trong danh sách, 2 cặp trùng tên). Tài khoản mẫu giữ lại cho buổi demo.
   - Còn thiếu: chức danh, ngày vào làm, quản lý trực tiếp (file không có); vai trò Quản trị đơn vị gán tay khi cần.
-- [ ] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (2 buổi, kế hoạch duyệt 17/11): thanh tiêu đề xanh logo trắng cỡ M, thanh tab đáy có icon. Hôm nay: Check-in, Đại lý gần tôi, trạng thái ghi kèm Kết thúc ngày, số lượt và km hôm nay, chờ gửi, đại lý gần nhất chưa ghé. Lịch sử: toàn bộ check-in của tôi trong 18 tháng (ảnh 45 ngày), có mạng lấy máy chủ, mất mạng lấy trên máy, lượt chưa gửi gắn Chờ gửi; km từng chặng, tổng km, xuất Excel. Tôi: thông tin, Hỗ trợ tạm, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. Tuyến: đại lý tôi phụ trách, gần nhất lên đầu.
+- [x] **M6. App 4 tab: Hôm nay, Tuyến, Lịch sử, Tôi** (xong 17/11, sớm 1 ngày; chưa thử trên iPhone; biểu tượng app mới có hiệu lực ở lần build sau): thanh tiêu đề xanh logo trắng cỡ M, thanh tab đáy có icon. Hôm nay: Check-in, Đại lý gần tôi, trạng thái ghi kèm Kết thúc ngày, số lượt và km hôm nay, chờ gửi, đại lý gần nhất chưa ghé. Lịch sử: toàn bộ check-in của tôi trong 18 tháng (ảnh 45 ngày), có mạng lấy máy chủ, mất mạng lấy trên máy, lượt chưa gửi gắn Chờ gửi; km từng chặng, tổng km, xuất Excel. Tôi: thông tin, Hỗ trợ tạm, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. Tuyến: đại lý tôi phụ trách, gần nhất lên đầu.
 - [x] **M4. Toạ độ đại lý từ check-in** (làm 16/11, sớm 4 ngày): lần check-in đầu tại đại lý chưa có toạ độ thì đề xuất toạ độ, Quản trị đơn vị duyệt ở `/quan-tri/dai-ly/duyet-toa-do` (quyền `admin.dealer-location.approve`); check-in xa đại lý quá bán kính thì bắt nhập lý do, gắn cờ Xa đại lý.
   - Thêm sau chuyến đi thử 16/11: cách check-in thứ hai **Đại lý gần tôi** trên app; đại lý chưa có toạ độ thì so tên phố lúc chụp với địa chỉ danh mục, khác phố gắn cờ; gõ tên tay đúng tên đại lý mình phụ trách thì máy chủ tự gắn; app tự tìm lại đại lý khi mất mạng.
   - Chưa làm: ước tính toạ độ hàng loạt từ địa chỉ qua Vietmap (chờ duyệt dùng lượt gọi).
@@ -74,7 +74,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
   - Cần: bạn đăng nhập Apple và nhập mã 2 lớp khi build; email Apple ID của người dùng iPhone trong buổi demo.
 - [ ] **DM1. Tổng duyệt demo** (1 buổi): kịch bản và tài khoản demo; kiểm tra tunnel, máy chủ thử, dữ liệu nhóm thử; xử lý cảnh báo chứng chỉ trên `https://localhost`; quay sẵn video luồng app để dự phòng mất mạng; sửa lỗi nhóm thử báo.
 
-**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4, M2 đã xong, còn 5,5).
+**Cộng giai đoạn 1: 9 buổi** (P1, G1a, M4, M2, M6 đã xong, còn 3,5: V2b, K0, M9a, DM1).
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
