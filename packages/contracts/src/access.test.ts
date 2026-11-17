@@ -46,12 +46,27 @@ const EXPECTED_PAGES: Record<string, ReadonlyArray<(typeof PAGE_PROBES)[number]>
     '/quan-tri/ho-tro',
     '/quan-tri/tai-khoan',
   ],
+  'unit-leader': [
+    '/tong-quan',
+    '/kinh-doanh/dashboard',
+    '/kinh-doanh/dai-ly',
+    '/kinh-doanh/check-in',
+    '/kinh-doanh/bao-cao',
+  ],
+  manager: [
+    '/kinh-doanh/dashboard',
+    '/kinh-doanh/dai-ly',
+    '/kinh-doanh/check-in',
+    '/kinh-doanh/bao-cao',
+  ],
   staff: ['/kinh-doanh/dashboard', '/kinh-doanh/dai-ly', '/kinh-doanh/check-in'],
 };
 
 const EXPECTED_DEPARTMENTS: Record<string, readonly string[]> = {
   admin: ['kinh-doanh', 'quan-tri'],
   operations: ['kinh-doanh', 'quan-tri'],
+  'unit-leader': ['kinh-doanh'],
+  manager: ['kinh-doanh'],
   staff: ['kinh-doanh'],
 };
 
@@ -216,6 +231,7 @@ describe('pham vi du lieu', () => {
     userId: 'u1',
     orgUnitId: 'o1',
     orgUnitTreeIds: ['o1', 'o2'],
+    teamUserIds: ['u1', 'u2', 'u3'],
   };
 
   it('tao dieu kien dung theo tung pham vi', () => {
@@ -225,6 +241,15 @@ describe('pham vi du lieu', () => {
       orgUnitId: { in: ['o1', 'o2'] },
     });
     expect(scopeWhere({ ...context, dataScope: 'ALL' }, fields)).toEqual({});
+    expect(scopeWhere({ ...context, dataScope: 'TEAM' }, fields)).toEqual({
+      assignedUserId: { in: ['u1', 'u2', 'u3'] },
+    });
+  });
+
+  it('Quan ly chua co cap duoi chi thay cua minh', () => {
+    expect(scopeWhere({ ...context, dataScope: 'TEAM', teamUserIds: [] }, fields)).toEqual({
+      assignedUserId: 'u1',
+    });
   });
 
   it('nguoi chua co don vi chi thay du lieu cua minh', () => {

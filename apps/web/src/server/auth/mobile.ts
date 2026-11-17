@@ -5,7 +5,7 @@ import { widestDataScope, type DataScope, type PermissionCode } from '@dms/contr
 import type { MobileAuthReason } from '@dms/contracts/check-ins';
 import type { ErrorCode } from '@dms/contracts/common';
 import { db } from '@dms/db/client';
-import { getOrgUnitTreeIds } from '@dms/db/org-units';
+import { getOrgUnitTreeIds, getTeamUserIds } from '@dms/db/org-units';
 import { scopedDb } from '@dms/db/scoped-client';
 import { DomainError } from '@/server/services/domain-error';
 
@@ -136,6 +136,7 @@ export async function mobileScopedDb(user: MobileUser) {
     userId: user.id,
     orgUnitId: user.orgUnitId,
     orgUnitTreeIds: needsTree && user.orgUnitId ? await getOrgUnitTreeIds(user.orgUnitId) : [],
+    teamUserIds: user.dataScope === 'TEAM' ? await getTeamUserIds(user.id) : [],
   });
 }
 

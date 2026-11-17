@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { getOrgUnitTreeIds } from '@dms/db/org-units';
+import { getOrgUnitTreeIds, getTeamUserIds } from '@dms/db/org-units';
 import { scopedDb } from '@dms/db/scoped-client';
 import { requireUser } from './current-user';
 
@@ -16,6 +16,7 @@ export const getScopedDb = cache(async () => {
     userId: user.id,
     orgUnitId: user.orgUnitId,
     orgUnitTreeIds: needsTree && user.orgUnitId ? await getTreeIds(user.orgUnitId) : [],
+    teamUserIds: user.dataScope === 'TEAM' ? await getTeamUserIds(user.id) : [],
   });
 });
 
@@ -23,7 +24,10 @@ export const getScopedDb = cache(async () => {
 export const getAssignableOrgUnitIds = cache(async (): Promise<ReadonlySet<string> | null> => {
   const user = await requireUser();
   if (user.dataScope === 'ALL') return null;
-  if (!user.orgUnitId || user.dataScope === 'OWN') return new Set();
+  // Quan ly (TEAM) xep nguoi theo nhom, khong theo don vi, nen khong duoc chuyen don vi.
+  if (!user.orgUnitId || user.dataScope === 'OWN' || user.dataScope === 'TEAM') {
+    return new Set();
+  }
   if (user.dataScope === 'ORG_UNIT') return new Set([user.orgUnitId]);
   return new Set(await getTreeIds(user.orgUnitId));
 });

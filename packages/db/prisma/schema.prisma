@@ -9,6 +9,7 @@ datasource db {
 
 enum DataScope {
   OWN
+  TEAM
   ORG_UNIT
   ORG_UNIT_TREE
   ALL
@@ -25,6 +26,8 @@ model OrgUnit {
   children                OrgUnit[]                @relation("org_unit_tree")
   managerId               String?                  @map("manager_id") @db.Uuid
   manager                 User?                    @relation("org_unit_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  // Co cap Quan ly (quyet dinh 31): bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
+  hasManagerLevel         Boolean                  @default(false) @map("has_manager_level")
   users                   User[]                   @relation("org_unit_members")
   checkIns                CheckIn[]
   dealers                 Dealer[]

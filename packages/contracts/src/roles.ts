@@ -11,6 +11,7 @@ import {
 
 export const DATA_SCOPE_LABEL: Record<DataScope, string> = {
   OWN: 'Của mình',
+  TEAM: 'Nhóm của tôi (cấp dưới trực tiếp)',
   ORG_UNIT: 'Đơn vị',
   ORG_UNIT_TREE: 'Đơn vị và cấp dưới',
   ALL: 'Toàn công ty',

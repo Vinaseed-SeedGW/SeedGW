@@ -7,6 +7,9 @@ const SEED_USERS = [
   { employeeCode: 'KD001', fullName: 'Nhân viên Kinh doanh', roleCode: 'staff' },
   { employeeCode: 'CS001', fullName: 'Nhân viên CSKH', roleCode: 'staff' },
   { employeeCode: 'QT001', fullName: 'Nhân viên Quản trị', roleCode: 'operations' },
+  // Quyet dinh 31: tai khoan mau cho luong NVKD, Quan ly, Lanh dao don vi.
+  { employeeCode: 'QL001', fullName: 'Quản lý Kinh doanh', roleCode: 'manager' },
+  { employeeCode: 'LD001', fullName: 'Lãnh đạo đơn vị', roleCode: 'unit-leader' },
 ];
 
 async function main() {
@@ -66,6 +69,17 @@ async function main() {
         create: { userId: saved.id, roleId: role.id },
       });
     }
+
+    // KD001 thuoc nhom cua QL001; LD001 la Truong don vi, don vi bat cap Quan ly.
+    const [manager, leader] = await Promise.all([
+      db.user.findUniqueOrThrow({ where: { employeeCode: 'QL001' } }),
+      db.user.findUniqueOrThrow({ where: { employeeCode: 'LD001' } }),
+    ]);
+    await db.user.update({ where: { employeeCode: 'KD001' }, data: { managerId: manager.id } });
+    await db.orgUnit.update({
+      where: { id: company.id },
+      data: { managerId: leader.id, hasManagerLevel: true },
+    });
 
     console.log(
       `Da nap ${PERMISSIONS.length} quyen, ${ROLE_PRESETS.length} vai tro, ${SEED_USERS.length} tai khoan mau.`,

@@ -42,6 +42,30 @@ function loadUnits(tx: Tx) {
   return tx.orgUnit.findMany({ select: { id: true, parentId: true, code: true, name: true } });
 }
 
+const UNIT_LEADER_ROLE = 'unit-leader';
+const YES_NO = (value: boolean) => (value ? 'Có' : 'Không');
+
+/**
+ * Quyết định 31: Trưởng đơn vị là Lãnh đạo đơn vị, người duyệt cuối Tuyến và Chỉ tiêu. Chọn ai làm
+ * Trưởng đơn vị thì tự gán thêm vai trò này; thôi làm thì không tự gỡ, Quản trị gỡ tay. Trả tên vai trò
+ * khi vừa gán để ghi vào nhật ký.
+ */
+async function grantUnitLeaderRole(tx: Tx, userId: string | null): Promise<string | null> {
+  if (!userId) return null;
+  const role = await tx.role.findUnique({
+    where: { code: UNIT_LEADER_ROLE },
+    select: { id: true, name: true },
+  });
+  if (!role) return null;
+  const existing = await tx.userRole.findUnique({
+    where: { userId_roleId: { userId, roleId: role.id } },
+    select: { userId: true },
+  });
+  if (existing) return null;
+  await tx.userRole.create({ data: { userId, roleId: role.id } });
+  return role.name;
+}
+
 async function resolveManagerName(tx: Tx, managerId: string | null): Promise<string | null> {
   if (!managerId) return null;
   const manager = await tx.user.findFirst({
@@ -67,13 +91,21 @@ export function createOrgUnit(input: CreateOrgUnitInput): Promise<OrgUnitOutcome
 
     const managerName = await resolveManagerName(tx, input.managerId);
     const created = await tx.orgUnit.create({ data: input, select: { id: true } });
+    const grantedRole = await grantUnitLeaderRole(tx, input.managerId);
 
     return {
       id: created.id,
       label: input.code,
       changes: auditChanges(
         {},
-        { code: input.code, name: input.name, parent: parent.name, manager: managerName },
+        {
+          code: input.code,
+          name: input.name,
+          parent: parent.name,
+          manager: managerName,
+          'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
+          ...(grantedRole ? { 'Vai trò Trưởng đơn vị': `Gán ${grantedRole}` } : {}),
+        },
       ),
     };
   });
@@ -83,22 +115,45 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
   return withLockedTree(async (tx) => {
     const current = await tx.orgUnit.findUnique({
       where: { id: input.id },
-      select: { code: true, name: true, manager: { select: { fullName: true } } },
+      select: {
+        code: true,
+        name: true,
+        hasManagerLevel: true,
+        manager: { select: { fullName: true } },
+      },
     });
     if (!current) throw new DomainError('NOT_FOUND', 'Không tìm thấy đơn vị này');
 
     const managerName = await resolveManagerName(tx, input.managerId);
     const changes = auditChanges(
-      { code: current.code, name: current.name, manager: current.manager?.fullName ?? null },
-      { code: input.code, name: input.name, manager: managerName },
+      {
+        code: current.code,
+        name: current.name,
+        manager: current.manager?.fullName ?? null,
+        'Có cấp Quản lý': YES_NO(current.hasManagerLevel),
+      },
+      {
+        code: input.code,
+        name: input.name,
+        manager: managerName,
+        'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
+      },
     );
 
     if (Object.keys(changes).length > 0) {
       await tx.orgUnit.update({
         where: { id: input.id },
-        data: { code: input.code, name: input.name, managerId: input.managerId },
+        data: {
+          code: input.code,
+          name: input.name,
+          managerId: input.managerId,
+          hasManagerLevel: input.hasManagerLevel,
+        },
       });
     }
+    const grantedRole = await grantUnitLeaderRole(tx, input.managerId);
+    if (grantedRole)
+      changes['Vai trò Trưởng đơn vị'] = { before: null, after: `Gán ${grantedRole}` };
     return { id: input.id, label: input.code, changes };
   });
 }
@@ -134,13 +189,19 @@ export async function assignOrgUnitManager({
     });
   }
 
-  await db.orgUnit.update({ where: { id }, data: { managerId } });
+  const grantedRole = await db.$transaction(async (tx) => {
+    await tx.orgUnit.update({ where: { id }, data: { managerId } });
+    return grantUnitLeaderRole(tx, managerId);
+  });
   return {
     id,
     label: unit.code,
     changes: auditChanges(
       { manager: unit.manager?.fullName ?? null },
-      { manager: manager?.fullName ?? null },
+      {
+        manager: manager?.fullName ?? null,
+        ...(grantedRole ? { 'Vai trò Trưởng đơn vị': `Gán ${grantedRole}` } : {}),
+      },
     ),
   };
 }

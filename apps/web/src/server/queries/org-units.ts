@@ -16,6 +16,7 @@ export async function listOrgUnits(): Promise<OrgUnitRow[]> {
       name: true,
       parentId: true,
       managerId: true,
+      hasManagerLevel: true,
       manager: { select: { fullName: true } },
       _count: { select: { users: true } },
     },

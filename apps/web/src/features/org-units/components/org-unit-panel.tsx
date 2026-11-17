@@ -32,13 +32,23 @@ export type OrgPanel =
   | { type: 'confirm-move'; unit: OrgUnitRow; target: OrgUnitRow };
 
 const CODE_HINT = 'Viết liền, không dấu, ví dụ MB-VUNG1';
+const LEADER_HINT =
+  'Là Lãnh đạo đơn vị, người duyệt cuối Tuyến và Chỉ tiêu. Tự được gán vai trò này.';
+const MANAGER_LEVEL_HINT =
+  'Bật thì phiếu Tuyến, Chỉ tiêu của nhân viên qua Quản lý trực tiếp trước khi tới Lãnh đạo đơn vị.';
 
 type FormProps = { managerOptions: ManagerOption[]; onClose: () => void };
 
 function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: OrgUnitRow }) {
   const form = useForm<CreateOrgUnitInput>({
     resolver: zodResolver(createOrgUnitInput),
-    defaultValues: { parentId: parent.id, code: '', name: '', managerId: null },
+    defaultValues: {
+      parentId: parent.id,
+      code: '',
+      name: '',
+      managerId: null,
+      hasManagerLevel: false,
+    },
   });
 
   return (
@@ -55,9 +65,14 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
         <Form.Field name="name" label="Tên đơn vị">
           <Form.Input autoComplete="off" />
         </Form.Field>
-        <Form.Field name="managerId" label="Trưởng đơn vị">
+        <Form.Field name="managerId" label="Trưởng đơn vị" hint={LEADER_HINT}>
           <Form.Select options={managerOptions} emptyLabel="Chưa chọn" />
         </Form.Field>
+        <Form.CheckboxField
+          name="hasManagerLevel"
+          label="Có cấp Quản lý"
+          hint={MANAGER_LEVEL_HINT}
+        />
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Tạo đơn vị</Form.Submit>
@@ -71,7 +86,13 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
 function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUnitRow }) {
   const form = useForm<UpdateOrgUnitInput>({
     resolver: zodResolver(updateOrgUnitInput),
-    defaultValues: { id: unit.id, code: unit.code, name: unit.name, managerId: unit.managerId },
+    defaultValues: {
+      id: unit.id,
+      code: unit.code,
+      name: unit.name,
+      managerId: unit.managerId,
+      hasManagerLevel: unit.hasManagerLevel,
+    },
   });
 
   return (
@@ -88,9 +109,14 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
         <Form.Field name="name" label="Tên đơn vị">
           <Form.Input autoComplete="off" />
         </Form.Field>
-        <Form.Field name="managerId" label="Trưởng đơn vị">
+        <Form.Field name="managerId" label="Trưởng đơn vị" hint={LEADER_HINT}>
           <Form.Select options={managerOptions} emptyLabel="Chưa chọn" />
         </Form.Field>
+        <Form.CheckboxField
+          name="hasManagerLevel"
+          label="Có cấp Quản lý"
+          hint={MANAGER_LEVEL_HINT}
+        />
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Lưu</Form.Submit>

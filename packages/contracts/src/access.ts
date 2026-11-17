@@ -180,7 +180,8 @@ export function departmentLanding(
   return firstAllowed?.path ?? FORBIDDEN_PATH;
 }
 
-export const dataScope = z.enum(['OWN', 'ORG_UNIT', 'ORG_UNIT_TREE', 'ALL']);
+// Thu tu tu hep toi rong; TEAM (17/11/2026, quyet dinh 31) la minh va cap duoi truc tiep cua vai tro Quan ly.
+export const dataScope = z.enum(['OWN', 'TEAM', 'ORG_UNIT', 'ORG_UNIT_TREE', 'ALL']);
 export type DataScope = z.infer<typeof dataScope>;
 
 // Nguoi co nhieu vai tro duoc pham vi rong nhat trong cac vai tro.
@@ -210,6 +211,8 @@ export type ScopeContext = {
   userId: string;
   orgUnitId: string | null;
   orgUnitTreeIds: readonly string[];
+  /** Pham vi TEAM: id cua chinh minh va nhan vien co minh la Quan ly truc tiep. */
+  teamUserIds: readonly string[];
 };
 
 export type ScopeFields = {
@@ -239,6 +242,10 @@ export function scopeWhere(
     case 'ORG_UNIT_TREE':
       return context.orgUnitTreeIds.length > 0
         ? fieldFilter(orgUnitField, { in: [...context.orgUnitTreeIds] })
+        : ownOnly;
+    case 'TEAM':
+      return context.teamUserIds.length > 0
+        ? { [ownerField]: { in: [...context.teamUserIds] } }
         : ownOnly;
     case 'OWN':
       return ownOnly;
@@ -279,8 +286,45 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     ],
   },
   {
+    // Quyet dinh 31: Lanh dao don vi la Truong don vi, duyet cuoi Tuyen va Chi tieu (A10b).
+    code: 'unit-leader',
+    name: 'Lãnh đạo đơn vị',
+    dataScope: 'ORG_UNIT_TREE',
+    permissions: [
+      'executive.overview.read',
+      'sales.dashboard.read',
+      'sales.target.read',
+      'sales.dealer.read',
+      'sales.customer.read',
+      'sales.route.read',
+      'sales.check-in.read',
+      'sales.check-in.create',
+      'sales.report.read',
+      'support.request.create',
+    ],
+  },
+  {
+    // Quan ly cap tren truc tiep cua NVKD, chi thay nhom cua minh (pham vi TEAM).
+    code: 'manager',
+    name: 'Quản lý',
+    dataScope: 'TEAM',
+    permissions: [
+      'sales.dashboard.read',
+      'sales.target.read',
+      'sales.dealer.read',
+      'sales.dealer.create',
+      'sales.dealer.update',
+      'sales.customer.read',
+      'sales.route.read',
+      'sales.check-in.read',
+      'sales.check-in.create',
+      'sales.report.read',
+      'support.request.create',
+    ],
+  },
+  {
     code: 'staff',
-    name: 'Cán bộ nhân viên',
+    name: 'Nhân viên kinh doanh',
     dataScope: 'OWN',
     permissions: [
       'sales.dashboard.read',

@@ -11,3 +11,12 @@ export async function getOrgUnitTreeIds(rootId: string): Promise<string[]> {
   `;
   return rows.map((row) => row.id);
 }
+
+/** Pham vi TEAM (vai tro Quan ly): chinh minh va nhan vien dang hoat dong co minh la Quan ly truc tiep. */
+export async function getTeamUserIds(managerId: string): Promise<string[]> {
+  const reports = await db.user.findMany({
+    where: { managerId, isActive: true },
+    select: { id: true },
+  });
+  return [managerId, ...reports.map((user) => user.id)];
+}

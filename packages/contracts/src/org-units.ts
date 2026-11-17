@@ -19,6 +19,8 @@ export const createOrgUnitInput = z.object({
   code: orgUnitCode,
   name: orgUnitName,
   managerId,
+  // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
+  hasManagerLevel: z.boolean(),
 });
 export type CreateOrgUnitInput = z.infer<typeof createOrgUnitInput>;
 
@@ -27,6 +29,8 @@ export const updateOrgUnitInput = z.object({
   code: orgUnitCode,
   name: orgUnitName,
   managerId,
+  // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
+  hasManagerLevel: z.boolean(),
 });
 export type UpdateOrgUnitInput = z.infer<typeof updateOrgUnitInput>;
 
@@ -49,6 +53,7 @@ export type OrgUnitRow = {
   parentId: string | null;
   managerId: string | null;
   managerName: string | null;
+  hasManagerLevel: boolean;
   memberCount: number;
 };
 
