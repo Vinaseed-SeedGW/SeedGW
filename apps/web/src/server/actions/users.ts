@@ -23,6 +23,7 @@ import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { USER_SUMMARY_SELECT, toUserSummary, userOrderBy, userWhere } from '@/server/queries/users';
+import { syncPendingApprovers } from '@/server/services/approval-sync';
 import { getClientIp, writeAudit, writeAuditMany } from '@/server/services/audit';
 import { buildWorkbookBase64, type ExcelColumn } from '@/server/services/excel';
 import { startImpersonation, stopImpersonation } from '@/server/services/impersonation';
@@ -113,6 +114,7 @@ export async function updateUserAction(raw: unknown): Promise<ActionResult<{ id:
           ip,
         }),
       );
+      await syncPendingApprovers(user, ip);
       revalidateAccounts();
     }
     return { ok: true, data: { id: input.id } };
@@ -158,6 +160,7 @@ export async function setUsersActiveAction(
         })),
       ),
     );
+    await syncPendingApprovers(user, ip);
     revalidateAccounts();
     return { ok: true, data: { changed: changed.length, skipped } };
   } catch (error) {

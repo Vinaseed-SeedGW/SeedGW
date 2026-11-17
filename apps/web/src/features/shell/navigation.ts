@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  ClipboardCheck,
   FileChartColumn,
   LayoutDashboard,
   LifeBuoy,
@@ -26,7 +27,10 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
   'kinh-doanh': [
     {
       label: 'Tổng quan',
-      items: [{ label: 'Dashboard', href: '/kinh-doanh/dashboard', icon: LayoutDashboard }],
+      items: [
+        { label: 'Dashboard', href: '/kinh-doanh/dashboard', icon: LayoutDashboard },
+        { label: 'Cần duyệt', href: '/kinh-doanh/can-duyet', icon: ClipboardCheck },
+      ],
     },
     {
       label: 'Đối tác',

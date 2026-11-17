@@ -5,7 +5,10 @@ export const PERMISSIONS = [
   { code: 'executive.overview.read', name: 'Xem Tổng quan điều hành' },
 
   { code: 'sales.dashboard.read', name: 'Xem Dashboard Kinh doanh' },
+  { code: 'sales.approval.read', name: 'Xem phiếu Tuyến và Chỉ tiêu' },
+  { code: 'sales.approval.review', name: 'Duyệt Tuyến và Chỉ tiêu' },
   { code: 'sales.target.read', name: 'Xem Chỉ tiêu' },
+  { code: 'sales.target.register', name: 'Đăng ký Chỉ tiêu tháng của mình' },
   { code: 'sales.dealer.read', name: 'Xem Đại lý' },
   { code: 'sales.dealer.create', name: 'Thêm Đại lý' },
   { code: 'sales.dealer.update', name: 'Sửa Đại lý' },
@@ -58,6 +61,7 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/tong-quan', permission: 'executive.overview.read', department: null },
 
   { path: '/kinh-doanh/dashboard', permission: 'sales.dashboard.read', department: 'kinh-doanh' },
+  { path: '/kinh-doanh/can-duyet', permission: 'sales.approval.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/chi-tieu', permission: 'sales.target.read', department: 'kinh-doanh' },
   { path: '/kinh-doanh/dai-ly', permission: 'sales.dealer.read', department: 'kinh-doanh' },
   {
@@ -274,7 +278,10 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     name: 'Quản trị đơn vị',
     dataScope: 'ORG_UNIT_TREE',
     permissions: [
-      ...codesInModule('sales'),
+      // Quyet dinh 31: nguoi duyet chi la Quan ly va Lanh dao don vi; Quan tri don vi chi xem de ho tro.
+      ...codesInModule('sales').filter(
+        (code) => code !== 'sales.approval.review' && code !== 'sales.target.register',
+      ),
       ...codesInModule('support'),
       'admin.user.read',
       'admin.user.manage',
@@ -293,7 +300,10 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     permissions: [
       'executive.overview.read',
       'sales.dashboard.read',
+      'sales.approval.read',
+      'sales.approval.review',
       'sales.target.read',
+      'sales.target.register',
       'sales.dealer.read',
       'sales.customer.read',
       'sales.route.read',
@@ -310,7 +320,10 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     dataScope: 'TEAM',
     permissions: [
       'sales.dashboard.read',
+      'sales.approval.read',
+      'sales.approval.review',
       'sales.target.read',
+      'sales.target.register',
       'sales.dealer.read',
       'sales.dealer.create',
       'sales.dealer.update',
@@ -329,6 +342,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
     permissions: [
       'sales.dashboard.read',
       'sales.target.read',
+      'sales.target.register',
       'sales.dealer.read',
       'sales.dealer.create',
       'sales.dealer.update',

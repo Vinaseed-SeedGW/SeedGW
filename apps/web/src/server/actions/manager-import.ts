@@ -8,6 +8,7 @@ import { MAX_IMPORT_FILE_BYTES } from '@dms/contracts/user-import';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
+import { syncPendingApprovers } from '@/server/services/approval-sync';
 import { getClientIp, writeAuditMany } from '@/server/services/audit';
 import {
   buildManagerImportTemplate,
@@ -69,6 +70,7 @@ export async function commitManagerImportAction(
         })),
       ),
     );
+    if (changes.length > 0) await syncPendingApprovers(user, ip);
     revalidatePath('/quan-tri/tai-khoan', 'layout');
     return { ok: true, data: { updatedCount: changes.length } };
   } catch (error) {

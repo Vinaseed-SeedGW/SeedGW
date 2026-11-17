@@ -13,16 +13,19 @@ import {
 } from 'react-native';
 import { logout } from './src/api/client';
 import { loadConsentState, recordConsent, type ConsentState } from './src/api/consent';
+import { loadCapabilities, type Capabilities } from './src/api/targets';
 import type { DealerChoice } from './src/api/dealers';
 import { ConsentScreen } from './src/components/consent-screen';
 import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
+import { ApprovalsScreen } from './src/components/approvals-screen';
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
 import { MeTab } from './src/components/me-tab';
 import { RouteTab } from './src/components/route-tab';
 import { TabBar, TABS, type TabKey } from './src/components/tab-bar';
+import { TargetsScreen } from './src/components/targets-screen';
 import { TodayTab } from './src/components/today-tab';
 import { useTracking } from './src/components/use-tracking';
 import { useAutoSync, useSession } from './src/components/use-sync';
@@ -69,6 +72,21 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
+  // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
+  const [overlay, setOverlay] = useState<'targets' | 'approvals' | null>(null);
+  const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!session || overlay !== null) return;
+    let cancelled = false;
+    void loadCapabilities().then((value) => {
+      if (!cancelled && value) setCapabilities(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, overlay, tab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +153,22 @@ function Main({ signedIn }: { signedIn: boolean }) {
   }
 
   const account = session ? { user: session.user, sync } : null;
+  const closeOverlay = () => {
+    setOverlay(null);
+    setRefreshKey((value) => value + 1);
+  };
+  if (overlay && account) {
+    return (
+      <View style={styles.fill}>
+        <AppHeader title={overlay === 'targets' ? 'Chỉ tiêu' : 'Cần duyệt'} />
+        {overlay === 'targets' ? (
+          <TargetsScreen onClose={closeOverlay} />
+        ) : (
+          <ApprovalsScreen onClose={closeOverlay} />
+        )}
+      </View>
+    );
+  }
   return (
     <View style={styles.fill}>
       <AppHeader title={TABS.find((item) => item.key === tab)?.label ?? ''} />
@@ -146,6 +180,8 @@ function Main({ signedIn }: { signedIn: boolean }) {
             onOpenCamera={() => openCamera(null)}
             onPickDealer={openCamera}
             onOpenRoute={account ? () => setTab('route') : null}
+            onOpenTargets={account ? () => setOverlay('targets') : null}
+            refreshKey={refreshKey}
           />
         ) : null}
         {tab === 'route' ? (
@@ -157,7 +193,19 @@ function Main({ signedIn }: { signedIn: boolean }) {
         ) : null}
         {tab === 'history' ? <HistoryTab /> : null}
         {tab === 'me' ? (
-          <MeTab control={control} account={account} onWithdrawConsent={withdrawConsent} />
+          <MeTab
+            control={control}
+            account={account}
+            onWithdrawConsent={withdrawConsent}
+            approvals={
+              capabilities?.canReviewApprovals
+                ? {
+                    pendingCount: capabilities.pendingApprovalCount,
+                    onOpen: () => setOverlay('approvals'),
+                  }
+                : null
+            }
+          />
         ) : null}
       </View>
       <TabBar active={tab} onChange={setTab} />

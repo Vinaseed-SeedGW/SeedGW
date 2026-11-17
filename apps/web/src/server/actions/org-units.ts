@@ -14,6 +14,7 @@ import {
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';
+import { syncPendingApprovers } from '@/server/services/approval-sync';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import {
   assignOrgUnitManager,
@@ -45,7 +46,10 @@ async function recordChange(user: CurrentUser, action: AuditAction, outcome: Org
       ip,
     }),
   );
+  // Đổi Trưởng đơn vị, Có cấp Quản lý hoặc chuyển đơn vị: phiếu đang chờ sang người duyệt mới (A10b).
+  if (action !== 'org-unit.create') await syncPendingApprovers(user, ip);
   revalidatePath('/quan-tri/co-cau-to-chuc');
+  revalidatePath('/kinh-doanh/can-duyet', 'layout');
 }
 
 export async function createOrgUnitAction(raw: unknown): Promise<ActionResult<{ id: string }>> {

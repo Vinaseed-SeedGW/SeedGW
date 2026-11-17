@@ -8,6 +8,7 @@ import { computeDayStats, getOpenSession, readLocalHistory } from '../sync/track
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { distanceText, toChoice } from './dealer-picker';
+import { TargetCard } from './target-card';
 import { Text } from './text';
 import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
@@ -75,10 +76,21 @@ type Props = {
   onOpenCamera: () => void;
   onPickDealer: (dealer: DealerChoice) => void;
   onOpenRoute: (() => void) | null;
+  /** Có khi đã đăng nhập máy chủ: mở màn Chỉ tiêu của tôi (K3a). */
+  onOpenTargets: (() => void) | null;
+  refreshKey: number;
 };
 
 /** Tab Hôm nay (IA): việc chính khi đi thị trường, trạng thái ghi hành trình và dữ liệu chờ gửi. */
-export function TodayTab({ control, sync, onOpenCamera, onPickDealer, onOpenRoute }: Props) {
+export function TodayTab({
+  control,
+  sync,
+  onOpenCamera,
+  onPickDealer,
+  onOpenRoute,
+  onOpenTargets,
+  refreshKey,
+}: Props) {
   const { state, actions } = control;
   const [today, setToday] = useState<Today>(readToday);
   const reload = useCallback(() => setToday(readToday()), []);
@@ -134,6 +146,8 @@ export function TodayTab({ control, sync, onOpenCamera, onPickDealer, onOpenRout
         </View>
       </View>
       {state.message ? <Text style={styles.error}>{state.message}</Text> : null}
+
+      {onOpenTargets ? <TargetCard refreshKey={refreshKey} onOpen={onOpenTargets} /> : null}
 
       {next ? (
         <View style={styles.card}>

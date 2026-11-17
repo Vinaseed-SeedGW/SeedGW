@@ -10,6 +10,12 @@ import { ImpersonationBanner } from '@/features/shell/components/impersonation-b
 import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 import { SupportLauncher } from '@/features/support/components/support-launcher';
 import { requireDepartmentAccess } from '@/server/auth/can';
+import { getPendingApprovalCount } from '@/server/queries/approvals';
+
+// Mục có số việc đang chờ cạnh tên (A10b).
+const NAV_COUNTS: Partial<Record<string, () => Promise<number>>> = {
+  '/kinh-doanh/can-duyet': getPendingApprovalCount,
+};
 
 type DepartmentLayoutProps = {
   slug: DepartmentSlug;
@@ -28,6 +34,13 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
     }))
     .filter((group) => group.items.length > 0);
   const pages = groups.flatMap((group) => group.items.map(({ href, label }) => ({ href, label })));
+  const counts = new Map(
+    await Promise.all(
+      pages
+        .filter((page) => NAV_COUNTS[page.href])
+        .map(async (page) => [page.href, (await NAV_COUNTS[page.href]?.()) ?? 0] as const),
+    ),
+  );
   const otherDepartments = DEPARTMENTS.filter(
     (department) =>
       department.slug !== slug && canAccessDepartment(user.permissions, department.slug),
@@ -39,7 +52,12 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
         {groups.map((group, index) => (
           <AppShell.NavGroup key={group.label ?? index} label={group.label}>
             {group.items.map((item) => (
-              <AppShell.NavItem key={item.href} href={item.href} label={item.label}>
+              <AppShell.NavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                count={counts.get(item.href)}
+              >
                 <item.icon aria-hidden />
               </AppShell.NavItem>
             ))}

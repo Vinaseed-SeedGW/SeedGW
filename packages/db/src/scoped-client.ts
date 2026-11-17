@@ -15,6 +15,8 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   // Theo don vi phu trach dai ly luc de xuat, nhan vien chi thay de xuat cua minh.
   DealerLocationProposal: { ownerField: 'proposedById', orgUnitField: 'orgUnitId' },
   UserConsent: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
+  ApprovalRequest: { ownerField: 'submittedById', orgUnitField: 'orgUnitId' },
+  MonthlySalesTarget: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
 };
 
 const SCOPED_OPERATIONS = new Set<string>([
@@ -57,3 +59,5 @@ export function scopedDb(context: ScopeContext) {
     },
   });
 }
+
+export type ScopedDb = ReturnType<typeof scopedDb>;

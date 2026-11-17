@@ -152,10 +152,12 @@ export function ShellCollapseButton() {
 type ShellNavItemProps = {
   href: string;
   label: string;
+  /** Số việc đang chờ (ví dụ phiếu chờ duyệt). 0 hoặc bỏ trống thì không hiện. */
+  count?: number;
   children: ReactNode;
 };
 
-export function ShellNavItem({ href, label, children }: ShellNavItemProps) {
+export function ShellNavItem({ href, label, count = 0, children }: ShellNavItemProps) {
   const pathname = usePathname();
   const { actions, meta } = useShell();
   const isActive =
@@ -164,13 +166,18 @@ export function ShellNavItem({ href, label, children }: ShellNavItemProps) {
     <Link
       href={href}
       className="app-nav-item"
-      aria-label={label}
+      aria-label={count > 0 ? `${label}, ${count} việc đang chờ` : label}
       aria-current={isActive ? 'page' : undefined}
       title={label}
       onClick={actions.closeDrawer}
     >
       {children}
       <span className="when-expanded">{label}</span>
+      {count > 0 ? (
+        <span className="app-nav-count" aria-hidden>
+          {count > 99 ? '99+' : count}
+        </span>
+      ) : null}
     </Link>
   );
 }

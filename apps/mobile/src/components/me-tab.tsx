@@ -32,10 +32,12 @@ type Props = {
   /** Có khi app nối máy chủ và đã đăng nhập. Null là bản thử, dữ liệu chỉ trên máy. */
   account: { user: MobileProfile; sync: SyncControl } | null;
   onWithdrawConsent: () => void;
+  /** Quản lý và Lãnh đạo đơn vị có mục Cần duyệt (A10b). */
+  approvals: { pendingCount: number; onOpen: () => void } | null;
 };
 
 /** Tab Tôi (IA): thông tin, Hỗ trợ, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. */
-export function MeTab({ control, account, onWithdrawConsent }: Props) {
+export function MeTab({ control, account, onWithdrawConsent, approvals }: Props) {
   const { state, actions } = control;
   const [showTech, setShowTech] = useState(false);
 
@@ -79,6 +81,20 @@ export function MeTab({ control, account, onWithdrawConsent }: Props) {
           </>
         )}
       </View>
+
+      {approvals ? (
+        <View style={styles.card}>
+          <Text style={styles.section}>Cần duyệt</Text>
+          <Text style={styles.body}>
+            {approvals.pendingCount > 0
+              ? `${approvals.pendingCount} phiếu đang chờ bạn duyệt`
+              : 'Không có phiếu nào chờ bạn duyệt'}
+          </Text>
+          <View style={styles.actions}>
+            <Button label="Mở Cần duyệt" onPress={approvals.onOpen} variant="ghost" />
+          </View>
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <Text style={styles.section}>Hỗ trợ</Text>

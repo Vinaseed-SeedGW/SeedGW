@@ -140,10 +140,12 @@ export async function mobileScopedDb(user: MobileUser) {
   });
 }
 
-export function assertMobileCan(user: MobileUser, permission: PermissionCode): void {
-  if (!user.permissions.has(permission)) {
-    throw new DomainError('FORBIDDEN', 'Tài khoản chưa được cấp quyền check-in trên app');
-  }
+export function assertMobileCan(
+  user: MobileUser,
+  permission: PermissionCode,
+  message = 'Tài khoản chưa được cấp quyền check-in trên app',
+): void {
+  if (!user.permissions.has(permission)) throw new DomainError('FORBIDDEN', message);
 }
 
 const HTTP_STATUS: Record<ErrorCode, number> = {

@@ -32,6 +32,8 @@ model OrgUnit {
   checkIns                CheckIn[]
   dealers                 Dealer[]
   dealerLocationProposals DealerLocationProposal[]
+  approvalRequests        ApprovalRequest[]
+  monthlySalesTargets     MonthlySalesTarget[]
   createdAt               DateTime                 @default(now()) @map("created_at")
   updatedAt               DateTime                 @updatedAt @map("updated_at")
 
@@ -84,6 +86,12 @@ model User {
   locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
   locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
   consents               UserConsent[]
+  submittedApprovals     ApprovalRequest[]        @relation("approval_submitter")
+  pendingApprovals       ApprovalRequest[]        @relation("approval_current_approver")
+  managerApprovals       ApprovalRequest[]        @relation("approval_manager_approver")
+  leaderApprovals        ApprovalRequest[]        @relation("approval_leader_approver")
+  approvalActions        ApprovalAction[]         @relation("approval_actor")
+  monthlySalesTargets    MonthlySalesTarget[]
   createdAt              DateTime                 @default(now()) @map("created_at")
   updatedAt              DateTime                 @updatedAt @map("updated_at")
 
@@ -431,4 +439,119 @@ model UserConsent {
 
   @@unique([userId, kind, version])
   @@map("user_consents")
+}
+
+enum ApprovalKind {
+  ROUTE_PLAN
+  SALES_TARGET
+
+  @@map("approval_kind")
+}
+
+enum ApprovalStatus {
+  DRAFT
+  PENDING_MANAGER
+  PENDING_LEADER
+  RETURNED
+  APPROVED
+  WITHDRAWN
+
+  @@map("approval_status")
+}
+
+enum ApprovalActionType {
+  SUBMIT
+  APPROVE
+  RETURN
+  WITHDRAW
+  AUTO_PASS
+  SKIP_STEP
+  REASSIGN
+
+  @@map("approval_action_type")
+}
+
+enum ApprovalStep {
+  MANAGER
+  LEADER
+
+  @@map("approval_step")
+}
+
+// Ho so phe duyet dung chung cho Tuyen (S8) va Chi tieu thang (K3a) theo quyet dinh 31.
+model ApprovalRequest {
+  id                String           @id @default(uuid()) @db.Uuid
+  code              String           @unique
+  kind              ApprovalKind
+  subjectId         String           @map("subject_id") @db.Uuid
+  submittedById     String           @map("submitted_by_id") @db.Uuid
+  submittedBy       User             @relation("approval_submitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  orgUnitId         String?          @map("org_unit_id") @db.Uuid
+  orgUnit           OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  status            ApprovalStatus   @default(DRAFT)
+  currentApproverId String?          @map("current_approver_id") @db.Uuid
+  currentApprover   User?            @relation("approval_current_approver", fields: [currentApproverId], references: [id], onDelete: SetNull)
+  managerApproverId String?          @map("manager_approver_id") @db.Uuid
+  managerApprover   User?            @relation("approval_manager_approver", fields: [managerApproverId], references: [id], onDelete: SetNull)
+  leaderApproverId  String?          @map("leader_approver_id") @db.Uuid
+  leaderApprover    User?            @relation("approval_leader_approver", fields: [leaderApproverId], references: [id], onDelete: SetNull)
+  periodStart       DateTime         @map("period_start")
+  periodEnd         DateTime         @map("period_end")
+  periodLabel       String           @map("period_label")
+  summaryText       String           @default("") @map("summary_text")
+  isLate            Boolean          @default(false) @map("is_late")
+  submissionCount   Int              @default(0) @map("submission_count")
+  submittedAt       DateTime?        @map("submitted_at")
+  decidedAt         DateTime?        @map("decided_at")
+  actions           ApprovalAction[]
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@unique([kind, subjectId])
+  @@index([currentApproverId, status])
+  @@index([orgUnitId, status, submittedAt(sort: Desc)])
+  @@index([submittedById, kind, status])
+  @@map("approval_requests")
+}
+
+model ApprovalAction {
+  id        String             @id @default(uuid()) @db.Uuid
+  requestId String             @map("request_id") @db.Uuid
+  request   ApprovalRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actorId   String?            @map("actor_id") @db.Uuid
+  actor     User?              @relation("approval_actor", fields: [actorId], references: [id], onDelete: SetNull)
+  action    ApprovalActionType
+  step      ApprovalStep?
+  note      String             @default("")
+  snapshot  Json?
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  @@index([requestId, createdAt(sort: Asc)])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@map("approval_actions")
+}
+
+// Chi tieu thang tu dang ky cua NVKD (K3a), duyet qua luong A10b.
+model MonthlySalesTarget {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @map("user_id") @db.Uuid
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgUnitId            String?  @map("org_unit_id") @db.Uuid
+  orgUnit              OrgUnit? @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  month                String
+  visitCountTarget     Int      @map("visit_count_target")
+  dealerCoverageTarget Int      @map("dealer_coverage_target")
+  salesKgTarget        Float    @default(0) @map("sales_kg_target")
+  note                 String   @default("")
+  // Ban dang hieu luc. Sua chi tieu da duyet thi cac cot tren la ban de nghi, cot approved giu nguyen den khi duyet xong.
+  approvedVisitCount     Int?      @map("approved_visit_count")
+  approvedDealerCoverage Int?      @map("approved_dealer_coverage")
+  approvedSalesKg        Float?    @map("approved_sales_kg")
+  approvedAt             DateTime? @map("approved_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, month])
+  @@index([orgUnitId, month])
+  @@map("monthly_sales_targets")
 }
