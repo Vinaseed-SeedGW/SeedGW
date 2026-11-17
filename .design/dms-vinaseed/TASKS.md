@@ -93,7 +93,8 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 - [ ] **R4. Máy chủ tìm đường** (1,5 buổi): OSRM bản đồ Việt Nam chạy bằng Docker, khớp vết GPS vào đường; đo trên 3 tuyến có đồng hồ hành trình 0,1 km.
   - **Xong khi**: km theo đường đi lệch đồng hồ xe không quá 5% trên 3 tuyến.
 - [ ] **V1b. Khoảng cách theo đường đi** (1 buổi): điền cột Khoảng cách (km) trong báo cáo và Excel; đoạn mất vết nối bằng đường ngắn nhất, ghi "ước tính".
-- [ ] **M5. Cờ nghi vấn** (0,5 buổi): thêm tốc độ di chuyển phi lý giữa hai lượt, máy đã root hoặc jailbreak. Không chặn check-in.
+- [x] **M5. Cờ nghi vấn** (xong 18/11, kéo lên trước demo): thêm tốc độ di chuyển phi lý giữa hai lượt, máy đã root hoặc jailbreak. Không chặn check-in.
+  - Đã làm: cờ Di chuyển nhanh bất thường (đường chim bay giữa hai lượt liền nhau trong ngày, bỏ qua dưới 2 km, ngưỡng ở Tham số mặc định 120 km/h, tính lại cả ngày khi check-in tới muộn); cờ Máy đã root hoặc jailbreak (thư viện expo-device, cần APK mới, app cũ coi là không rõ), danh sách thiết bị ở Tài khoản hiện máy đã root. Không báo cho nhân viên trên app. Đã thử 7 bước trên máy chủ thử, đều đạt.
 - [ ] **A9b. Tham số check-in** (0,5 buổi): giờ tự dừng ghi hành trình, khoảng lọc điểm GPS, bán kính gộp chỗ dừng đưa vào trang Tham số.
 - [ ] **A7b. Hoàn thiện danh mục đại lý** (0,5 buổi): gộp đại lý trùng số điện thoại hoặc mã số thuế, chọn toạ độ trên bản đồ, sửa nhanh 2.578 số điện thoại sai dạng. Danh sách lâu chưa ghé thăm đã làm ở K0.
 - [ ] **S1. Khách hàng nông dân, hợp tác xã** (1,5 buổi): danh sách, hồ sơ, tạo, sửa; số điện thoại, cây trồng, diện tích, đại lý mua thường xuyên. Check-in loại Khách hàng chọn từ danh sách.
