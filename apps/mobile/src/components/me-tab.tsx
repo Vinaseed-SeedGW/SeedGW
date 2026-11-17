@@ -9,6 +9,7 @@ import {
   clearAllTestData,
   computeDayStats,
   countTaskErrorsSince,
+  getTrackingSettings,
   getTesterProfile,
   saveTesterProfile,
   type TesterProfile,
@@ -147,6 +148,7 @@ export function MeTab({ control, account, onWithdrawConsent, approvals }: Props)
 }
 
 function TechInfo() {
+  const tracking = getTrackingSettings();
   const dayStart = startOfVnDay(Date.now());
   const stats = computeDayStats(dayStart);
   return (
@@ -165,11 +167,11 @@ function TechInfo() {
       />
       <InfoRow label="Km theo GPS (đã lọc)" value={`${formatKm(stats.gpsDistanceM)} km`} />
       <InfoRow
-        label={`Chỗ đứng yên đã gộp (từ ${FILTER.stopMinSeconds / 60} phút trong ${FILTER.stopRadiusM} m)`}
+        label={`Chỗ đứng yên đã gộp (từ ${tracking.stopMinSeconds} giây trong ${tracking.stopRadiusM} m)`}
         value={String(stats.stopCount)}
       />
       <InfoRow
-        label={`Điểm sai số trên ${FILTER.maxAccuracyM} m`}
+        label={`Điểm sai số trên ${tracking.maxAccuracyM} m`}
         value={String(stats.poorAccuracyCount)}
       />
       <InfoRow label="Điểm từ ứng dụng giả lập vị trí" value={String(stats.mockedCount)} />
@@ -184,7 +186,7 @@ function TechInfo() {
       <InfoRow label="Lỗi khi chạy nền" value={String(countTaskErrorsSince(dayStart))} />
       <InfoRow
         label="Cách ghi"
-        value={`${TRACKING_CONFIG.timeIntervalMs / 1000} giây một lần, khi đã đi thêm ${TRACKING_CONFIG.distanceIntervalM} m. Tự dừng lúc ${TRACKING_CONFIG.autoStopHourVn}:00.`}
+        value={`${tracking.intervalSeconds} giây một lần, khi đã đi thêm ${TRACKING_CONFIG.distanceIntervalM} m. Tự dừng lúc ${tracking.autoStopHourVn}:00.`}
       />
     </View>
   );

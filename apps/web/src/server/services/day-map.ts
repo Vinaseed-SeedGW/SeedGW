@@ -13,8 +13,10 @@ import {
   segmentOf,
   type KeptPoint,
 } from '@dms/contracts/track-distance';
+import { trackFilterOf, trackingSettingsFrom } from '@dms/contracts/tracking-settings';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
+import { readSystemSettings } from './settings';
 
 const DAY_MS = 86_400_000;
 // Vết GPS thô giữ 45 ngày như ảnh (CHECK_IN_PLAN, thời gian lưu).
@@ -118,6 +120,7 @@ export async function readDayMap(
   ]);
 
   const starts = sessions.map((session) => session.startedAt.getTime());
+  const settings = await readSystemSettings();
   const track = filterTrack(
     points.map((point) => ({
       recordedAt: point.recordedAt.getTime(),
@@ -126,6 +129,7 @@ export async function readDayMap(
       accuracy: point.accuracyM,
       segment: segmentOf(starts, point.recordedAt.getTime()),
     })),
+    trackFilterOf(trackingSettingsFrom(settings.values)),
   );
   const { lines, gaps } = splitLines(track.kept);
   const first = track.kept[0];

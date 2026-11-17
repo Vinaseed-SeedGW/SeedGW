@@ -15,6 +15,16 @@ export function distanceMeters(a: GeoPoint, b: GeoPoint): number {
 // Dùng chung cho app và máy chủ để km trên app và trên báo cáo tính cùng một cách.
 
 /** Ngưỡng lọc theo CHECK_IN_PLAN §3.4. */
+export type TrackFilter = {
+  maxAccuracyM: number;
+  maxSpeedKmh: number;
+  gapMinutes: number;
+  gapMeters: number;
+  stopRadiusM: number;
+  stopMinSeconds: number;
+};
+
+/** Giá trị mặc định. Sai số, bán kính và thời gian gộp chỗ dừng sửa được ở Tham số (A9b). */
 export const FILTER = {
   maxAccuracyM: 50,
   maxSpeedKmh: 150,
@@ -22,7 +32,7 @@ export const FILTER = {
   gapMeters: 300,
   stopRadiusM: 40,
   stopMinSeconds: 60,
-} as const;
+} as const satisfies TrackFilter;
 
 export type RawPoint = {
   recordedAt: number;
@@ -56,10 +66,14 @@ type Base = Omit<KeptPoint, 'cumulativeM'>;
 
 /**
  * Gộp chỗ dừng: khi đứng yên, iPhone báo vị trí nhảy qua lại vài chục mét và mỗi lần nhảy
- * sinh thêm km giả. Chuỗi điểm nằm trong bán kính 40 m quanh điểm đầu, kéo dài từ 1 phút,
+ * sinh thêm km giả. Chuỗi điểm nằm trong bán kính (mặc định 40 m) quanh điểm đầu, kéo dài từ thời gian
+ * tối thiểu (mặc định 1 phút),
  * được thay bằng một điểm ở giữa, giữ thời điểm của điểm đầu.
  */
-function mergeStops(points: readonly Base[]): { merged: Base[]; stopCount: number } {
+function mergeStops(
+  points: readonly Base[],
+  filter: TrackFilter,
+): { merged: Base[]; stopCount: number } {
   const merged: Base[] = [];
   let stopCount = 0;
   let i = 0;
@@ -70,11 +84,11 @@ function mergeStops(points: readonly Base[]): { merged: Base[]; stopCount: numbe
     while (j + 1 < points.length) {
       const next = points[j + 1];
       if (!next || next.segment !== first.segment) break;
-      if (distanceMeters(first, next) > FILTER.stopRadiusM) break;
+      if (distanceMeters(first, next) > filter.stopRadiusM) break;
       j += 1;
     }
     const last = points[j];
-    if (j > i && last && (last.recordedAt - first.recordedAt) / 1000 >= FILTER.stopMinSeconds) {
+    if (j > i && last && (last.recordedAt - first.recordedAt) / 1000 >= filter.stopMinSeconds) {
       const group = points.slice(i, j + 1);
       merged.push({
         recordedAt: first.recordedAt,
@@ -93,11 +107,14 @@ function mergeStops(points: readonly Base[]): { merged: Base[]; stopCount: numbe
 }
 
 /** Lọc vết GPS một ngày theo thứ tự: bỏ điểm sai số lớn, gộp chỗ dừng, bỏ điểm nhảy quá nhanh. */
-export function filterTrack(points: readonly RawPoint[]): FilteredTrack {
+export function filterTrack(
+  points: readonly RawPoint[],
+  filter: TrackFilter = FILTER,
+): FilteredTrack {
   const accurate: Base[] = [];
   let poorAccuracyCount = 0;
   for (const point of points) {
-    if (point.accuracy === null || point.accuracy > FILTER.maxAccuracyM) {
+    if (point.accuracy === null || point.accuracy > filter.maxAccuracyM) {
       poorAccuracyCount += 1;
       continue;
     }
@@ -109,7 +126,7 @@ export function filterTrack(points: readonly RawPoint[]): FilteredTrack {
     });
   }
 
-  const { merged, stopCount } = mergeStops(accurate);
+  const { merged, stopCount } = mergeStops(accurate, filter);
 
   const kept: KeptPoint[] = [];
   let distanceM = 0;
@@ -122,13 +139,13 @@ export function filterTrack(points: readonly RawPoint[]): FilteredTrack {
       const meters = distanceMeters(previous, point);
       const seconds = (point.recordedAt - previous.recordedAt) / 1000;
       const speedKmh = seconds > 0 ? (meters / seconds) * 3.6 : Infinity;
-      if (speedKmh > FILTER.maxSpeedKmh) {
+      if (speedKmh > filter.maxSpeedKmh) {
         speedRejectedCount += 1;
         continue;
       }
       const gapMinutes = seconds / 60;
       // Đứng yên trong đại lý cũng không sinh điểm, nên chỉ tính là đứt khi đã đi xa mà không có điểm.
-      if (gapMinutes > FILTER.gapMinutes && meters > FILTER.gapMeters) {
+      if (gapMinutes > filter.gapMinutes && meters > filter.gapMeters) {
         gapCount += 1;
         longestGapMinutes = Math.max(longestGapMinutes, gapMinutes);
       }

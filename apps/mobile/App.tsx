@@ -14,6 +14,7 @@ import {
 import { logout } from './src/api/client';
 import { loadConsentState, recordConsent, type ConsentState } from './src/api/consent';
 import { loadCapabilities, type Capabilities } from './src/api/targets';
+import { refreshTrackingSettings } from './src/api/tracking-settings';
 import type { DealerChoice } from './src/api/dealers';
 import { ConsentScreen } from './src/components/consent-screen';
 import { stopTracking } from './src/sync/background-tracking';
@@ -81,6 +82,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     if (!session || overlay !== null) return;
     let cancelled = false;
+    void refreshTrackingSettings();
     void loadCapabilities().then((value) => {
       if (!cancelled && value) setCapabilities(value);
     });

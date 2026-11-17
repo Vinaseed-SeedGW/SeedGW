@@ -101,13 +101,61 @@ const ROUTE_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
+// A9b (18/11/2026): áp cho lần tính km từ lúc đổi trở đi, không tính lại các ngày cũ.
+const TRACKING_SETTINGS = [
+  {
+    key: 'trackingAutoStopHour',
+    label: 'Giờ tự dừng ghi hành trình (giờ Việt Nam)',
+    min: 12,
+    max: 23,
+    defaultValue: 20,
+    hint: 'Sau giờ này app không ghi vị trí nữa. App nhận giờ mới khi mở app có mạng.',
+  },
+  {
+    key: 'trackingIntervalSeconds',
+    label: 'Chu kỳ ghi vị trí (giây)',
+    min: 5,
+    max: 60,
+    defaultValue: 5,
+    hint: 'Tăng lên thì đỡ tốn pin nhưng vết đi ở đường vòng thô hơn, km theo GPS có thể thấp hơn một chút. App áp từ lần bắt đầu ghi tiếp theo.',
+  },
+  {
+    key: 'gpsMaxAccuracyM',
+    label: 'Bỏ điểm GPS có sai số lớn hơn (m)',
+    min: 10,
+    max: 200,
+    defaultValue: 50,
+  },
+  {
+    key: 'gpsStopRadiusM',
+    label: 'Bán kính gộp chỗ đứng yên (m)',
+    min: 10,
+    max: 200,
+    defaultValue: 40,
+    hint: 'Đứng yên thì GPS nhảy qua lại vài chục mét; các điểm trong bán kính này được gộp thành một để không cộng km giả.',
+  },
+  {
+    key: 'gpsStopMinSeconds',
+    label: 'Thời gian đứng yên tối thiểu để gộp (giây)',
+    min: 30,
+    max: 600,
+    defaultValue: 60,
+  },
+] as const satisfies readonly SettingDefinition[];
+
 export const SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
   { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
+  { title: 'Ghi hành trình và km theo GPS', settings: TRACKING_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
-const ALL_SETTINGS = [...SALES_SETTINGS, ...ROUTE_SETTINGS, ...FAST_SYNC_SETTINGS];
+const ALL_SETTINGS = [
+  ...SALES_SETTINGS,
+  ...ROUTE_SETTINGS,
+  ...TRACKING_SETTINGS,
+  ...FAST_SYNC_SETTINGS,
+];
 
 export type SettingKey = (typeof ALL_SETTINGS)[number]['key'];
 export type SystemSettings = Record<SettingKey, number>;

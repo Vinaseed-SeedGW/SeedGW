@@ -24,8 +24,13 @@ import {
 } from '../api/reverse-geocode';
 import { distanceMeters, type GeoPoint } from '../sync/geo';
 import { syncNow } from '../sync/sync-queue';
-import { deleteDraftPhoto, insertPhoto, updatePhotoPlace, type PlaceKind } from '../sync/track-db';
-import { FILTER } from '@dms/contracts/track-distance';
+import {
+  deleteDraftPhoto,
+  insertPhoto,
+  updatePhotoPlace,
+  type PlaceKind,
+  getTrackingSettings,
+} from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { serverEnabled } from '../api/session';
@@ -176,7 +181,7 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
         accuracy: location.coords.accuracy,
       }
     : null;
-  const imprecise = (location?.coords.accuracy ?? Infinity) > FILTER.maxAccuracyM;
+  const imprecise = (location?.coords.accuracy ?? Infinity) > getTrackingSettings().maxAccuracyM;
   const liveAddress = useLiveAddress(stripLocation, !imprecise);
 
   async function capture() {

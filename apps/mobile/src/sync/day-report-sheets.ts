@@ -1,5 +1,6 @@
 import { formatCoord, formatVnDate, formatVnTime } from './geo';
 import { cumulativeAt, FILTER, type FilteredTrack } from '@dms/contracts/track-distance';
+import { getTrackingSettings } from './track-db';
 import type { PhotoRecord, PlaceKind, SessionRow, TesterProfile, TrackPoint } from './track-db';
 import {
   base64ToBytes,
@@ -165,10 +166,11 @@ function reportSheet(
   }
 
   rows.push({ cells: [] });
+  const tracking = getTrackingSettings();
   for (const note of [
     'Ghi chú cách tính:',
     'Khoảng cách theo GPS là quãng đường từ lượt check-in trước tới lượt này. Lượt đầu ngày bằng 0, giống mẫu cũ.',
-    `Đã bỏ điểm GPS sai số trên ${FILTER.maxAccuracyM} m và gộp chỗ đứng yên từ ${FILTER.stopMinSeconds / 60} phút trong bán kính ${FILTER.stopRadiusM} m thành một điểm, để không cộng km giả khi đứng yên.`,
+    `Đã bỏ điểm GPS sai số trên ${tracking.maxAccuracyM} m và gộp chỗ đứng yên từ ${tracking.stopMinSeconds} giây trong bán kính ${tracking.stopRadiusM} m thành một điểm, để không cộng km giả khi đứng yên.`,
     'Cột Khoảng cách (km) theo đường đi thực tế sẽ có khi nối máy chủ bản đồ (task R4, V1). Bản thử chỉ có km theo GPS.',
     'Địa chỉ lấy từ bản đồ Vietmap theo toạ độ lúc chụp. Chữ "Gần" nghĩa là số nhà gần nhất cách chỗ chụp hơn 100 m.',
   ]) {
@@ -209,7 +211,7 @@ function summarySheet(input: DayReportInput, legMeters: Legs): Sheet {
     ]),
     ['Số điểm GPS', points.length],
     ['Điểm ghi khi app chạy nền', background],
-    [`Điểm sai số trên ${FILTER.maxAccuracyM} m (đã bỏ)`, track.poorAccuracyCount],
+    [`Điểm sai số trên ${getTrackingSettings().maxAccuracyM} m (đã bỏ)`, track.poorAccuracyCount],
     ['Chỗ đứng yên đã gộp', track.stopCount],
     [`Đoạn đứt (quá ${FILTER.gapMinutes} phút và quá ${FILTER.gapMeters} m)`, track.gapCount],
     ['Điểm từ ứng dụng giả lập vị trí', mocked],

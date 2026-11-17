@@ -6,7 +6,6 @@ import {
   isTracking,
   startTracking,
   stopTracking,
-  TRACKING_CONFIG,
   type StartResult,
 } from '../sync/background-tracking';
 import { getConsentAt, getLastPointAt } from '../sync/track-db';
@@ -40,7 +39,7 @@ const START_ERRORS: Record<Exclude<StartResult, { ok: true }>['reason'], string>
     Platform.OS === 'ios'
       ? 'Cần quyền vị trí Luôn luôn để ghi hành trình khi app chạy nền. Mở Cài đặt, chọn Vị trí, chọn Luôn luôn.'
       : 'Cần quyền vị trí Luôn cho phép để ghi hành trình khi app chạy nền. Mở Cài đặt, chọn Quyền, Vị trí, Luôn cho phép.',
-  AFTER_CUTOFF: `Đã quá ${TRACKING_CONFIG.autoStopHourVn}:00, app không ghi hành trình sau giờ này.`,
+  AFTER_CUTOFF: 'Đã quá giờ tự dừng trong Tham số, app không ghi hành trình sau giờ này.',
 };
 
 function ask(title: string, message: string, confirmLabel: string): Promise<boolean> {

@@ -1,5 +1,6 @@
 import 'server-only';
 import { speedFlaggedIds } from '@dms/contracts/check-in-speed';
+import { trackFilterOf, trackingSettingsFrom } from '@dms/contracts/tracking-settings';
 import {
   CLOCK_SKEW_FLAG_MINUTES,
   type CheckInFlag,
@@ -323,6 +324,7 @@ export async function recomputeDayDistances(userId: string, day: string): Promis
       accuracy: point.accuracyM,
       segment: segmentOf(starts, point.recordedAt.getTime()),
     })),
+    trackFilterOf(trackingSettingsFrom(settings.values)),
   );
 
   const updates = [];

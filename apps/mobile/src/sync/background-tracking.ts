@@ -7,6 +7,7 @@ import { syncNow } from './sync-queue';
 import {
   closeSession,
   getConsentAt,
+  getTrackingSettings,
   insertTrackPoints,
   openSession,
   recordTaskError,
@@ -15,12 +16,10 @@ import {
 
 export const TRACKING_TASK = 'dms-ghi-hanh-trinh';
 
-// Số liệu theo CHECK_IN_PLAN §3.1, §3.5. Bản chính thức đọc từ Tham số (A9).
+// Số liệu cố định theo CHECK_IN_PLAN §3.1, §3.5. Chu kỳ ghi và giờ tự dừng lấy từ Tham số (A9b).
 export const TRACKING_CONFIG = {
-  timeIntervalMs: 5_000,
   distanceIntervalM: 10,
   batchIntervalMs: 30_000,
-  autoStopHourVn: 20,
 } as const;
 
 type TaskData = { locations?: Location.LocationObject[] };
@@ -36,12 +35,12 @@ TaskManager.defineTask<TaskData>(TRACKING_TASK, async ({ data, error }) => {
   const locations = data.locations ?? [];
   try {
     const beforeCutoff = locations.filter(
-      (l) => vnHour(l.timestamp) < TRACKING_CONFIG.autoStopHourVn,
+      (l) => vnHour(l.timestamp) < getTrackingSettings().autoStopHourVn,
     );
     insertTrackPoints(beforeCutoff, AppState.currentState ?? null);
     if (
       beforeCutoff.length < locations.length ||
-      vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn
+      vnHour(Date.now()) >= getTrackingSettings().autoStopHourVn
     ) {
       await stopTracking('AUTO_CUTOFF');
     }
@@ -66,7 +65,7 @@ export async function isTracking(): Promise<boolean> {
 
 export async function startTracking(): Promise<StartResult> {
   if (getConsentAt() === null) return { ok: false, reason: 'NO_CONSENT' };
-  if (vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn)
+  if (vnHour(Date.now()) >= getTrackingSettings().autoStopHourVn)
     return { ok: false, reason: 'AFTER_CUTOFF' };
   if (!(await Location.hasServicesEnabledAsync())) return { ok: false, reason: 'SERVICES_OFF' };
 
@@ -79,7 +78,8 @@ export async function startTracking(): Promise<StartResult> {
     await Location.startLocationUpdatesAsync(TRACKING_TASK, {
       // Không dùng mức chính xác cao nhất để đỡ hao pin (CHECK_IN_PLAN §8).
       accuracy: Location.Accuracy.High,
-      timeInterval: TRACKING_CONFIG.timeIntervalMs,
+      // Chu kỳ lấy từ Tham số lúc bắt đầu ghi; đổi giữa chừng thì áp từ lần ghi sau (A9b).
+      timeInterval: getTrackingSettings().intervalSeconds * 1000,
       distanceInterval: TRACKING_CONFIG.distanceIntervalM,
       deferredUpdatesInterval: TRACKING_CONFIG.batchIntervalMs,
       pausesUpdatesAutomatically: false,
@@ -104,7 +104,7 @@ export async function stopTracking(reason: SessionEndReason): Promise<void> {
 
 /** Gọi mỗi lần mở app: đứng yên sau giờ dừng thì không có điểm mới để task tự dừng. */
 export async function enforceAutoStop(): Promise<void> {
-  if (vnHour(Date.now()) >= TRACKING_CONFIG.autoStopHourVn && (await isTracking())) {
+  if (vnHour(Date.now()) >= getTrackingSettings().autoStopHourVn && (await isTracking())) {
     await stopTracking('AUTO_CUTOFF');
   }
 }

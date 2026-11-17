@@ -3,6 +3,12 @@ import type { LocationObject } from 'expo-location';
 import { newId } from '../api/session';
 import { LOCATION_CONSENT_VERSION } from '@dms/contracts/consents';
 import {
+  DEFAULT_TRACKING_SETTINGS,
+  mobileTrackingSettings,
+  trackFilterOf,
+  type MobileTrackingSettings,
+} from '@dms/contracts/tracking-settings';
+import {
   filterTrack,
   segmentOf,
   type FilteredTrack,
@@ -479,7 +485,7 @@ export function readDayTrack(dayStart: number): DayTrack {
     accuracy: p.accuracy,
     segment: segmentOf(starts, p.recorded_at),
   }));
-  return { sessions, track: filterTrack(raw), points };
+  return { sessions, track: filterTrack(raw, trackFilterOf(getTrackingSettings())), points };
 }
 
 export function computeDayStats(dayStart: number): DayStats {
@@ -675,4 +681,23 @@ export function saveRouteDraft(periodKey: string, json: string): void {
 
 export function clearRouteDraft(periodKey: string): void {
   getDb().runSync('DELETE FROM meta WHERE key = ?', `route_draft:${periodKey}`);
+}
+
+/**
+ * Tham số ghi hành trình lấy từ máy chủ lần gần nhất (A9b). Chưa lấy được lần nào hoặc dữ liệu hỏng thì dùng
+ * giá trị mặc định, trùng với mặc định ở trang Tham số.
+ */
+export function getTrackingSettings(): MobileTrackingSettings {
+  const raw = getMeta('tracking_settings');
+  if (!raw) return DEFAULT_TRACKING_SETTINGS;
+  try {
+    const parsed = mobileTrackingSettings.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : DEFAULT_TRACKING_SETTINGS;
+  } catch {
+    return DEFAULT_TRACKING_SETTINGS;
+  }
+}
+
+export function saveTrackingSettings(settings: MobileTrackingSettings): void {
+  setMeta('tracking_settings', JSON.stringify(settings));
 }
