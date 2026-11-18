@@ -22,6 +22,10 @@ import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
 import { RoutesScreen } from './src/components/routes-screen';
+import { SupportScreen, type SupportPrefill } from './src/components/support-screen';
+import { readSupportBadge } from './src/api/support';
+import { countPendingSupport } from './src/sync/support-outbox';
+import { rememberScreen } from './src/sync/support-screenshot';
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
 import { MeTab } from './src/components/me-tab';
@@ -75,7 +79,11 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
   // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
-  const [overlay, setOverlay] = useState<'targets' | 'approvals' | 'routes' | null>(null);
+  const [overlay, setOverlay] = useState<'targets' | 'approvals' | 'routes' | 'support' | null>(
+    null,
+  );
+  const [supportPrefill, setSupportPrefill] = useState<SupportPrefill | null>(null);
+  const [supportUnread, setSupportUnread] = useState(0);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -90,6 +98,22 @@ function Main({ signedIn }: { signedIn: boolean }) {
       cancelled = true;
     };
   }, [session, overlay, tab]);
+
+  // Số đỏ Hỗ trợ: hỏi khi mở app và mỗi 60 giây khi app đang mở (chưa có thông báo đẩy M7).
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    const load = () =>
+      void readSupportBadge().then((count) => {
+        if (!cancelled && count !== null) setSupportUnread(count);
+      });
+    load();
+    const timer = setInterval(load, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [session, overlay]);
 
   useEffect(() => {
     let cancelled = false;
@@ -156,8 +180,31 @@ function Main({ signedIn }: { signedIn: boolean }) {
   }
 
   const account = session ? { user: session.user, sync } : null;
+
+  // Chụp màn hình tab đang xem trước khi sang tab Tôi, để đính kèm khi báo lỗi (người dùng chọn mới gửi).
+  function changeTab(next: TabKey) {
+    if (next === 'me' && tab !== 'me' && account) {
+      const label = TABS.find((item) => item.key === tab)?.label ?? '';
+      void rememberScreen(label).finally(() => setTab(next));
+      return;
+    }
+    setTab(next);
+  }
+
+  function reportProblem(detail: string) {
+    void rememberScreen('Hôm nay').then((screenshot) => {
+      setSupportPrefill({
+        title: 'Lỗi gửi dữ liệu check-in',
+        body: detail,
+        context: { screen: 'Hôm nay' },
+        screenshot,
+      });
+      setOverlay('support');
+    });
+  }
   const closeOverlay = () => {
     setOverlay(null);
+    setSupportPrefill(null);
     setRefreshKey((value) => value + 1);
   };
   if (overlay && account) {
@@ -167,6 +214,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
         {overlay === 'targets' ? <TargetsScreen onClose={closeOverlay} /> : null}
         {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
         {overlay === 'routes' ? <RoutesScreen onClose={closeOverlay} /> : null}
+        {overlay === 'support' ? (
+          <SupportScreen onClose={closeOverlay} prefill={supportPrefill} />
+        ) : null}
       </View>
     );
   }
@@ -182,6 +232,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
             onPickDealer={openCamera}
             onOpenRoute={account ? () => setTab('route') : null}
             onOpenTargets={account ? () => setOverlay('targets') : null}
+            onReportProblem={account ? reportProblem : null}
             refreshKey={refreshKey}
           />
         ) : null}
@@ -210,15 +261,29 @@ function Main({ signedIn }: { signedIn: boolean }) {
                   }
                 : null
             }
+            support={
+              account
+                ? {
+                    unreadCount: supportUnread,
+                    pendingCount: countPendingSupport(),
+                    onOpen: () => setOverlay('support'),
+                  }
+                : null
+            }
           />
         ) : null}
       </View>
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar active={tab} onChange={changeTab} badges={{ me: supportUnread }} />
     </View>
   );
 }
 
-const OVERLAY_TITLE = { targets: 'Chỉ tiêu', approvals: 'Cần duyệt', routes: 'Tuyến' } as const;
+const OVERLAY_TITLE = {
+  targets: 'Chỉ tiêu',
+  approvals: 'Cần duyệt',
+  routes: 'Tuyến',
+  support: 'Hỗ trợ',
+} as const;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.surface },

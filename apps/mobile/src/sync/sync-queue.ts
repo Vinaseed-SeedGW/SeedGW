@@ -13,6 +13,7 @@ import {
 } from './track-db';
 import { base64ToBytes } from './xlsx';
 import { getDeviceIntegrity } from './device-integrity';
+import { syncSupportOutbox } from './support-outbox';
 
 // Gửi dữ liệu trên máy lên máy chủ. Mọi thứ đã lưu SQLite trước, nên mất mạng chỉ làm chậm, không mất (M3).
 const MAX_POINT_BATCHES_PER_RUN = 20;
@@ -146,6 +147,7 @@ async function runSync(): Promise<SyncReport> {
   const points = await syncPoints();
   report.sentPoints = points.sent;
   report.error = points.error ?? consentError;
+  await syncSupportOutbox().catch(() => null);
   return report;
 }
 

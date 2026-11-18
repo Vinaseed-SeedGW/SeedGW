@@ -188,6 +188,27 @@ function Input({ className, ...props }: ComponentProps<'input'>) {
   );
 }
 
+function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
+  const field = use(FieldContext);
+  if (!field) throw new Error('Form.Textarea phai nam trong Form.Field.');
+  const { register } = useFormContext();
+
+  return (
+    <textarea
+      {...props}
+      {...register(field.name)}
+      id={field.inputId}
+      aria-invalid={field.hasError}
+      aria-describedby={field.messageId}
+      className={cn(
+        'min-h-28 w-full rounded-md border bg-surface px-2.5 py-2',
+        field.hasError ? 'border-danger' : 'border-input',
+        className,
+      )}
+    />
+  );
+}
+
 function DateField() {
   const field = use(FieldContext);
   if (!field) throw new Error('Form.DateInput phai nam trong Form.Field.');
@@ -359,6 +380,7 @@ export const Form = {
   Root,
   Field,
   Input,
+  Textarea,
   DateInput: DateField,
   Select,
   ChoiceSelect,

@@ -15,6 +15,9 @@ const SECRET_KEY = process.env.S3_SECRET_KEY || process.env.MINIO_ROOT_PASSWORD 
 /** Ảnh check-in tự xoá sau 45 ngày (DESIGN_BRIEF quyết định 22). */
 export const CHECK_IN_PHOTO_PREFIX = 'check-ins/';
 export const CHECK_IN_PHOTO_RETENTION_DAYS = 45;
+/** Tệp đính kèm yêu cầu hỗ trợ lưu 18 tháng (T5), worker xoá dòng dữ liệu cùng lúc. */
+export const SUPPORT_FILE_PREFIX = 'support/';
+export const SUPPORT_FILE_RETENTION_DAYS = 548;
 
 const sha256Hex = (data: string | Buffer) => createHash('sha256').update(data).digest('hex');
 const hmac = (key: Buffer | string, data: string) =>
@@ -113,7 +116,7 @@ async function s3Request(
 
 let bucketReady: Promise<void> | null = null;
 
-/** Tạo bucket nếu chưa có và đặt luật tự xoá ảnh check-in sau 45 ngày. Chạy một lần mỗi tiến trình. */
+/** Tạo bucket nếu chưa có, đặt luật tự xoá ảnh check-in sau 45 ngày và tệp hỗ trợ sau 18 tháng. Chạy một lần mỗi tiến trình. */
 export function ensureBucket(): Promise<void> {
   bucketReady ??= (async () => {
     const created = await s3Request('PUT', objectPath());
@@ -123,7 +126,10 @@ export function ensureBucket(): Promise<void> {
     const lifecycle =
       '<LifecycleConfiguration><Rule><ID>check-in-photos</ID><Status>Enabled</Status>' +
       `<Filter><Prefix>${CHECK_IN_PHOTO_PREFIX}</Prefix></Filter>` +
-      `<Expiration><Days>${CHECK_IN_PHOTO_RETENTION_DAYS}</Days></Expiration></Rule></LifecycleConfiguration>`;
+      `<Expiration><Days>${CHECK_IN_PHOTO_RETENTION_DAYS}</Days></Expiration></Rule>` +
+      '<Rule><ID>support-files</ID><Status>Enabled</Status>' +
+      `<Filter><Prefix>${SUPPORT_FILE_PREFIX}</Prefix></Filter>` +
+      `<Expiration><Days>${SUPPORT_FILE_RETENTION_DAYS}</Days></Expiration></Rule></LifecycleConfiguration>`;
     const body = Buffer.from(lifecycle);
     const response = await s3Request('PUT', objectPath(), {
       query: { lifecycle: '' },

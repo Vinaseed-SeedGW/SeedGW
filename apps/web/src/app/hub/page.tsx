@@ -43,6 +43,23 @@ export default async function HubPage() {
         })}
       </div>
 
+      {summary.supportOverdue !== null ? (
+        <Link
+          href="/quan-tri/ho-tro?xem=dang-mo&han=qua-han"
+          className={`mt-4 flex flex-wrap items-baseline gap-2 rounded-md border p-4 hover:border-brand ${
+            summary.supportOverdue > 0 ? 'border-danger bg-danger-soft' : 'border-border bg-surface'
+          }`}
+        >
+          <span className="text-2xl font-bold">{summary.supportOverdue}</span>
+          <span className="font-bold">yêu cầu hỗ trợ quá hạn</span>
+          <span className="text-sm text-text-muted">
+            {summary.supportOverdue > 0
+              ? 'Quá hạn phản hồi đầu hoặc hạn xử lý theo Tham số. Bấm để xem.'
+              : 'Không có yêu cầu nào quá hạn.'}
+          </span>
+        </Link>
+      ) : null}
+
       {summary.departments.length === 0 ? (
         <p className="mt-5 text-text-muted">
           Tài khoản của bạn chưa được cấp quyền vào bộ phận nào. Vui lòng liên hệ quản trị hệ thống.

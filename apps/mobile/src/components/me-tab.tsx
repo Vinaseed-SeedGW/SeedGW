@@ -35,10 +35,12 @@ type Props = {
   onWithdrawConsent: () => void;
   /** Quản lý và Lãnh đạo đơn vị có mục Cần duyệt (A10b). */
   approvals: { pendingCount: number; onOpen: () => void } | null;
+  /** Màn hình Hỗ trợ (T3); null ở bản thử chưa nối máy chủ. */
+  support: { unreadCount: number; pendingCount: number; onOpen: () => void } | null;
 };
 
 /** Tab Tôi (IA): thông tin, Hỗ trợ, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. */
-export function MeTab({ control, account, onWithdrawConsent, approvals }: Props) {
+export function MeTab({ control, account, onWithdrawConsent, approvals, support }: Props) {
   const { state, actions } = control;
   const [showTech, setShowTech] = useState(false);
 
@@ -99,10 +101,28 @@ export function MeTab({ control, account, onWithdrawConsent, approvals }: Props)
 
       <View style={styles.card}>
         <Text style={styles.section}>Hỗ trợ</Text>
-        <Text style={styles.body}>
-          Gặp vướng mắc khi dùng app, liên hệ Phòng ĐMST&CĐS theo email hoặc số điện thoại ở cuối
-          trang. Màn hình gửi yêu cầu hỗ trợ ngay trong app sẽ có ở bản sau.
-        </Text>
+        {support ? (
+          <>
+            <Text style={styles.body}>
+              {support.unreadCount > 0
+                ? `${support.unreadCount} yêu cầu có trả lời mới`
+                : 'Hỏi đáp, báo lỗi, góp ý gửi tới Quản trị đơn vị của bạn.'}
+            </Text>
+            {support.pendingCount > 0 ? (
+              <Text style={styles.muted}>
+                {support.pendingCount} mục đang chờ gửi, có mạng app tự gửi.
+              </Text>
+            ) : null}
+            <View style={styles.actions}>
+              <Button label="Mở Hỗ trợ" onPress={support.onOpen} variant="ghost" />
+            </View>
+          </>
+        ) : (
+          <Text style={styles.body}>
+            Bản thử chưa nối máy chủ: gặp vướng mắc thì liên hệ Phòng ĐMST&CĐS theo email hoặc số
+            điện thoại ở cuối trang.
+          </Text>
+        )}
       </View>
 
       <View style={styles.card}>

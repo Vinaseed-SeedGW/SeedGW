@@ -11,10 +11,12 @@ import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 import { SupportLauncher } from '@/features/support/components/support-launcher';
 import { requireDepartmentAccess } from '@/server/auth/can';
 import { getPendingApprovalCount } from '@/server/queries/approvals';
+import { getSupportPendingCount } from '@/server/queries/support';
 
 // Mục có số việc đang chờ cạnh tên (A10b).
 const NAV_COUNTS: Partial<Record<string, () => Promise<number>>> = {
   '/kinh-doanh/can-duyet': getPendingApprovalCount,
+  '/quan-tri/ho-tro': getSupportPendingCount,
 };
 
 type DepartmentLayoutProps = {

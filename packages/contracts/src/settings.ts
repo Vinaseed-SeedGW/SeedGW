@@ -143,10 +143,88 @@ const TRACKING_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
+// T4 (18/11/2026): thời hạn yêu cầu hỗ trợ tính theo giờ làm việc; Hỏi đáp, Góp ý tính như mức Nhẹ.
+const SUPPORT_SETTINGS = [
+  {
+    key: 'supportWorkStartHour',
+    label: 'Giờ bắt đầu làm việc',
+    min: 5,
+    max: 12,
+    defaultValue: 8,
+    hint: 'Thời hạn xử lý yêu cầu hỗ trợ chỉ đếm trong giờ làm việc.',
+  },
+  {
+    key: 'supportWorkEndHour',
+    label: 'Giờ kết thúc làm việc',
+    min: 13,
+    max: 22,
+    defaultValue: 17,
+  },
+  {
+    key: 'supportWorkDaysPerWeek',
+    label: 'Số ngày làm việc trong tuần (5 hoặc 6)',
+    min: 5,
+    max: 6,
+    defaultValue: 5,
+    hint: '5 là thứ Hai tới thứ Sáu, 6 là thêm thứ Bảy.',
+  },
+  {
+    key: 'supportFirstResponseHoursBlocker',
+    label: 'Báo lỗi chặn công việc: phản hồi đầu trong (giờ làm việc)',
+    min: 1,
+    max: 72,
+    defaultValue: 1,
+  },
+  {
+    key: 'supportResolveHoursBlocker',
+    label: 'Báo lỗi chặn công việc: xử lý xong trong (giờ làm việc)',
+    min: 1,
+    max: 200,
+    defaultValue: 4,
+    hint: 'Quá hạn thì báo vào Mattermost khi đã cấu hình kênh.',
+  },
+  {
+    key: 'supportFirstResponseHoursMajor',
+    label: 'Báo lỗi ảnh hưởng: phản hồi đầu trong (giờ làm việc)',
+    min: 1,
+    max: 72,
+    defaultValue: 4,
+  },
+  {
+    key: 'supportResolveHoursMajor',
+    label: 'Báo lỗi ảnh hưởng: xử lý xong trong (giờ làm việc)',
+    min: 1,
+    max: 200,
+    defaultValue: 18,
+  },
+  {
+    key: 'supportFirstResponseHoursMinor',
+    label: 'Lỗi nhẹ, Hỏi đáp, Góp ý: phản hồi đầu trong (giờ làm việc)',
+    min: 1,
+    max: 72,
+    defaultValue: 9,
+  },
+  {
+    key: 'supportResolveHoursMinor',
+    label: 'Lỗi nhẹ, Hỏi đáp, Góp ý: xử lý xong trong (giờ làm việc)',
+    min: 1,
+    max: 200,
+    defaultValue: 45,
+  },
+  {
+    key: 'supportDueSoonPercent',
+    label: 'Báo sắp quá hạn khi còn lại (% thời hạn)',
+    min: 5,
+    max: 75,
+    defaultValue: 25,
+  },
+] as const satisfies readonly SettingDefinition[];
+
 export const SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
   { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
   { title: 'Ghi hành trình và km theo GPS', settings: TRACKING_SETTINGS },
+  { title: 'Thời hạn xử lý yêu cầu hỗ trợ', settings: SUPPORT_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
@@ -154,6 +232,7 @@ const ALL_SETTINGS = [
   ...SALES_SETTINGS,
   ...ROUTE_SETTINGS,
   ...TRACKING_SETTINGS,
+  ...SUPPORT_SETTINGS,
   ...FAST_SYNC_SETTINGS,
 ];
 

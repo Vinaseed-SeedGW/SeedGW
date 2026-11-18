@@ -79,6 +79,8 @@ type Props = {
   onOpenRoute: (() => void) | null;
   /** Có khi đã đăng nhập máy chủ: mở màn Chỉ tiêu của tôi (K3a). */
   onOpenTargets: (() => void) | null;
+  /** Mở Hỗ trợ điền sẵn báo lỗi gửi dữ liệu (T3). */
+  onReportProblem: ((detail: string) => void) | null;
   refreshKey: number;
 };
 
@@ -90,6 +92,7 @@ export function TodayTab({
   onPickDealer,
   onOpenRoute,
   onOpenTargets,
+  onReportProblem,
   refreshKey,
 }: Props) {
   const { state, actions } = control;
@@ -205,9 +208,28 @@ export function TodayTab({
                 : `Chờ gửi: ${pending.checkIns} check-in, ${pending.points} điểm GPS`}
           </Text>
           {pending.failedCheckIns > 0 ? (
-            <Text style={styles.error}>
-              {pending.failedCheckIns} check-in máy chủ không nhận. Báo Phòng ĐMST&CĐS để kiểm tra.
-            </Text>
+            <Text style={styles.error}>{pending.failedCheckIns} check-in máy chủ không nhận.</Text>
+          ) : null}
+          {onReportProblem && (pending.failedCheckIns > 0 || sync.state.lastError) ? (
+            <View style={styles.actions}>
+              <Button
+                label="Báo lỗi này"
+                variant="ghost"
+                onPress={() =>
+                  onReportProblem(
+                    [
+                      pending.failedCheckIns > 0
+                        ? `${pending.failedCheckIns} check-in máy chủ không nhận.`
+                        : '',
+                      sync.state.lastError ? `Lần gửi gần nhất: ${sync.state.lastError}` : '',
+                      `Chờ gửi: ${pending.checkIns} check-in, ${pending.points} điểm GPS.`,
+                    ]
+                      .filter(Boolean)
+                      .join(' '),
+                  )
+                }
+              />
+            </View>
           ) : null}
           {sync.state.lastError ? (
             <Text style={styles.muted}>Lần gửi gần nhất: {sync.state.lastError}</Text>
