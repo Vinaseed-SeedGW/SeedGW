@@ -66,7 +66,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 
 - **Quản trị** `/quan-tri` (Quản trị đơn vị vào Hỗ trợ, Quản trị hệ thống vào Tài khoản)
   - Tiếp nhận
-    - Hỗ trợ `/quan-tri/ho-tro`, chi tiết: `/quan-tri/ho-tro/[ma]`
+    - Hỗ trợ `/quan-tri/ho-tro` (nhóm `?xem=can-xu-ly|toi-nhan|dang-mo|tat-ca`, lọc `?trang-thai= ?loai= ?muc-do= ?cap=don-vi|he-thong ?han=qua-han ?q=`), chi tiết: `/quan-tri/ho-tro/[ma]` (danh sách bên trái từ 1024 px), Thống kê `/quan-tri/ho-tro/thong-ke?ky=30-ngay|90-ngay|12-thang` (T1 tới T5, 18/11/2026)
   - Người dùng
     - Tài khoản `/quan-tri/tai-khoan`, chi tiết: `/quan-tri/tai-khoan/[id]`
     - Vai trò và quyền `/quan-tri/vai-tro`
