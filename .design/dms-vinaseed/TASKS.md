@@ -91,6 +91,7 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 ## Giai đoạn 2: Hoàn thiện check-in và thị trường (30/11 đến 14/12/2026)
 
 - [ ] **R4. Máy chủ tìm đường** (1,5 buổi): OSRM bản đồ Việt Nam chạy bằng Docker, khớp vết GPS vào đường; đo trên 3 tuyến có đồng hồ hành trình 0,1 km.
+  - Đã làm 18/11: OSRM 5.27.1 trong máy chủ thử (chỉ mạng nội bộ Docker), bản đồ Geofabrik Việt Nam, cách tính đường xe máy (`deploy/osrm/motorbike.lua`, không đi cao tốc, cho đi đường đất), lệnh xử lý bản đồ hằng tháng `deploy/osrm/prepare.sh`, lớp `RoadDistanceProvider` (OSRM, có thể đổi sang Vietmap). Đo trên vết có sẵn: 12/11 theo đường 36,66 km, lệch 1,8% so với đồng hồ 36 km (km GPS lệch 2,7%); 16/11 theo đường 15,11 km, GPS 15,13 km. Còn: đo 3 tuyến Đường lớn, Phố cổ, Ngõ nhỏ có ảnh đồng hồ xe rồi chốt.
   - **Xong khi**: km theo đường đi lệch đồng hồ xe không quá 5% trên 3 tuyến.
 - [ ] **V1b. Khoảng cách theo đường đi** (1 buổi): điền cột Khoảng cách (km) trong báo cáo và Excel; đoạn mất vết nối bằng đường ngắn nhất, ghi "ước tính".
 - [x] **M5. Cờ nghi vấn** (xong 18/11, kéo lên trước demo): thêm tốc độ di chuyển phi lý giữa hai lượt, máy đã root hoặc jailbreak. Không chặn check-in.

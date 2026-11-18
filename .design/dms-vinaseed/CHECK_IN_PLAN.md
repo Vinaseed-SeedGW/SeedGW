@@ -167,7 +167,7 @@ Thứ tự dòng giữ như mẫu: theo đơn vị, theo nhân viên, giờ mớ
 
 1. Duyệt các thư viện ở mục 4.
 2. Chọn nhà cung cấp địa chỉ: Vietmap hay Goong. Đăng ký tài khoản đứng tên Vinaseed và gửi khoá API cho tôi qua file `.env` trên máy chủ, không gửi trong chat.
-3. Máy chủ nội bộ cho dịch vụ tìm đường: khoảng 4 CPU, 8 GB RAM, 50 GB ổ đĩa (số chính xác đo ở R4). Làm cùng IT Vinaseed trong F7.
+3. Máy chủ nội bộ cho dịch vụ tìm đường: khoảng 4 CPU, 8 GB RAM, 50 GB ổ đĩa. Làm cùng IT Vinaseed trong F7. Số đo thật ở R4 (18/11/2026, OSRM 5.27.1, bản đồ Việt Nam 333 MB, cách tính đường xe máy): xử lý bản đồ mất 16,5 phút trên 12 CPU, RAM cao nhất 5,2 GB; dữ liệu sau xử lý 4,6 GB; máy chủ tìm đường khi chạy giữ 2,7 GB RAM; khớp vết một ngày (2.700 điểm) mất khoảng 11 giây. Nên dành 8 GB RAM riêng cho máy chủ tìm đường để còn chỗ xử lý bản đồ hằng tháng.
 4. ~~Thời gian lưu~~: đã chốt 12/11/2026, dòng check-in 18 tháng, ảnh 45 ngày, điểm GPS 45 ngày (mục 7).
 5. Giờ tự dừng ghi hành trình (đề xuất 20:00).
 6. Một nhân viên thử nghiệm có xe máy để đo km thật trong R3, R4.
