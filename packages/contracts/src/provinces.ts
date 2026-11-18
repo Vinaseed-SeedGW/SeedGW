@@ -40,6 +40,47 @@ export const PROVINCES = [
 ] as const;
 export type ProvinceName = (typeof PROVINCES)[number];
 
+/**
+ * Tâm bản đồ ban đầu khi chọn toạ độ đại lý (A7b): gần trung tâm hành chính của tỉnh mới, chỉ để mở bản đồ
+ * đúng vùng, người dùng vẫn phải phóng to và chọn đúng chỗ.
+ */
+export const PROVINCE_MAP_CENTER: Record<ProvinceName, { lat: number; lng: number }> = {
+  'Thành phố Hà Nội': { lat: 21.0285, lng: 105.8542 },
+  'Thành phố Huế': { lat: 16.4637, lng: 107.5909 },
+  'Thành phố Hải Phòng': { lat: 20.8449, lng: 106.6881 },
+  'Thành phố Đà Nẵng': { lat: 16.0544, lng: 108.2022 },
+  'Thành phố Hồ Chí Minh': { lat: 10.7769, lng: 106.7009 },
+  'Thành phố Cần Thơ': { lat: 10.0452, lng: 105.7469 },
+  'Tỉnh Lai Châu': { lat: 22.3964, lng: 103.4582 },
+  'Tỉnh Điện Biên': { lat: 21.386, lng: 103.023 },
+  'Tỉnh Sơn La': { lat: 21.3256, lng: 103.9188 },
+  'Tỉnh Lạng Sơn': { lat: 21.8537, lng: 106.7615 },
+  'Tỉnh Quảng Ninh': { lat: 20.959, lng: 107.0448 },
+  'Tỉnh Thanh Hóa': { lat: 19.8067, lng: 105.7852 },
+  'Tỉnh Nghệ An': { lat: 18.6796, lng: 105.6813 },
+  'Tỉnh Hà Tĩnh': { lat: 18.3428, lng: 105.9057 },
+  'Tỉnh Cao Bằng': { lat: 22.6657, lng: 106.2577 },
+  'Tỉnh Tuyên Quang': { lat: 21.8236, lng: 105.218 },
+  'Tỉnh Lào Cai': { lat: 21.7229, lng: 104.9113 },
+  'Tỉnh Thái Nguyên': { lat: 21.5942, lng: 105.8482 },
+  'Tỉnh Phú Thọ': { lat: 21.3227, lng: 105.4019 },
+  'Tỉnh Bắc Ninh': { lat: 21.2731, lng: 106.1946 },
+  'Tỉnh Hưng Yên': { lat: 20.6464, lng: 106.0511 },
+  'Tỉnh Ninh Bình': { lat: 20.2506, lng: 105.9745 },
+  'Tỉnh Quảng Trị': { lat: 17.4689, lng: 106.6223 },
+  'Tỉnh Quảng Ngãi': { lat: 15.1214, lng: 108.8044 },
+  'Tỉnh Gia Lai': { lat: 13.782, lng: 109.2192 },
+  'Tỉnh Khánh Hòa': { lat: 12.2388, lng: 109.1967 },
+  'Tỉnh Lâm Đồng': { lat: 11.9404, lng: 108.4583 },
+  'Tỉnh Đắk Lắk': { lat: 12.6667, lng: 108.05 },
+  'Tỉnh Đồng Nai': { lat: 10.9574, lng: 106.8426 },
+  'Tỉnh Tây Ninh': { lat: 10.5359, lng: 106.4137 },
+  'Tỉnh Vĩnh Long': { lat: 10.2537, lng: 105.9722 },
+  'Tỉnh Đồng Tháp': { lat: 10.36, lng: 106.36 },
+  'Tỉnh Cà Mau': { lat: 9.1769, lng: 105.1524 },
+  'Tỉnh An Giang': { lat: 10.0125, lng: 105.0809 },
+};
+
 // Tỉnh cũ (bỏ chữ "Tỉnh", "Thành phố") sang tỉnh mới. Tỉnh không sáp nhập thì giữ tên.
 const OLD_TO_NEW: Record<string, ProvinceName> = {
   'ha noi': 'Thành phố Hà Nội',

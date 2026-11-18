@@ -11,6 +11,7 @@ import type {
   ListDealersResult,
 } from '@dms/contracts/dealers';
 import { db } from '@dms/db/client';
+import { mapTileConfig } from '@/server/integrations/map-tiles';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
@@ -109,6 +110,12 @@ export async function getDealer(id: string, entry: DealerEntry): Promise<DealerD
       createdAt: true,
       updatedAt: true,
       parent: { select: { id: true, name: true, code: true, legacyCode: true } },
+      mergedInto: { select: { id: true, name: true } },
+      checkIns: {
+        orderBy: { capturedAt: 'desc' },
+        take: 1,
+        select: { lat: true, lng: true },
+      },
     },
   });
   if (!row) return null;
@@ -127,6 +134,8 @@ export async function getDealer(id: string, entry: DealerEntry): Promise<DealerD
     orgUnitId: row.orgUnitId,
     assignedUserId: row.assignedUserId,
     legacyOrgUnitName: row.legacyOrgUnitName,
+    lastCheckInPoint: row.checkIns[0] ?? null,
+    mergedInto: row.mergedInto,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -155,7 +164,13 @@ export async function getDealerFormOptions(): Promise<DealerFormOptions> {
     getAssignableOrgUnitIds(),
   ]);
   if (!can(user, 'sales.dealer.update') && !can(user, 'admin.dealer.manage')) {
-    return { orgUnits: [], users: [], canEdit: false, canMoveOrgUnit: false };
+    return {
+      orgUnits: [],
+      users: [],
+      canEdit: false,
+      canMoveOrgUnit: false,
+      mapTiles: mapTileConfig(),
+    };
   }
   const [units, users] = await Promise.all([
     db.orgUnit.findMany({ select: { id: true, name: true, parentId: true } }),
@@ -172,6 +187,7 @@ export async function getDealerFormOptions(): Promise<DealerFormOptions> {
     users: users.map((row) => ({ value: row.id, label: `${row.employeeCode} - ${row.fullName}` })),
     canEdit: true,
     canMoveOrgUnit: orgUnits.length > 0,
+    mapTiles: mapTileConfig(),
   };
 }
 

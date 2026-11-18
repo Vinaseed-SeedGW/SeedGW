@@ -14,6 +14,7 @@ import {
 import { PROVINCES } from '@dms/contracts/provinces';
 import { Form } from '@dms/ui/form';
 import { updateDealerAction } from '@/server/actions/dealers';
+import { DealerLocationPicker } from './dealer-location-picker';
 
 type FormValues = z.input<typeof updateDealerInput>;
 
@@ -113,13 +114,14 @@ export function DealerEditForm({ dealer, options }: Props) {
           <Form.Field
             name="lat"
             label="Vĩ độ"
-            hint="Toạ độ sẽ tự đề xuất từ lần check-in đầu tiên tại đại lý"
+            hint="Gõ tay, chọn trên bản đồ bên dưới, hoặc để lần check-in đầu tiên tại đại lý tự đề xuất"
           >
             <Form.Input inputMode="decimal" autoComplete="off" />
           </Form.Field>
           <Form.Field name="lng" label="Kinh độ">
             <Form.Input inputMode="decimal" autoComplete="off" />
           </Form.Field>
+          <DealerLocationPicker dealer={dealer} tiles={options.mapTiles} />
           <Form.Field name="orgUnitId" label="Đơn vị phụ trách">
             <Form.ChoiceSelect options={orgUnits} />
           </Form.Field>

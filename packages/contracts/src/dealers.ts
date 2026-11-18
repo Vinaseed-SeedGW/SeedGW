@@ -189,6 +189,10 @@ export const dealerDetail = dealerSummary.extend({
   orgUnitId: z.uuid().nullable(),
   assignedUserId: z.uuid().nullable(),
   legacyOrgUnitName: z.string().nullable(),
+  // A7b: lần check-in gần nhất tại đại lý, để mở bản đồ chọn toạ độ đúng chỗ khi đại lý chưa có toạ độ.
+  lastCheckInPoint: z.object({ lat: z.number(), lng: z.number() }).nullable(),
+  // Đại lý đã gộp vào đại lý khác (A7b).
+  mergedInto: z.object({ id: z.uuid(), name: z.string() }).nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -351,4 +355,6 @@ export type DealerFormOptions = {
   users: DealerOption[];
   canEdit: boolean;
   canMoveOrgUnit: boolean;
+  /** Bản đồ nền cho ô chọn toạ độ (A7b). */
+  mapTiles: { url: string; attribution: string; maxZoom: number };
 };

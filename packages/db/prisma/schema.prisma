@@ -370,6 +370,12 @@ model Dealer {
   // Ten don vi va nguoi phu trach ghi tren DMS cu, de ghep lai khi doi co cau hoac nhap them tai khoan.
   legacyOrgUnitName  String?                  @map("legacy_org_unit_name")
   legacyAssigneeName String?                  @map("legacy_assignee_name")
+  // A7b: đại lý đã gộp vào đại lý khác (chuyển Ngừng hoạt động, không xoá).
+  mergedIntoId       String?                  @map("merged_into_id") @db.Uuid
+  mergedInto         Dealer?                  @relation("dealer_merged", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom         Dealer[]                 @relation("dealer_merged")
+  mergesKept         DealerMerge[]            @relation("dealer_merge_kept")
+  mergesMerged       DealerMerge[]            @relation("dealer_merge_merged")
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
   searchText         String?                  @default(dbgenerated()) @map("search_text")
   checkIns           CheckIn[]
@@ -607,4 +613,36 @@ model RoutePlanStop {
   @@unique([planId, revision, day, position])
   @@index([dealerId])
   @@map("route_plan_stops")
+}
+
+// A7b: lịch sử gộp đại lý trùng, đủ để khôi phục tay khi cần.
+model DealerMerge {
+  id             String   @id @default(uuid()) @db.Uuid
+  keptId         String   @map("kept_id") @db.Uuid
+  kept           Dealer   @relation("dealer_merge_kept", fields: [keptId], references: [id], onDelete: Cascade)
+  mergedId       String   @map("merged_id") @db.Uuid
+  merged         Dealer   @relation("dealer_merge_merged", fields: [mergedId], references: [id], onDelete: Cascade)
+  actorId        String?  @map("actor_id") @db.Uuid
+  movedCheckIns  Int      @default(0) @map("moved_check_ins")
+  movedStops     Int      @default(0) @map("moved_stops")
+  movedProposals Int      @default(0) @map("moved_proposals")
+  movedChildren  Int      @default(0) @map("moved_children")
+  filledFields   String[] @default([]) @map("filled_fields")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([keptId])
+  @@index([mergedId])
+  @@map("dealer_merges")
+}
+
+// A7b: nhóm cùng số điện thoại hoặc mã số thuế đã xem và xác nhận không phải đại lý trùng.
+model DealerDuplicateDismissal {
+  id            String   @id @default(uuid()) @db.Uuid
+  kind          String
+  value         String
+  dismissedById String?  @map("dismissed_by_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([kind, value])
+  @@map("dealer_duplicate_dismissals")
 }

@@ -34,6 +34,18 @@ export function DealerProfile({ dealer, backHref, editOptions, visits }: Props) 
         Về danh sách đại lý
       </Link>
       <h1 className="mt-2 text-2xl font-bold text-brand">{dealer.name}</h1>
+      {dealer.mergedInto ? (
+        <p className="mt-2 rounded-md bg-warning-soft px-3 py-2">
+          Đại lý này đã gộp vào{' '}
+          <Link
+            href={`${backHref.split('?')[0]}/${dealer.mergedInto.id}`}
+            className="font-bold text-brand hover:underline"
+          >
+            {dealer.mergedInto.name}
+          </Link>
+          , dữ liệu check-in và tuyến đã chuyển sang đại lý đó.
+        </p>
+      ) : null}
       <p className="text-text-muted">
         {dealer.code ? `Mã ${dealer.code}` : 'Chưa có mã FAST'}
         {dealer.legacyCode ? `, mã DMS cũ ${dealer.legacyCode}` : ''}

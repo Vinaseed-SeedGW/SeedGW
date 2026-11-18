@@ -35,6 +35,7 @@ export const PERMISSIONS = [
   { code: 'admin.dealer.read', name: 'Xem danh mục Đại lý' },
   { code: 'admin.dealer.manage', name: 'Quản lý danh mục Đại lý' },
   { code: 'admin.dealer-location.approve', name: 'Duyệt toạ độ Đại lý' },
+  { code: 'admin.dealer.cleanup', name: 'Gộp Đại lý trùng, sửa số điện thoại sai' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
@@ -98,6 +99,12 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   {
     path: '/quan-tri/dai-ly/duyet-toa-do',
     permission: 'admin.dealer-location.approve',
+    department: 'quan-tri',
+  },
+  { path: '/quan-tri/dai-ly/trung', permission: 'admin.dealer.cleanup', department: 'quan-tri' },
+  {
+    path: '/quan-tri/dai-ly/so-dien-thoai',
+    permission: 'admin.dealer.cleanup',
     department: 'quan-tri',
   },
   {
@@ -296,6 +303,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'admin.org-unit.assign',
       'admin.dealer.read',
       'admin.dealer-location.approve',
+      'admin.dealer.cleanup',
     ],
   },
   {

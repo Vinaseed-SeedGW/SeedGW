@@ -42,6 +42,9 @@ export const AUDIT_ACTION_LABEL = {
   'dealer.move': 'Đổi đơn vị phụ trách đại lý',
   'dealer.location.approve': 'Duyệt toạ độ đại lý',
   'dealer.location.reject': 'Từ chối toạ độ đại lý',
+  'dealer.merge': 'Gộp đại lý trùng',
+  'dealer.phone-fix': 'Sửa số điện thoại sai dạng',
+  'dealer.duplicate-dismiss': 'Đánh dấu không phải đại lý trùng',
   'approval.submit': 'Gửi duyệt phiếu',
   'approval.approve': 'Duyệt phiếu',
   'approval.return': 'Trả lại phiếu',
@@ -173,6 +176,9 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   note: 'Ghi chú',
   routeKind: 'Kiểu tuyến',
   stops: 'Điểm trong tuyến',
+  mergedInto: 'Gộp vào',
+  movedData: 'Dữ liệu chuyển sang',
+  taxCode: 'Mã số thuế',
   ...SETTING_LABEL,
 };
 
