@@ -18,7 +18,13 @@ export function checkInWhere(input: ExportCheckInsInput): Prisma.CheckInWhereInp
     ...(search ? { user: { searchText: { contains: escapeLikePattern(search) } } } : {}),
     ...(input.placeKind ? { placeKind: input.placeKind } : {}),
     ...(input.flaggedOnly
-      ? { OR: [{ flags: { isEmpty: false } }, { isDistanceEstimated: true }] }
+      ? {
+          OR: [
+            { flags: { isEmpty: false } },
+            { isDistanceEstimated: true },
+            { isRoadEstimated: true },
+          ],
+        }
       : {}),
   };
 }
@@ -44,6 +50,7 @@ export const CHECK_IN_ROW_SELECT = {
   roadDistanceKm: true,
   gpsDistanceKm: true,
   isDistanceEstimated: true,
+  isRoadEstimated: true,
   dealerDistanceM: true,
   farReason: true,
   flags: true,
@@ -73,6 +80,7 @@ export function toCheckInRow(record: CheckInRecord, now = Date.now()): CheckInRo
     placeName: record.placeName,
     note: record.note,
     roadDistanceKm: record.roadDistanceKm,
+    isRoadEstimated: record.isRoadEstimated,
     gpsDistanceKm: record.gpsDistanceKm,
     isDistanceEstimated: record.isDistanceEstimated,
     dealerDistanceM: record.dealerDistanceM,
@@ -123,7 +131,8 @@ function vnTime(iso: string): string {
 
 function noteText(row: CheckInRow): string {
   const parts = [row.placeKind === 'OTHER' ? `Điểm khác: ${row.placeName}` : '', row.note];
-  if (row.isDistanceEstimated) parts.push('Km ước tính do thiếu vết GPS');
+  if (row.isRoadEstimated) parts.push('Km theo đường ước tính do thiếu vết GPS');
+  if (row.isDistanceEstimated) parts.push('Km GPS ước tính do thiếu vết GPS');
   for (const flag of row.flags) parts.push(CHECK_IN_FLAG_LABEL[flag]);
   if (row.flags.includes('FAR_FROM_DEALER') && row.dealerDistanceM !== null) {
     parts.push(`Cách đại lý ${Math.round(row.dealerDistanceM)} m`);
@@ -205,7 +214,7 @@ export async function buildCheckInWorkbook(
 
   sheet.addRow([]);
   const note = sheet.addRow([
-    'Khoảng cách (km) theo đường đi thực tế sẽ có khi nối máy chủ tìm đường (task R4). Khoảng cách theo GPS đã bỏ điểm sai số lớn và gộp chỗ đứng yên.',
+    'Khoảng cách (km) tính theo đường đi thực tế giữa hai lượt check-in liền nhau; chặng mất vết GPS được nối bằng đường ngắn nhất và ghi ước tính ở cột Ghi chú. Ô trống là máy chủ chưa tính xong. Khoảng cách theo GPS đã bỏ điểm sai số lớn và gộp chỗ đứng yên.',
   ]);
   sheet.mergeCells(`A${note.number}:L${note.number}`);
 

@@ -193,7 +193,7 @@ function Entry({
               ? 'Lượt đầu ngày'
               : entry.legKm === null
                 ? 'Km đang tính'
-                : `${kmText(entry.legKm)} km từ lượt trước${entry.estimated ? ', ước tính' : ''}`}
+                : `${kmText(entry.legKm)} km ${entry.legSource === 'ROAD' ? 'theo đường' : 'theo GPS'} từ lượt trước${entry.estimated ? ', ước tính' : ''}`}
           </Text>
           {entry.note ? <Text style={styles.body}>Ghi chú: {entry.note}</Text> : null}
           {entry.farReason ? <Text style={styles.body}>Lý do xa: {entry.farReason}</Text> : null}

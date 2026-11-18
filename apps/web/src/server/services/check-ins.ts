@@ -21,6 +21,7 @@ import {
 import { db } from '@dms/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
+import { scheduleRoadDistance } from '@/server/integrations/road-distance-queue';
 import { reverseGeocode } from '@/server/integrations/vietmap';
 import { DomainError } from './domain-error';
 import { resolveCheckInDealer, type CheckInDealer } from './mobile-dealers';
@@ -272,7 +273,7 @@ export async function saveTrackSession(user: MobileUser, input: TrackSessionInpu
 /**
  * Tính lại km theo GPS của mọi check-in trong một ngày của một nhân viên (V1). Chạy lại được
  * nhiều lần nên điểm GPS hoặc check-in gửi trễ, lệch thứ tự vẫn ra đúng.
- * Khoảng cách theo đường đi thực tế để trống tới khi có máy chủ tìm đường (R4).
+ * Km theo đường đi (V1b) do worker tính sau, ở đây chỉ hẹn lịch.
  */
 export async function recomputeDayDistances(userId: string, day: string): Promise<void> {
   const from = vietnamDayStart(day);
@@ -364,6 +365,7 @@ export async function recomputeDayDistances(userId: string, day: string): Promis
     previousCumulative = cumulative;
   }
   if (updates.length > 0) await db.$transaction(updates);
+  await scheduleRoadDistance({ userId, day });
 }
 
 /** Lấy địa chỉ cho check-in còn thiếu của nhân viên. Lỗi thì để lần sau thử lại, báo cáo vẫn có toạ độ. */

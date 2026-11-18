@@ -37,8 +37,8 @@ export default async function CheckInReportPage({ searchParams }: PageProps) {
     <>
       <h1 className="text-2xl font-bold text-brand">Check-in</h1>
       <p className="mt-1 text-text-muted">
-        Các lượt check-in nhân viên gửi từ app, kèm địa chỉ, ảnh, km theo GPS từ lượt trước và bản
-        đồ hành trình trong ngày. Check-in chỉ làm trên app.
+        Các lượt check-in nhân viên gửi từ app, kèm địa chỉ, ảnh, km theo đường đi và theo GPS từ
+        lượt trước, bản đồ hành trình trong ngày. Check-in chỉ làm trên app.
       </p>
       <nav aria-label="Cách xem" className="mt-4 flex gap-2 border-b border-border">
         {TABS.map((item) => (

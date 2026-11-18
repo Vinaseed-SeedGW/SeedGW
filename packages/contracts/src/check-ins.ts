@@ -179,6 +179,9 @@ export const mobileHistoryItem = z.object({
   address: z.string().nullable(),
   gpsDistanceKm: z.number().nullable(),
   isDistanceEstimated: z.boolean(),
+  // V1b: km theo đường đi; null khi máy chủ chưa tính hoặc chưa bật máy chủ tìm đường. App cũ bỏ qua.
+  roadDistanceKm: z.number().nullable().optional(),
+  isRoadEstimated: z.boolean().optional(),
   flags: z.array(checkInFlag),
   // Ảnh còn trong thời hạn lưu 45 ngày và đã gửi lên máy chủ.
   hasPhoto: z.boolean(),
@@ -243,6 +246,8 @@ export type DayMapCheckIn = {
   accuracyM: number | null;
   gpsDistanceKm: number | null;
   isDistanceEstimated: boolean;
+  roadDistanceKm: number | null;
+  isRoadEstimated: boolean;
   flags: CheckInFlag[];
   farReason: string | null;
   dealerDistanceM: number | null;
@@ -265,6 +270,8 @@ export type DayMapResult = {
   pointCount: number;
   trackKm: number;
   checkInKm: number;
+  /** Tổng km theo đường đi giữa các lượt; null khi chưa tính xong lượt nào. */
+  roadKm: number | null;
   checkIns: DayMapCheckIn[];
 };
 
@@ -291,6 +298,7 @@ export const checkInRow = z.object({
   placeName: z.string(),
   note: z.string(),
   roadDistanceKm: z.number().nullable(),
+  isRoadEstimated: z.boolean(),
   gpsDistanceKm: z.number().nullable(),
   isDistanceEstimated: z.boolean(),
   dealerDistanceM: z.number().nullable(),
@@ -313,6 +321,9 @@ export type ListCheckInsInput = z.infer<typeof listCheckInsInput>;
 
 export const listCheckInsResult = pageResult(checkInRow).extend({
   totalGpsDistanceKm: z.number(),
+  // V1b: tắt khi chưa có máy chủ tìm đường, cột Khoảng cách (km) ẩn đi.
+  roadEnabled: z.boolean(),
+  totalRoadDistanceKm: z.number(),
 });
 export type ListCheckInsResult = z.infer<typeof listCheckInsResult>;
 
@@ -374,4 +385,15 @@ const kmNumber = new Intl.NumberFormat('vi-VN', {
 /** Km hiển thị 3 chữ số thập phân như mẫu Excel, ví dụ 28,315. */
 export function formatKm(value: number): string {
   return kmNumber.format(value);
+}
+
+/** Dòng km của một lượt trên Bản đồ hành trình: km theo đường khi đã tính, không thì km theo GPS (V1b). */
+export function dayMapLegText(checkIn: DayMapCheckIn): string {
+  if (checkIn.order === 1) return 'Lượt đầu ngày';
+  if (checkIn.roadDistanceKm !== null) {
+    const gps = checkIn.gpsDistanceKm === null ? '' : `, ${formatKm(checkIn.gpsDistanceKm)} km GPS`;
+    return `${formatKm(checkIn.roadDistanceKm)} km theo đường từ lượt trước${checkIn.isRoadEstimated ? ' (ước tính)' : ''}${gps}`;
+  }
+  if (checkIn.gpsDistanceKm === null) return 'Km đang tính';
+  return `${formatKm(checkIn.gpsDistanceKm)} km theo GPS từ lượt trước${checkIn.isDistanceEstimated ? ', ước tính' : ''}`;
 }

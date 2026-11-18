@@ -110,6 +110,8 @@ export async function readDayMap(
         accuracyM: true,
         gpsDistanceKm: true,
         isDistanceEstimated: true,
+        roadDistanceKm: true,
+        isRoadEstimated: true,
         flags: true,
         farReason: true,
         dealerDistanceM: true,
@@ -148,6 +150,8 @@ export async function readDayMap(
     accuracyM: row.accuracyM,
     gpsDistanceKm: row.gpsDistanceKm,
     isDistanceEstimated: row.isDistanceEstimated,
+    roadDistanceKm: row.roadDistanceKm,
+    isRoadEstimated: row.isRoadEstimated,
     flags: row.flags.flatMap((flag) => {
       const parsed = checkInFlag.safeParse(flag);
       return parsed.success ? [parsed.data] : [];
@@ -177,6 +181,9 @@ export async function readDayMap(
     trackKm: Math.round(track.distanceM) / 1000,
     checkInKm:
       Math.round(mapped.reduce((sum, row) => sum + (row.gpsDistanceKm ?? 0), 0) * 1000) / 1000,
+    roadKm: mapped.some((row) => row.roadDistanceKm !== null)
+      ? Math.round(mapped.reduce((sum, row) => sum + (row.roadDistanceKm ?? 0), 0) * 1000) / 1000
+      : null,
     checkIns: mapped,
   };
 }

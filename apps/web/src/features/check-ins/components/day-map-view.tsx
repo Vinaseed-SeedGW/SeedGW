@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react';
 import {
   CHECK_IN_FLAG_LABEL,
   CHECK_IN_PLACE_KIND_LABEL,
+  dayMapLegText,
   formatKm,
   type DayMapCheckIn,
   type DayMapFilterOptions,
@@ -157,13 +158,7 @@ export function DayMapView({ input, options, data, tiles }: Props) {
                         ? ''
                         : `, ${CHECK_IN_PLACE_KIND_LABEL[checkIn.placeKind]}`}
                     </span>
-                    <span className="text-sm text-text-muted">
-                      {checkIn.order === 1
-                        ? 'Lượt đầu ngày'
-                        : checkIn.gpsDistanceKm === null
-                          ? 'Km đang tính'
-                          : `${formatKm(checkIn.gpsDistanceKm)} km từ lượt trước`}
-                    </span>
+                    <span className="text-sm text-text-muted">{dayMapLegText(checkIn)}</span>
                     {checkIn.flags.length > 0 ? (
                       <span className="text-sm">
                         {checkIn.flags.map((flag) => CHECK_IN_FLAG_LABEL[flag]).join(', ')}
@@ -185,6 +180,9 @@ function Summary({ data }: { data: DayMapResult }) {
   const items = [
     { label: 'Nhân viên', value: `${data.employee.code}, ${data.employee.name}` },
     { label: 'Lượt check-in', value: String(data.checkIns.length) },
+    ...(data.roadKm === null
+      ? []
+      : [{ label: 'Km theo đường giữa các lượt', value: formatKm(data.roadKm) }]),
     { label: 'Km theo GPS giữa các lượt', value: formatKm(data.checkInKm) },
     {
       label: 'Km theo GPS cả ngày',
@@ -198,7 +196,11 @@ function Summary({ data }: { data: DayMapResult }) {
     { label: 'Đoạn đứt', value: String(data.gaps.length) },
   ];
   return (
-    <dl className="grid grid-cols-2 gap-3 rounded-md border border-border p-3 sm:grid-cols-3 xl:grid-cols-6">
+    <dl
+      className={`grid grid-cols-2 gap-3 rounded-md border border-border p-3 sm:grid-cols-3 ${
+        items.length > 6 ? 'sm:grid-cols-4 xl:grid-cols-7' : 'xl:grid-cols-6'
+      }`}
+    >
       {items.map((item) => (
         <div key={item.label} className="grid gap-0.5">
           <dt className="text-sm text-text-muted">{item.label}</dt>

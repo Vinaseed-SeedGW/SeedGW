@@ -273,6 +273,9 @@ model CheckIn {
   photoBytes          Int?                    @map("photo_bytes")
   gpsDistanceKm       Float?                  @map("gps_distance_km")
   roadDistanceKm      Float?                  @map("road_distance_km")
+  // V1b: chặng có đoạn nối bằng đường ngắn nhất (mất vết, không khớp được); lúc tính xong lần gần nhất.
+  isRoadEstimated     Boolean                 @default(false) @map("is_road_estimated")
+  roadComputedAt      DateTime?               @map("road_computed_at")
   isDistanceEstimated Boolean                 @default(false) @map("is_distance_estimated")
   flags               String[]                @default([])
   // Khoang cach toi toa do dai ly da duyet (M4), null khi dai ly chua co toa do.

@@ -28,6 +28,8 @@ export type HistoryEntry = {
   farReason: string | null;
   address: string | null;
   legKm: number | null;
+  // V1b: km theo đường đi khi máy chủ đã tính, không thì km theo GPS.
+  legSource: 'ROAD' | 'GPS';
   estimated: boolean;
   flags: CheckInFlag[];
   status: HistoryStatus;
@@ -83,6 +85,7 @@ function fromLocal(row: LocalHistoryRow, legMeters: number | undefined): History
     farReason: row.farReason,
     address: row.address,
     legKm: legMeters === undefined ? null : Math.round(legMeters) / 1000,
+    legSource: 'GPS',
     estimated: false,
     flags: [],
     status:
@@ -134,8 +137,17 @@ export async function loadHistoryMonth(month: string, now = Date.now()): Promise
     note: item.note,
     farReason: item.farReason,
     address: item.address,
-    legKm: item.gpsDistanceKm,
-    estimated: item.isDistanceEstimated,
+    ...(item.roadDistanceKm === null || item.roadDistanceKm === undefined
+      ? {
+          legKm: item.gpsDistanceKm,
+          legSource: 'GPS' as const,
+          estimated: item.isDistanceEstimated,
+        }
+      : {
+          legKm: item.roadDistanceKm,
+          legSource: 'ROAD' as const,
+          estimated: item.isRoadEstimated ?? false,
+        }),
     flags: item.flags,
     status: 'SERVER',
     remotePhoto: item.hasPhoto,

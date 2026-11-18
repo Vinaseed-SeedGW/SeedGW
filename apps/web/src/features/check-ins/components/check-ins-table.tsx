@@ -43,7 +43,27 @@ function dayMapHref(row: CheckInRow): string {
   return `/kinh-doanh/check-in?${params.toString()}`;
 }
 
-function columns(onViewPhoto: (row: CheckInRow) => void): ColumnDef<CheckInRow>[] {
+const ROAD_COLUMN: ColumnDef<CheckInRow> = {
+  id: 'roadDistanceKm',
+  header: 'Khoảng cách (km)',
+  meta: { label: 'Khoảng cách (km)', className: 'text-right' },
+  cell: ({ row }) =>
+    row.original.roadDistanceKm === null ? (
+      <span className="text-text-muted">Đang tính</span>
+    ) : (
+      <>
+        {formatKm(row.original.roadDistanceKm)}
+        {row.original.isRoadEstimated ? (
+          <span className="block text-sm text-text-muted">ước tính</span>
+        ) : null}
+      </>
+    ),
+};
+
+function columns(
+  onViewPhoto: (row: CheckInRow) => void,
+  roadEnabled: boolean,
+): ColumnDef<CheckInRow>[] {
   return [
     {
       id: 'employee',
@@ -131,6 +151,7 @@ function columns(onViewPhoto: (row: CheckInRow) => void): ColumnDef<CheckInRow>[
         </>
       ),
     },
+    ...(roadEnabled ? [ROAD_COLUMN] : []),
     {
       id: 'gpsDistanceKm',
       header: 'Km theo GPS',
@@ -186,7 +207,7 @@ export function CheckInsTable({ data, input }: Props) {
 
   return (
     <DataTable.Root
-      columns={columns(setViewing)}
+      columns={columns(setViewing, data.roadEnabled)}
       data={data.items}
       getRowId={getCheckInId}
       total={data.total}
@@ -215,8 +236,9 @@ export function CheckInsTable({ data, input }: Props) {
       </DataTable.Toolbar>
       <DataTable.Body emptyMessage="Không có lượt check-in nào trong khoảng ngày và bộ lọc này." />
       <p className="mt-3 font-bold">
-        Tổng {formatNumber(data.total)} lượt check-in, {formatKm(data.totalGpsDistanceKm)} km theo
-        GPS
+        Tổng {formatNumber(data.total)} lượt check-in,{' '}
+        {data.roadEnabled ? `${formatKm(data.totalRoadDistanceKm)} km theo đường đi, ` : ''}
+        {formatKm(data.totalGpsDistanceKm)} km theo GPS
       </p>
       <DataTable.Pagination itemLabel="lượt check-in" />
       {viewing ? <CheckInPhotoDialog row={viewing} onClose={() => setViewing(null)} /> : null}

@@ -5,6 +5,7 @@ import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@dms/contracts/check-ins';
 import {
   DASHBOARD_PERIOD_LABEL,
   dashboardUrlParams,
+  kmSourceNote,
   type Coverage,
   type DashboardInput,
   type DashboardResult,
@@ -136,8 +137,8 @@ async function DashboardBody({ input }: { input: DashboardInput }) {
           <Kpi
             href={checkInHref(input)}
             label="Tổng km đi thị trường"
-            value={formatKm(data.kpi.gpsKm)}
-            note="Theo GPS; km theo đường đi có ở bản sau"
+            value={formatKm(data.kpi.km)}
+            note={kmSourceNote(data.kpi.kmSource)}
           />
         </div>
       </section>

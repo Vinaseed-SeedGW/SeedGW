@@ -81,6 +81,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_started
 
   # R4: máy chủ tìm đường OSRM, bản đồ OpenStreetMap Việt Nam, cách tính đường xe máy. Chỉ trong mạng nội bộ
   # Docker, không mở cổng ra ngoài. Dữ liệu tạo bằng deploy/osrm/prepare.sh, cập nhật hằng tháng.

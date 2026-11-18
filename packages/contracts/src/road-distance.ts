@@ -47,3 +47,45 @@ export function deviationPercent(systemKm: number, odometerKm: number): number |
   if (odometerKm <= 0) return null;
   return ((systemKm - odometerKm) / odometerKm) * 100;
 }
+
+export type RoadCheckIn = { id: string; capturedAt: number; lat: number; lng: number };
+
+/**
+ * Chia vết một ngày thành chặng giữa hai lượt check-in liền nhau (V1b). Mỗi chặng gồm điểm check-in trước,
+ * các điểm GPS đã lọc ở giữa, và điểm check-in sau. Lượt đầu ngày không có chặng (km bằng 0, như mẫu cũ).
+ */
+export function buildRoadLegs(
+  checkIns: readonly RoadCheckIn[],
+  kept: readonly RoadPoint[],
+): Array<{ checkInId: string; points: RoadPoint[]; trackPoints: number }> {
+  const sorted = [...checkIns].sort((a, b) => a.capturedAt - b.capturedAt);
+  const legs: Array<{ checkInId: string; points: RoadPoint[]; trackPoints: number }> = [];
+  for (let index = 1; index < sorted.length; index += 1) {
+    const from = sorted[index - 1];
+    const to = sorted[index];
+    if (!from || !to) continue;
+    const between = kept.filter(
+      (point) => point.recordedAt > from.capturedAt && point.recordedAt < to.capturedAt,
+    );
+    legs.push({
+      checkInId: to.id,
+      points: [
+        { recordedAt: from.capturedAt, lat: from.lat, lng: from.lng, accuracy: null },
+        ...between,
+        { recordedAt: to.capturedAt, lat: to.lat, lng: to.lng, accuracy: null },
+      ],
+      trackPoints: between.length,
+    });
+  }
+  return legs;
+}
+
+/** Tên hàng đợi và khoá gom việc theo người, theo ngày (dùng chung giữa web xếp lịch và worker). */
+export const ROAD_DISTANCE_QUEUE = 'road-distance';
+/** Chờ ngần này sau lần nhận dữ liệu cuối mới tính, để gom nhiều lần app gửi (duyệt 18/11/2026). */
+export const ROAD_DISTANCE_DEBOUNCE_MS = 3 * 60_000;
+export type RoadDistanceJob = { userId: string; day: string };
+
+export function roadDistanceJobId(job: RoadDistanceJob): string {
+  return `${job.userId}:${job.day}`;
+}

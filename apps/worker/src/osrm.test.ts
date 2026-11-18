@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('server-only', () => ({}));
-const { OsrmRoadDistance } = await import('./road-distance');
+const { OsrmRoadDistance } = await import('./osrm');
 
 const point = (seconds: number, lat: number) => ({
   recordedAt: Date.parse('2026-11-12T01:00:00Z') + seconds * 1000,

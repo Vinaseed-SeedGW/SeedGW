@@ -3,6 +3,7 @@ import type { ListCheckInsInput, ListCheckInsResult } from '@dms/contracts/check
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';
+import { isRoadDistanceEnabled } from '@/server/integrations/road-distance-queue';
 import {
   CHECK_IN_ORDER_BY,
   CHECK_IN_ROW_SELECT,
@@ -25,7 +26,7 @@ export async function listCheckIns(input: ListCheckInsInput): Promise<ListCheckI
       select: CHECK_IN_ROW_SELECT,
     }),
     scoped.checkIn.count({ where }),
-    scoped.checkIn.aggregate({ where, _sum: { gpsDistanceKm: true } }),
+    scoped.checkIn.aggregate({ where, _sum: { gpsDistanceKm: true, roadDistanceKm: true } }),
   ]);
 
   const now = Date.now();
@@ -35,5 +36,7 @@ export async function listCheckIns(input: ListCheckInsInput): Promise<ListCheckI
     page: input.page,
     pageSize: input.pageSize,
     totalGpsDistanceKm: Math.round((sum._sum.gpsDistanceKm ?? 0) * 1000) / 1000,
+    roadEnabled: isRoadDistanceEnabled(),
+    totalRoadDistanceKm: Math.round((sum._sum.roadDistanceKm ?? 0) * 1000) / 1000,
   };
 }

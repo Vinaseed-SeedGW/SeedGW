@@ -106,6 +106,15 @@ export function dashboardUrlParams(now: Date = new Date()) {
 
 export type Coverage = { active: number; covered: number };
 
+/** Nguồn của số km: toàn bộ theo đường đi, toàn bộ theo GPS, hay có lượt chưa tính xong dùng km GPS. */
+export type KmSource = { roadVisits: number; gpsVisits: number };
+
+export function kmSourceNote(source: KmSource): string {
+  if (source.roadVisits === 0) return 'Theo GPS, chưa có km theo đường đi';
+  if (source.gpsVisits === 0) return 'Theo đường đi thực tế';
+  return `Theo đường đi; ${source.gpsVisits} lượt chưa tính xong dùng km GPS`;
+}
+
 export type DashboardResult = {
   updatedAt: string;
   kpi: {
@@ -113,7 +122,9 @@ export type DashboardResult = {
     coverage: Coverage;
     staffCheckedInToday: number;
     staffTotal: number;
-    gpsKm: number;
+    // V1b: km theo đường đi khi máy chủ đã tính, lượt chưa tính lấy km theo GPS.
+    km: number;
+    kmSource: KmSource;
   };
   market: {
     perDay: { day: string; visits: number }[];

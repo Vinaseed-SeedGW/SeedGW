@@ -50,6 +50,8 @@ export async function listMyCheckIns(
             addressOnPhoto: true,
             gpsDistanceKm: true,
             isDistanceEstimated: true,
+            roadDistanceKm: true,
+            isRoadEstimated: true,
             flags: true,
             photoKey: true,
           },
@@ -67,6 +69,8 @@ export async function listMyCheckIns(
       address: row.address ?? row.addressOnPhoto,
       gpsDistanceKm: row.gpsDistanceKm,
       isDistanceEstimated: row.isDistanceEstimated,
+      roadDistanceKm: row.roadDistanceKm,
+      isRoadEstimated: row.isRoadEstimated,
       flags: row.flags.flatMap((flag) => {
         const parsed = checkInFlag.safeParse(flag);
         return parsed.success ? [parsed.data] : [];

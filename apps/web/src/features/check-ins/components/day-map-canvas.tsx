@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { useEffect, useRef } from 'react';
 import {
   CHECK_IN_FLAG_LABEL,
-  formatKm,
+  dayMapLegText,
   type DayMapCheckIn,
   type DayMapResult,
 } from '@dms/contracts/check-ins';
@@ -45,17 +45,7 @@ function popupContent(checkIn: DayMapCheckIn, onViewPhoto: () => void): HTMLElem
     element('span', '', formatDateTime(checkIn.capturedAt)),
   );
   if (checkIn.address) root.append(element('span', 'text-text-muted', checkIn.address));
-  root.append(
-    element(
-      'span',
-      '',
-      checkIn.order === 1 || checkIn.gpsDistanceKm === null
-        ? checkIn.order === 1
-          ? 'Lượt đầu ngày'
-          : 'Km đang tính'
-        : `${formatKm(checkIn.gpsDistanceKm)} km từ lượt trước${checkIn.isDistanceEstimated ? ', ước tính' : ''}`,
-    ),
-  );
+  root.append(element('span', '', dayMapLegText(checkIn)));
   for (const flag of checkIn.flags) {
     const extra =
       flag === 'FAR_FROM_DEALER' && checkIn.dealerDistanceM !== null

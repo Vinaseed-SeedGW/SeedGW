@@ -92,7 +92,9 @@ export async function readDashboard(
   const [
     visits,
     byKindRows,
-    kmSum,
+    roadSum,
+    gpsFallbackSum,
+    gpsFallbackVisits,
     flagged,
     capturedDays,
     activeDealers,
@@ -111,7 +113,18 @@ export async function readDashboard(
   ] = await Promise.all([
     scoped.checkIn.count({ where: inPeriod }),
     scoped.checkIn.groupBy({ by: ['placeKind'], where: inPeriod, _count: { _all: true } }),
-    scoped.checkIn.aggregate({ where: inPeriod, _sum: { gpsDistanceKm: true } }),
+    scoped.checkIn.aggregate({
+      where: { AND: [inPeriod, { roadDistanceKm: { not: null } }] },
+      _sum: { roadDistanceKm: true },
+      _count: { _all: true },
+    }),
+    scoped.checkIn.aggregate({
+      where: { AND: [inPeriod, { roadDistanceKm: null }] },
+      _sum: { gpsDistanceKm: true },
+    }),
+    scoped.checkIn.count({
+      where: { AND: [inPeriod, { roadDistanceKm: null }, { gpsDistanceKm: { gt: 0 } }] },
+    }),
     scoped.checkIn.count({ where: { ...inPeriod, flags: { isEmpty: false } } }),
     scoped.checkIn.findMany({ where: inPeriod, select: { capturedAt: true } }),
     scoped.dealer.count({ where: dealerScope }),
@@ -159,7 +172,8 @@ export async function readDashboard(
   }
   const byKind: Record<CheckInPlaceKind, number> = { DEALER: 0, CUSTOMER: 0, OTHER: 0 };
   for (const row of byKindRows) byKind[row.placeKind] = row._count._all;
-  const gpsKm = round3(kmSum._sum.gpsDistanceKm ?? 0);
+  // Km chính là km theo đường đi; lượt máy chủ chưa tính (hoặc chưa bật) lấy km theo GPS (V1b).
+  const km = round3((roadSum._sum.roadDistanceKm ?? 0) + (gpsFallbackSum._sum.gpsDistanceKm ?? 0));
 
   const unitIdsInUse = activeByUnit.flatMap((row) => (row.orgUnitId ? [row.orgUnitId] : []));
   const unitNames = new Map(
@@ -180,7 +194,8 @@ export async function readDashboard(
       coverage: { active: activeDealers, covered: coveredDealers },
       staffCheckedInToday: todayUsers.length,
       staffTotal,
-      gpsKm,
+      km,
+      kmSource: { roadVisits: roadSum._count._all, gpsVisits: gpsFallbackVisits },
     },
     market: {
       perDay: eachDay(input.from, input.to).map((day) => ({
@@ -188,7 +203,7 @@ export async function readDashboard(
         visits: perDayCounts.get(day) ?? 0,
       })),
       byKind,
-      kmPerVisit: visits > 0 ? round3(gpsKm / visits) : null,
+      kmPerVisit: visits > 0 ? round3(km / visits) : null,
       flagged,
     },
     dealers: {
@@ -237,36 +252,56 @@ async function readStaff(
   today: string,
 ): Promise<DashboardResult['staff']> {
   const scoped = await getScopedDb();
-  const [perUser, perUserDealer, assigned, staff, todayUsers] = await Promise.all([
-    scoped.checkIn.groupBy({
-      by: ['userId'],
-      where: inPeriod,
-      _count: { _all: true },
-      _sum: { gpsDistanceKm: true },
-    }),
-    scoped.checkIn.groupBy({
-      by: ['userId', 'dealerId'],
-      where: { ...inPeriod, dealerId: { not: null } },
-    }),
-    scoped.dealer.groupBy({
-      by: ['assignedUserId'],
-      where: { status: 'ACTIVE', assignedUserId: { not: null } },
-      _count: { _all: true },
-    }),
-    scoped.user.findMany({
-      where: staffScope,
-      orderBy: { employeeCode: 'asc' },
-      select: { id: true, employeeCode: true, fullName: true, orgUnit: { select: { name: true } } },
-    }),
-    scoped.checkIn.groupBy({
-      by: ['userId'],
-      where: {
-        ...checkInScope,
-        capturedAt: { gte: vietnamDayStart(today), lt: vietnamNextDayStart(today) },
-      },
-    }),
-  ]);
+  const [perUser, perUserRoad, perUserGps, perUserDealer, assigned, staff, todayUsers] =
+    await Promise.all([
+      scoped.checkIn.groupBy({
+        by: ['userId'],
+        where: inPeriod,
+        _count: { _all: true },
+      }),
+      scoped.checkIn.groupBy({
+        by: ['userId'],
+        where: { AND: [inPeriod, { roadDistanceKm: { not: null } }] },
+        _sum: { roadDistanceKm: true },
+      }),
+      scoped.checkIn.groupBy({
+        by: ['userId'],
+        where: { AND: [inPeriod, { roadDistanceKm: null }] },
+        _sum: { gpsDistanceKm: true },
+      }),
+      scoped.checkIn.groupBy({
+        by: ['userId', 'dealerId'],
+        where: { ...inPeriod, dealerId: { not: null } },
+      }),
+      scoped.dealer.groupBy({
+        by: ['assignedUserId'],
+        where: { status: 'ACTIVE', assignedUserId: { not: null } },
+        _count: { _all: true },
+      }),
+      scoped.user.findMany({
+        where: staffScope,
+        orderBy: { employeeCode: 'asc' },
+        select: {
+          id: true,
+          employeeCode: true,
+          fullName: true,
+          orgUnit: { select: { name: true } },
+        },
+      }),
+      scoped.checkIn.groupBy({
+        by: ['userId'],
+        where: {
+          ...checkInScope,
+          capturedAt: { gte: vietnamDayStart(today), lt: vietnamNextDayStart(today) },
+        },
+      }),
+    ]);
   const visits = new Map(perUser.map((row) => [row.userId, row]));
+  const kmByUser = new Map<string, number>();
+  for (const row of perUserRoad) kmByUser.set(row.userId, row._sum.roadDistanceKm ?? 0);
+  for (const row of perUserGps) {
+    kmByUser.set(row.userId, (kmByUser.get(row.userId) ?? 0) + (row._sum.gpsDistanceKm ?? 0));
+  }
   const covered = new Map<string, number>();
   for (const row of perUserDealer) covered.set(row.userId, (covered.get(row.userId) ?? 0) + 1);
   const assignedCount = new Map(assigned.map((row) => [row.assignedUserId, row._count._all]));
@@ -290,7 +325,7 @@ async function readStaff(
       visits: visits.get(user.id)?._count._all ?? 0,
       coveredDealers: covered.get(user.id) ?? 0,
       assignedDealers: assignedCount.get(user.id) ?? 0,
-      km: round3(visits.get(user.id)?._sum.gpsDistanceKm ?? 0),
+      km: round3(kmByUser.get(user.id) ?? 0),
     }))
     .filter((row) => row.visits > 0)
     .sort((a, b) => b.visits - a.visits || b.km - a.km)
