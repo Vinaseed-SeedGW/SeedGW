@@ -73,6 +73,8 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
   - Danh mục
     - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
+    - Đại lý trùng `/quan-tri/dai-ly/trung` (tab: Nghi trùng số điện thoại, Số dùng chung, Trùng mã số thuế; A7b)
+    - Số điện thoại sai `/quan-tri/dai-ly/so-dien-thoai` (lọc theo nhóm: số rác, thiếu số, dư số, khác; A7b)
     - Duyệt toạ độ `/quan-tri/dai-ly/duyet-toa-do` (tab: Chờ duyệt · Đã xử lý; đề xuất toạ độ từ lần check-in đầu tại đại lý chưa có toạ độ, kèm ảnh, địa chỉ lúc chụp, cùng phố hay khác phố)
   - Quy định
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
