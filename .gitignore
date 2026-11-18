@@ -25,3 +25,6 @@ Thumbs.db
 
 # File bien moi truong that cua may chu thu
 deploy/staging/*.env
+
+# R4: ban do va du lieu OSRM tai ve, khong commit
+deploy/osrm/data/

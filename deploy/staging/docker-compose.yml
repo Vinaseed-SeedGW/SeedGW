@@ -61,6 +61,8 @@ services:
     image: dms-web:staging
     restart: unless-stopped
     <<: *app-env
+    environment:
+      OSRM_URL: http://osrm:5000
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -74,9 +76,28 @@ services:
     restart: unless-stopped
     <<: *app-env
     command: ['pnpm', '--filter', '@dms/worker', 'exec', 'tsx', 'src/index.ts']
+    environment:
+      OSRM_URL: http://osrm:5000
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  # R4: máy chủ tìm đường OSRM, bản đồ OpenStreetMap Việt Nam, cách tính đường xe máy. Chỉ trong mạng nội bộ
+  # Docker, không mở cổng ra ngoài. Dữ liệu tạo bằng deploy/osrm/prepare.sh, cập nhật hằng tháng.
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    restart: unless-stopped
+    command:
+      [
+        'osrm-routed',
+        '--algorithm',
+        'mld',
+        '--max-matching-size',
+        '1000',
+        '/data/vietnam-latest.osrm',
+      ]
+    volumes:
+      - ../osrm/data:/data:ro
 
   caddy:
     image: caddy:2
