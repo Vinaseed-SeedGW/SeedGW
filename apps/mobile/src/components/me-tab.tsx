@@ -15,6 +15,7 @@ import {
   type TesterProfile,
 } from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
+import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { AppFooter } from './app-footer';
 import { Button } from './button';
 import { cardStyle, InfoRow } from './info-row';
@@ -263,7 +264,7 @@ function ClearTestData() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: SPACE.lg, gap: SPACE.md },
+  content: { padding: SPACE.lg, gap: SPACE.md, paddingBottom: SUPPORT_FAB_CLEARANCE },
   card: {
     borderWidth: 1,
     borderColor: COLORS.border,

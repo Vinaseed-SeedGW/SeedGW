@@ -23,14 +23,15 @@ import { DomainError } from '@/server/services/domain-error';
 import {
   changeSupportStatus,
   claimSupport,
-  countSupportBadge,
   createSupportRequest,
   escalateSupport,
   listMySupport,
   markSupportRead,
+  readSupportButtonSummary,
   readSupportDetail,
   reopenSupport,
   replySupport,
+  type SupportButtonSummary,
   type SupportMutation,
   type SupportUpload,
 } from '@/server/services/support';
@@ -108,10 +109,12 @@ export async function loadSupportDetailAction(raw: unknown): Promise<ActionResul
   }
 }
 
-export async function loadSupportBadgeAction(): Promise<ActionResult<{ count: number }>> {
+export async function loadSupportButtonSummaryAction(): Promise<
+  ActionResult<SupportButtonSummary>
+> {
   try {
     const user = await requireUser();
-    return { ok: true, data: { count: await countSupportBadge(user, await getScopedDb()) } };
+    return { ok: true, data: await readSupportButtonSummary(user, await getScopedDb()) };
   } catch (error) {
     return toActionError(error);
   }

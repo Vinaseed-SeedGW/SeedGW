@@ -12,7 +12,7 @@ import {
   permissionForPath,
   roleExceedsActor,
   scopeWhere,
-  showsSupportButton,
+  supportButtonMode,
   widestDataScope,
   type ScopeContext,
 } from './access';
@@ -216,11 +216,13 @@ describe('departmentLanding', () => {
 });
 
 describe('nut noi Ho tro', () => {
-  it('chi hien cho nguoi gui, khong hien cho nguoi xu ly', () => {
-    expect(showsSupportButton(permissionsOf('staff'))).toBe(true);
-    expect(showsSupportButton(permissionsOf('operations'))).toBe(false);
-    expect(showsSupportButton(permissionsOf('admin'))).toBe(false);
-    expect(showsSupportButton(new Set())).toBe(false);
+  it('hien cho moi vai tro, khac noi dung theo quyen xu ly (quyet dinh 32)', () => {
+    expect(supportButtonMode(permissionsOf('staff'), 'OWN')).toBe('REQUESTER');
+    expect(supportButtonMode(permissionsOf('manager'), 'TEAM')).toBe('REQUESTER');
+    expect(supportButtonMode(permissionsOf('unit-leader'), 'ORG_UNIT_TREE')).toBe('REQUESTER');
+    expect(supportButtonMode(permissionsOf('operations'), 'ORG_UNIT_TREE')).toBe('UNIT_HANDLER');
+    expect(supportButtonMode(permissionsOf('admin'), 'ALL')).toBe('SYSTEM_HANDLER');
+    expect(supportButtonMode(new Set(), 'OWN')).toBeNull();
   });
 });
 

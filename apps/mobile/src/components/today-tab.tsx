@@ -6,6 +6,7 @@ import { searchDealers, type DealerChoice } from '../api/dealers';
 import { formatKm, formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import { computeDayStats, getOpenSession, readLocalHistory } from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
+import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { distanceText, toChoice } from './dealer-picker';
 import { TargetCard } from './target-card';
@@ -253,7 +254,7 @@ function Figure({ value, label }: { value: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: SPACE.lg, gap: SPACE.md },
+  content: { padding: SPACE.lg, gap: SPACE.md, paddingBottom: SUPPORT_FAB_CLEARANCE },
   date: { fontSize: 15, color: COLORS.textMuted },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
   status: { borderRadius: 8, padding: SPACE.md, gap: SPACE.sm },

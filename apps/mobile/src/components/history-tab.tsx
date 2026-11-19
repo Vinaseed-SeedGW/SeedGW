@@ -11,6 +11,7 @@ import {
   type HistoryMonth,
 } from '../sync/history';
 import { COLORS, FONT, SPACE } from '../theme';
+import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { PhotoViewer, type PhotoTarget } from './photo-viewer';
 import { Text } from './text';
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: { fontSize: 17, fontWeight: FONT.bold, color: COLORS.text },
   navSpacer: { width: 88 },
-  content: { padding: SPACE.lg, gap: SPACE.lg },
+  content: { padding: SPACE.lg, gap: SPACE.lg, paddingBottom: SUPPORT_FAB_CLEARANCE },
   notice: {
     fontSize: 14,
     color: COLORS.text,

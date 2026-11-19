@@ -6,6 +6,7 @@ import type { DealerChoice } from '../api/dealers';
 import { startOfVnDay } from '../sync/geo';
 import { readLocalHistory } from '../sync/track-db';
 import { COLORS, FONT, SPACE } from '../theme';
+import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
 import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
@@ -136,7 +137,7 @@ export function RouteTab({ onPick, onOpenRoutes, refreshKey }: Props) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: COLORS.surface },
-  content: { padding: SPACE.lg, gap: SPACE.sm },
+  content: { padding: SPACE.lg, gap: SPACE.sm, paddingBottom: SUPPORT_FAB_CLEARANCE },
   title: { fontSize: 20, fontWeight: FONT.bold, color: COLORS.brand },
   muted: { fontSize: 14, color: COLORS.textMuted },
   danger: { fontSize: 14, color: COLORS.danger },

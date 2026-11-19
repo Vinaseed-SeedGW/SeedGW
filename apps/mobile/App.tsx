@@ -22,6 +22,7 @@ import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
 import { RoutesScreen } from './src/components/routes-screen';
+import { SupportFab } from './src/components/support-fab';
 import { SupportScreen, type SupportPrefill } from './src/components/support-screen';
 import { readSupportBadge } from './src/api/support';
 import { countPendingSupport } from './src/sync/support-outbox';
@@ -181,14 +182,13 @@ function Main({ signedIn }: { signedIn: boolean }) {
 
   const account = session ? { user: session.user, sync } : null;
 
-  // Chụp màn hình tab đang xem trước khi sang tab Tôi, để đính kèm khi báo lỗi (người dùng chọn mới gửi).
-  function changeTab(next: TabKey) {
-    if (next === 'me' && tab !== 'me' && account) {
-      const label = TABS.find((item) => item.key === tab)?.label ?? '';
-      void rememberScreen(label).finally(() => setTab(next));
-      return;
-    }
-    setTab(next);
+  // Nút nổi Hỗ trợ (quyết định 32): chụp màn hình đang xem để người dùng chọn đính kèm, rồi mở Hỗ trợ.
+  function openSupport() {
+    const label = TABS.find((item) => item.key === tab)?.label ?? '';
+    void rememberScreen(label).finally(() => {
+      setSupportPrefill(null);
+      setOverlay('support');
+    });
   }
 
   function reportProblem(detail: string) {
@@ -272,8 +272,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
             }
           />
         ) : null}
+        {account ? <SupportFab count={supportUnread} onPress={openSupport} /> : null}
       </View>
-      <TabBar active={tab} onChange={changeTab} badges={{ me: supportUnread }} />
+      <TabBar active={tab} onChange={setTab} badges={{ me: supportUnread }} />
     </View>
   );
 }

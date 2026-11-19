@@ -171,11 +171,13 @@ async function issueSupportCode(tx: Tx, now: Date): Promise<string> {
  * Đơn vị của người gửi hoặc đơn vị cha có Quản trị đơn vị đang hoạt động thì yêu cầu vào hộp chung
  * của đơn vị; không có thì gửi thẳng Quản trị hệ thống (quyết định 29).
  */
-async function hasUnitHandler(orgUnitId: string | null): Promise<boolean> {
+async function hasUnitHandler(orgUnitId: string | null, requesterId: string): Promise<boolean> {
   if (!orgUnitId) return false;
   const unitIds = await getOrgUnitAncestorIds(orgUnitId);
   const handler = await db.user.findFirst({
     where: {
+      // Không tính chính người gửi, để Quản trị đơn vị không nhận yêu cầu của mình.
+      id: { not: requesterId },
       isActive: true,
       orgUnitId: { in: unitIds },
       roles: {
@@ -415,6 +417,41 @@ export async function listSupportInbox(
     page: input.page,
     pageSize: input.pageSize,
   };
+}
+
+/** Yêu cầu chính mình gửi có trả lời mới chưa đọc. */
+export async function countMyUnread(actor: SupportActor, scoped: ScopedDb): Promise<number> {
+  const rows = await scoped.supportRequest.findMany({
+    where: { requesterId: actor.id, lastHandlerActivityAt: { not: null }, purgedAt: null },
+    select: { id: true, lastHandlerActivityAt: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 200,
+  });
+  const marks = await readMarks(
+    actor.id,
+    rows.map((row) => row.id),
+  );
+  return rows.filter((row) => {
+    const readAt = marks.get(row.id);
+    return row.lastHandlerActivityAt && (!readAt || row.lastHandlerActivityAt > readAt);
+  }).length;
+}
+
+export type SupportButtonSummary = { unread: number; pending: number; overdue: number };
+
+/** Số trên nút nổi Hỗ trợ (quyết định 32): trả lời mới của mình, việc chờ xử lý, quá hạn. */
+export async function readSupportButtonSummary(
+  actor: SupportActor,
+  scoped: ScopedDb,
+  now = new Date(),
+): Promise<SupportButtonSummary> {
+  const manage = canManageSupport(actor);
+  const [unread, pending, overdue] = await Promise.all([
+    actor.permissions.has(CREATE) && !isSystemHandler(actor) ? countMyUnread(actor, scoped) : 0,
+    manage ? scoped.supportRequest.count({ where: pendingWhere(actor) }) : 0,
+    manage ? scoped.supportRequest.count({ where: overdueWhere(now) }) : 0,
+  ]);
+  return { unread, pending, overdue };
 }
 
 /** Số đỏ: người gửi đếm yêu cầu có trả lời chưa đọc, bên xử lý đếm yêu cầu Cần xử lý ở cấp mình. */
@@ -669,6 +706,12 @@ export async function createSupportRequest(
   now = new Date(),
 ): Promise<SupportMutation> {
   assertCreate(actor);
+  if (isSystemHandler(actor)) {
+    throw new DomainError(
+      'FORBIDDEN',
+      'Quản trị hệ thống nhận và xử lý yêu cầu ở trang Hỗ trợ trong Quản trị, không gửi yêu cầu cho chính mình',
+    );
+  }
   const files = checkSupportFiles(uploads);
   const existing = await db.supportRequest.findUnique({
     where: { requesterId_clientId: { requesterId: actor.id, clientId: input.clientId } },
@@ -677,7 +720,7 @@ export async function createSupportRequest(
   if (existing) return { ...existing, created: false, warnings: [], changes: {} };
 
   const [unitHandler, settingRow] = await Promise.all([
-    hasUnitHandler(actor.orgUnitId),
+    canManageSupport(actor) ? Promise.resolve(false) : hasUnitHandler(actor.orgUnitId, actor.id),
     db.systemSetting.findUnique({ where: { key: 'general' }, select: { value: true } }),
   ]);
   const settings = resolveSystemSettings(settingRow?.value);
@@ -722,7 +765,11 @@ export async function createSupportRequest(
         kind: 'CREATE',
         toStatus: 'NEW',
         note:
-          level === 'SYSTEM' ? 'Đơn vị chưa có Quản trị đơn vị, gửi thẳng Quản trị hệ thống' : '',
+          level === 'UNIT'
+            ? ''
+            : canManageSupport(actor)
+              ? 'Quản trị đơn vị gửi, chuyển thẳng Quản trị hệ thống'
+              : 'Đơn vị chưa có Quản trị đơn vị, gửi thẳng Quản trị hệ thống',
         createdAt: now,
       },
     });

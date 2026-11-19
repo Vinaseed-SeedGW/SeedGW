@@ -16,7 +16,9 @@ import {
   listSupportInbox,
   markSupportRead,
   readSupportDetail,
+  readSupportButtonSummary,
   readSupportStats,
+  type SupportButtonSummary,
 } from '@/server/services/support';
 
 // Trang Quản trị › Hỗ trợ (T2). Khung nút nổi của nhân viên đọc qua Server Action ở actions/support.ts.
@@ -44,14 +46,13 @@ export async function getSupportPendingCount(): Promise<number> {
   return countSupportBadge(user, await getScopedDb());
 }
 
-/** Số yêu cầu của tôi có trả lời chưa đọc, hiện trên nút nổi. Lỗi thì 0 để không làm hỏng trang. */
-export async function getMySupportBadge(): Promise<number> {
+/** Số trên nút nổi Hỗ trợ. Lỗi thì trả 0 để không làm hỏng trang. */
+export async function getSupportButtonSummary(): Promise<SupportButtonSummary> {
   const user = await requireUser();
-  if (!can(user, 'support.request.create')) return 0;
   try {
-    return await countSupportBadge(user, await getScopedDb());
+    return await readSupportButtonSummary(user, await getScopedDb());
   } catch {
-    return 0;
+    return { unread: 0, pending: 0, overdue: 0 };
   }
 }
 

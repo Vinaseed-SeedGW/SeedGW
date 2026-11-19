@@ -171,9 +171,21 @@ const DEPARTMENT_LANDING: Record<
 
 export const FORBIDDEN_PATH = '/403';
 
-// Quyet dinh 30: nguoi gui yeu cau dung nut noi o moi trang; nguoi xu ly dung trang Quan tri > Ho tro.
-export function showsSupportButton(permissions: PermissionSet): boolean {
-  return permissions.has('support.request.create') && !permissions.has('support.request.manage');
+/**
+ * Quyết định 32 (19/11/2026, thay một phần quyết định 30): mọi người đều có nút nổi Hỗ trợ.
+ * Người gửi: gửi và trao đổi. Quản trị đơn vị: thêm lối vào hộp chung, yêu cầu của họ đi thẳng
+ * Quản trị hệ thống. Quản trị hệ thống: chỉ có lối vào trang xử lý, không tự gửi cho mình.
+ */
+export type SupportButtonMode = 'REQUESTER' | 'UNIT_HANDLER' | 'SYSTEM_HANDLER';
+
+export function supportButtonMode(
+  permissions: PermissionSet,
+  scope: DataScope,
+): SupportButtonMode | null {
+  if (permissions.has('support.request.manage')) {
+    return scope === 'ALL' ? 'SYSTEM_HANDLER' : 'UNIT_HANDLER';
+  }
+  return permissions.has('support.request.create') ? 'REQUESTER' : null;
 }
 
 // Trang dich theo INFORMATION_ARCHITECTURE muc 2, luon la trang nguoi dung co quyen vao.
