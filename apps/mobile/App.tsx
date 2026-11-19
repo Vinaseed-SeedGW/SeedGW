@@ -11,6 +11,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { FEATURES } from '@dms/contracts/features';
 import { logout } from './src/api/client';
 import { loadConsentState, recordConsent, type ConsentState } from './src/api/consent';
 import { loadCapabilities, type Capabilities } from './src/api/targets';
@@ -231,7 +232,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
             onOpenCamera={() => openCamera(null)}
             onPickDealer={openCamera}
             onOpenRoute={account ? () => setTab('route') : null}
-            onOpenTargets={account ? () => setOverlay('targets') : null}
+            onOpenTargets={account && FEATURES.salesTargets ? () => setOverlay('targets') : null}
             onReportProblem={account ? reportProblem : null}
             refreshKey={refreshKey}
           />

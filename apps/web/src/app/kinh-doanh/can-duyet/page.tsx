@@ -36,9 +36,8 @@ export default async function ApprovalsPage({ searchParams }: PageProps) {
     <>
       <h1 className="text-2xl font-bold text-brand">Cần duyệt</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
-        Phiếu Chỉ tiêu tháng (và Tuyến viếng thăm khi có) đi qua Quản lý trực tiếp nếu đơn vị có cấp
-        Quản lý, rồi Lãnh đạo đơn vị. Đổi Trưởng đơn vị hoặc Quản lý thì phiếu đang chờ tự chuyển
-        sang người mới.
+        Phiếu Tuyến viếng thăm đi qua Quản lý trực tiếp nếu đơn vị có cấp Quản lý, rồi Lãnh đạo đơn
+        vị. Đổi Trưởng đơn vị hoặc Quản lý thì phiếu đang chờ tự chuyển sang người mới.
       </p>
       <nav aria-label="Nhóm phiếu" className="mt-4 flex flex-wrap gap-2 border-b border-border">
         {tabs.map((tab) => {

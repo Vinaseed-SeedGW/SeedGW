@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { MAX_PAGE_SIZE, pageResult } from './common';
+import { FEATURES } from './features';
 
 export const approvalKind = z.enum(['ROUTE_PLAN', 'SALES_TARGET']);
+
+/** Loại phiếu đang dùng; Chỉ tiêu tạm hold từ 19/11/2026 (features.ts) nên ẩn khỏi Cần duyệt. */
+export const ACTIVE_APPROVAL_KINDS: readonly z.infer<typeof approvalKind>[] = FEATURES.salesTargets
+  ? ['ROUTE_PLAN', 'SALES_TARGET']
+  : ['ROUTE_PLAN'];
 export type ApprovalKind = z.infer<typeof approvalKind>;
 
 export const APPROVAL_KIND_LABEL: Record<ApprovalKind, string> = {

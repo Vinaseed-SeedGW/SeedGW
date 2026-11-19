@@ -1,12 +1,8 @@
-import {
-  SUPPORT_REOPEN_DAYS,
-  SUPPORT_RETENTION_MONTHS,
-  SUPPORT_SEVERITY_LABEL,
-} from '@dms/contracts/support';
+import { SUPPORT_REOPEN_DAYS, SUPPORT_RETENTION_MONTHS } from '@dms/contracts/support';
 import { db } from '@dms/db/client';
 
-// Việc định kỳ của Hỗ trợ (T4, T5): tự đóng yêu cầu đã xong quá 7 ngày, xoá nội dung sau 18 tháng,
-// tìm Báo lỗi chặn công việc quá hạn để báo Mattermost.
+// Việc định kỳ của Hỗ trợ (T5): tự đóng yêu cầu đã xong quá 7 ngày, xoá nội dung sau 18 tháng.
+// Không báo Mattermost (bỏ ngày 19/11/2026); yêu cầu quá hạn hiện ở Hub và trang Hỗ trợ.
 
 const DAY_MS = 86_400_000;
 
@@ -65,50 +61,4 @@ export async function purgeExpired(now = new Date()): Promise<number> {
     ]);
   }
   return rows.length;
-}
-
-export type OverdueAlert = { key: string; text: string; requestId: string };
-
-/** Báo lỗi chặn công việc đang mở đã quá hạn phản hồi đầu hoặc hạn xử lý, chưa báo lần nào. */
-export async function findOverdueBlockers(now = new Date()): Promise<OverdueAlert[]> {
-  const rows = await db.supportRequest.findMany({
-    where: {
-      type: 'BUG',
-      severity: 'BLOCKER',
-      status: { in: ['NEW', 'IN_PROGRESS'] },
-      overdueAlertedAt: null,
-      OR: [
-        { firstResponseAt: null, firstResponseDueAt: { lt: now } },
-        { resolveDueAt: { lt: now } },
-      ],
-    },
-    select: {
-      id: true,
-      code: true,
-      title: true,
-      firstResponseAt: true,
-      requester: { select: { fullName: true, employeeCode: true } },
-      orgUnit: { select: { name: true } },
-      assignee: { select: { fullName: true } },
-    },
-    take: 50,
-  });
-  const base = (process.env.AUTH_URL ?? '').replace(/\/$/, '');
-  return rows.map((row) => {
-    const stage = row.firstResponseAt ? 'quá hạn xử lý' : 'chưa phản hồi, quá hạn';
-    const link = base ? ` ${base}/quan-tri/ho-tro/${row.code}` : '';
-    return {
-      key: `support-overdue:${row.id}`,
-      requestId: row.id,
-      text:
-        `Báo lỗi ${SUPPORT_SEVERITY_LABEL.BLOCKER.toLowerCase()} ${stage}: ${row.code}, ${row.title}. ` +
-        `Người gửi ${row.requester.fullName} (${row.requester.employeeCode})` +
-        `${row.orgUnit ? `, ${row.orgUnit.name}` : ''}. ` +
-        `${row.assignee ? `Đang giao ${row.assignee.fullName}.` : 'Chưa ai nhận.'}${link}`,
-    };
-  });
-}
-
-export async function markAlerted(requestId: string, now = new Date()): Promise<void> {
-  await db.supportRequest.update({ where: { id: requestId }, data: { overdueAlertedAt: now } });
 }

@@ -389,6 +389,8 @@ model Dealer {
   searchText         String?                  @default(dbgenerated()) @map("search_text")
   checkIns           CheckIn[]
   routeStops         RoutePlanStop[]
+  // A8: bản ghi khách hàng FAST đã ghép với đại lý này.
+  fastCustomer       FastCustomer?
   locationProposals  DealerLocationProposal[]
   createdAt          DateTime                 @default(now()) @map("created_at")
   updatedAt          DateTime                 @updatedAt @map("updated_at")
@@ -730,7 +732,7 @@ model SupportRequest {
   // Người gửi trả lời sau lần trả lời cuối của bên xử lý thì yêu cầu cần xử lý.
   lastRequesterActivityAt DateTime         @map("last_requester_activity_at")
   lastHandlerActivityAt   DateTime?        @map("last_handler_activity_at")
-  // Đã báo Mattermost lần quá hạn của Báo lỗi chặn công việc (T4).
+  // Không còn dùng từ 19/11/2026 (bỏ Mattermost), giữ cột để không phải xoá dữ liệu.
   overdueAlertedAt        DateTime?        @map("overdue_alerted_at")
   // Đã xoá nội dung và tệp sau 18 tháng (T5), chỉ giữ số liệu thống kê.
   purgedAt                DateTime?        @map("purged_at")
@@ -814,7 +816,7 @@ model SupportRead {
   @@map("support_reads")
 }
 
-// Nhật ký gửi ra hệ thống ngoài (Mattermost, sau này FAST): chống gửi trùng theo khoá, ghi lỗi để gửi lại.
+// Nhật ký gửi ra hệ thống ngoài (chiều DMS gọi FAST, làm sau): chống gửi trùng theo khoá, ghi lỗi để gửi lại.
 model IntegrationLog {
   id             String    @id @default(uuid()) @db.Uuid
   provider       String
@@ -829,4 +831,84 @@ model IntegrationLog {
 
   @@index([provider, status])
   @@map("integration_logs")
+}
+
+// ---------- Kết nối FAST (A8, 19/11/2026) ----------
+
+// Cấu hình kết nối ra ngoài, giá trị mã hoá AES-256-GCM bằng INTEGRATION_SECRET_KEY, không lưu mật khẩu dạng rõ.
+model IntegrationSetting {
+  key         String   @id
+  value       String
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("integration_settings")
+}
+
+enum FastSyncStatus {
+  RUNNING
+  OK
+  FAILED
+  SKIPPED
+
+  @@map("fast_sync_status")
+}
+
+// Mỗi lần lấy danh mục khách hàng từ FAST: mốc lấy, số dòng, lỗi.
+model FastSyncRun {
+  id         String          @id @default(uuid()) @db.Uuid
+  trigger    String
+  status     FastSyncStatus  @default(RUNNING)
+  // Lấy khách hàng sửa từ mốc này; null là lấy toàn bộ.
+  sinceAt    DateTime?       @map("since_at")
+  // Ngày sửa lớn nhất nhận được, làm mốc cho lần sau.
+  cursorAt   DateTime?       @map("cursor_at")
+  fetched    Int             @default(0)
+  created    Int             @default(0)
+  updated    Int             @default(0)
+  unchanged  Int             @default(0)
+  failed     Int             @default(0)
+  message    String?
+  startedAt  DateTime        @default(now()) @map("started_at")
+  finishedAt DateTime?       @map("finished_at")
+  errors     FastSyncError[]
+
+  @@index([startedAt(sort: Desc)])
+  @@map("fast_sync_runs")
+}
+
+model FastSyncError {
+  id        String      @id @default(uuid()) @db.Uuid
+  runId     String      @map("run_id") @db.Uuid
+  run       FastSyncRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  fastCode  String?     @map("fast_code")
+  message   String
+  payload   Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@map("fast_sync_errors")
+}
+
+// Bản sao danh mục khách hàng FAST, giữ nguyên trường gốc để sau này phân loại lại (đại lý, khách hàng khác).
+model FastCustomer {
+  code          String    @id
+  name          String
+  taxCode       String?   @map("tax_code")
+  address       String?
+  provinceCode  String?   @map("province_code")
+  districtCode  String?   @map("district_code")
+  phone         String?
+  email         String?
+  unitCode      String?   @map("unit_code")
+  groups        Json      @default("{}")
+  status        String?
+  fastCreatedAt DateTime? @map("fast_created_at")
+  fastUpdatedAt DateTime? @map("fast_updated_at")
+  dealerId      String?   @unique @map("dealer_id") @db.Uuid
+  dealer        Dealer?   @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  syncedAt      DateTime  @map("synced_at")
+
+  @@index([fastUpdatedAt])
+  @@map("fast_customers")
 }

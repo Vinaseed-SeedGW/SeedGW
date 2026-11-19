@@ -38,7 +38,7 @@ Vẫn giữ trên máy cá nhân, chỉ để phát triển: `pnpm dev`, databas
 | `DATABASE_URL` | Chứa mật khẩu cũ | Theo mật khẩu database mới |
 | `VIETMAP_API_KEY` | Khoá thử | Khoá mới đứng tên Vinaseed |
 | `SEED_PASSWORD` | Có | Bỏ |
-| Biến FAST, Mattermost | Chưa có | Thêm ở giai đoạn 4 |
+| Khoá mã hoá cấu hình kết nối `INTEGRATION_SECRET_KEY` | Có từ A8 (19/11/2026) | Tạo khoá mới cho máy chủ thật; địa chỉ và tài khoản FAST nhập ở trang Kết nối |
 
 ### 2. Tách máy chủ thật khỏi máy chủ thử
 
@@ -85,7 +85,7 @@ Cài runner GitHub vào máy chủ (README mục 3). IT không cho gọi ra GitH
 | Web Next.js (trang quản trị và API cho app) | Toàn bộ nghiệp vụ: đăng nhập, 3 vai trò, đại lý, báo cáo ghé thăm, Hỗ trợ, Tham số |
 | PostgreSQL | Tài khoản, đơn vị, đại lý, check-in, vết GPS, nhật ký |
 | MinIO | Kho ảnh check-in, tự xoá sau 45 ngày, link ảnh có chữ ký và hạn dùng |
-| Redis và worker | Hàng đợi việc nền: đồng bộ FAST, thông báo, Mattermost |
+| Redis và worker | Hàng đợi việc nền: đồng bộ FAST, km theo đường đi, việc định kỳ của Hỗ trợ |
 | Caddy | Cổng vào duy nhất, tự lo HTTPS, chặn database, Redis, MinIO khỏi bên ngoài |
 | Migration database | Tạo và nâng cấp bảng an toàn mỗi lần cập nhật |
 | `backup.sh`, `restore.sh`, `wait-healthy.sh`, `/api/health` | Sao lưu, khôi phục, kiểm tra sau cập nhật; IT theo dõi `/api/health` |
@@ -113,6 +113,6 @@ Cài runner GitHub vào máy chủ (README mục 3). IT không cho gọi ra GitH
 
 1. Trang web quản trị có mở ra Internet không, hay chỉ trong mạng công ty hoặc VPN? Chỉ nội bộ thì giữ cách tách cổng như bản thử, chỉ API của app ra Internet.
 2. IT có mở cổng 80 và 443 ở DMZ không? Không thì dùng Cloudflare Tunnel có tên, cần tên miền nằm trên Cloudflare.
-3. Máy chủ có gọi ra được GitHub, FAST, Mattermost không?
+3. Máy chủ có gọi ra được GitHub và FAST không?
 4. Sao lưu đặt ở đâu, giữ bao lâu?
 5. Ai được vào máy chủ, ai nhận cảnh báo khi máy chủ ngừng?

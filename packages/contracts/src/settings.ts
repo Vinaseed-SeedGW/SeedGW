@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { HIDDEN_SETTING_KEYS } from './features';
 
 type SettingDefinition = {
   key: string;
@@ -61,10 +62,11 @@ const SALES_SETTINGS = [
 const FAST_SYNC_SETTINGS = [
   {
     key: 'fastCatalogSyncMinutes',
-    label: 'Danh mục đại lý hai chiều (phút)',
-    min: 15,
+    label: 'Danh mục đại lý, khách hàng từ FAST (phút)',
+    min: 5,
     max: 1440,
-    defaultValue: 60,
+    defaultValue: 5,
+    hint: 'Tài liệu FAST đề xuất 5 phút. Mỗi lần chỉ lấy khách hàng sửa từ lần trước.',
   },
   {
     key: 'fastStockDebtSyncMinutes',
@@ -181,7 +183,6 @@ const SUPPORT_SETTINGS = [
     min: 1,
     max: 200,
     defaultValue: 4,
-    hint: 'Quá hạn thì báo vào Mattermost khi đã cấu hình kênh.',
   },
   {
     key: 'supportFirstResponseHoursMajor',
@@ -220,13 +221,19 @@ const SUPPORT_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
-export const SETTING_GROUPS = [
+const ALL_SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
   { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
   { title: 'Ghi hành trình và km theo GPS', settings: TRACKING_SETTINGS },
   { title: 'Thời hạn xử lý yêu cầu hỗ trợ', settings: SUPPORT_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
+
+/** Nhóm tham số hiện trên trang Tham số; tham số của tính năng đang hold được ẩn (features.ts). */
+export const SETTING_GROUPS = ALL_SETTING_GROUPS.map((group) => ({
+  title: group.title,
+  settings: group.settings.filter((setting) => !HIDDEN_SETTING_KEYS.has(setting.key)),
+})).filter((group) => group.settings.length > 0);
 
 const ALL_SETTINGS = [
   ...SALES_SETTINGS,

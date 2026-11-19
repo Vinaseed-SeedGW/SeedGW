@@ -1,20 +1,15 @@
 import { Queue, Worker, type Job } from 'bullmq';
+import { FAST_SYNC_QUEUE } from '@dms/contracts/fast';
 import { ROAD_DISTANCE_QUEUE, type RoadDistanceJob } from '@dms/contracts/road-distance';
-import {
-  mattermostEnabled,
-  recordMattermost,
-  sendMattermost,
-  type MattermostJob,
-} from './mattermost';
+import { runFastCustomerSync } from './fast-sync';
 import { roadDistanceProvider } from './osrm';
 import { computeRoadDay, userDaysWithCheckIns } from './road-distance';
-import { autoCloseDone, findOverdueBlockers, markAlerted, purgeExpired } from './support';
+import { autoCloseDone, purgeExpired } from './support';
 
-// Worker chạy nền (F8): km theo đường đi (V1b), việc định kỳ của Hỗ trợ và gửi Mattermost (T4, T5).
+// Worker chạy nền (F8): km theo đường đi (V1b), việc định kỳ của Hỗ trợ (T5), đồng bộ FAST (A8).
 const REDIS_URL = process.env.REDIS_URL?.trim();
 const DAY_MS = 86_400_000;
 const SUPPORT_QUEUE = 'support';
-const INTEGRATIONS_QUEUE = 'integrations';
 
 const vnToday = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 
@@ -57,8 +52,7 @@ async function startRoadDistance(connection: Connection): Promise<Array<Queue | 
 
 async function startSupport(connection: Connection): Promise<Array<Queue | Worker>> {
   const queue = new Queue(SUPPORT_QUEUE, { connection });
-  const integrations = new Queue(INTEGRATIONS_QUEUE, { connection });
-  // 15 phút một lần: tự đóng, xoá quá 18 tháng, báo lỗi chặn công việc quá hạn.
+  // 15 phút một lần: tự đóng yêu cầu đã xong quá 7 ngày, xoá nội dung quá 18 tháng.
   await queue.upsertJobScheduler(
     'support-maintenance',
     { pattern: '*/15 * * * *', tz: 'Asia/Ho_Chi_Minh' },
@@ -72,42 +66,29 @@ async function startSupport(connection: Connection): Promise<Array<Queue | Worke
     SUPPORT_QUEUE,
     async () => {
       const now = new Date();
-      const closed = await autoCloseDone(now);
-      const purged = await purgeExpired(now);
-      const alerts = await findOverdueBlockers(now);
-      for (const alert of alerts) {
-        const job: MattermostJob = { key: alert.key, text: alert.text };
-        if ((await recordMattermost(job)) && mattermostEnabled()) {
-          // jobId theo khoá nhật ký: có xếp lại cũng không gửi trùng.
-          await integrations.add('mattermost', job, {
-            jobId: job.key.replace(/:/g, '-'),
-            attempts: 5,
-            backoff: { type: 'exponential', delay: 60_000 },
-            removeOnComplete: 1000,
-            removeOnFail: 1000,
-          });
-        }
-        await markAlerted(alert.requestId, now);
-      }
-      return { closed, purged, alerts: alerts.length };
-    },
-    { connection, concurrency: 1 },
-  );
-  const sender = new Worker(
-    INTEGRATIONS_QUEUE,
-    async (job: Job) => {
-      if (job.name === 'mattermost') await sendMattermost(job.data as MattermostJob);
+      return { closed: await autoCloseDone(now), purged: await purgeExpired(now) };
     },
     { connection, concurrency: 1 },
   );
   logJobs(worker, 'Hỗ trợ');
-  logJobs(sender, 'Gửi ra ngoài');
-  if (!mattermostEnabled()) {
-    console.log(
-      'Chưa cấu hình MATTERMOST_WEBHOOK_URL: lỗi quá hạn chỉ ghi nhật ký, không gửi Mattermost.',
-    );
-  }
-  return [queue, integrations, worker, sender];
+  return [queue, worker];
+}
+
+async function startFastSync(connection: Connection): Promise<Array<Queue | Worker>> {
+  const queue = new Queue(FAST_SYNC_QUEUE, { connection });
+  // Lịch 5 phút một lần; mỗi lần tự kiểm đã đủ chu kỳ ở Tham số chưa rồi mới gọi FAST.
+  await queue.upsertJobScheduler(
+    'fast-customers',
+    { pattern: '*/5 * * * *', tz: 'Asia/Ho_Chi_Minh' },
+    { name: 'schedule', data: {} },
+  );
+  const worker = new Worker(
+    FAST_SYNC_QUEUE,
+    async (job: Job) => runFastCustomerSync(job.name === 'manual' ? 'MANUAL' : 'SCHEDULE'),
+    { connection, concurrency: 1 },
+  );
+  logJobs(worker, 'Đồng bộ FAST');
+  return [queue, worker];
 }
 
 function logJobs(worker: Worker, label: string) {
@@ -126,7 +107,11 @@ async function main() {
     return;
   }
   const connection: Connection = { url: REDIS_URL, maxRetriesPerRequest: null };
-  const parts = [...(await startRoadDistance(connection)), ...(await startSupport(connection))];
+  const parts = [
+    ...(await startRoadDistance(connection)),
+    ...(await startSupport(connection)),
+    ...(await startFastSync(connection)),
+  ];
   console.log('Worker đã sẵn sàng.');
 
   const shutdown = async () => {

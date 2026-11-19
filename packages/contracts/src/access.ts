@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { DepartmentSlug } from './departments';
+import { isHiddenPath } from './features';
 
 export const PERMISSIONS = [
   { code: 'executive.overview.read', name: 'Xem Tổng quan điều hành' },
@@ -40,6 +41,7 @@ export const PERMISSIONS = [
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
   { code: 'admin.connection.read', name: 'Xem Kết nối' },
+  { code: 'admin.connection.manage', name: 'Sửa Kết nối' },
   { code: 'admin.audit-log.read', name: 'Xem Nhật ký' },
 ] as const;
 
@@ -138,6 +140,8 @@ export function activeNavHref(pathname: string, hrefs: readonly string[]): strin
 
 // Quy tac dai nhat duoc uu tien de trang con co the can quyen rieng.
 export function permissionForPath(pathname: string): PermissionCode | null {
+  // Trang của tính năng đang hold coi như không ai có quyền: ẩn khỏi menu, vào thẳng thì bị chặn.
+  if (isHiddenPath(pathname)) return null;
   let longest: RouteRule | null = null;
   for (const rule of ROUTE_RULES) {
     const matches = pathname === rule.path || pathname.startsWith(`${rule.path}/`);
@@ -200,7 +204,10 @@ export function departmentLanding(
 
   const firstAllowed = ROUTE_RULES.find(
     (rule) =>
-      rule.department === slug && !isActionPath(rule.path) && permissions.has(rule.permission),
+      rule.department === slug &&
+      !isActionPath(rule.path) &&
+      !isHiddenPath(rule.path) &&
+      permissions.has(rule.permission),
   );
   return firstAllowed?.path ?? FORBIDDEN_PATH;
 }

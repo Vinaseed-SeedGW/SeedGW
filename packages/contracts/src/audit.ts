@@ -68,6 +68,8 @@ export const AUDIT_ACTION_LABEL = {
   'role.update': 'Sửa quyền của vai trò',
   'role.delete': 'Xoá vai trò',
   'setting.update': 'Sửa tham số',
+  'connection.update': 'Sửa cấu hình kết nối FAST',
+  'connection.sync': 'Bấm đồng bộ FAST ngay',
   'code-sequence.update': 'Sửa dải mã',
   'workflow.publish': 'Tạo phiên bản quy trình duyệt',
   'workflow.inherit': 'Chuyển quy trình về kế thừa',
@@ -88,6 +90,7 @@ export const AUDIT_ENTITY_LABEL = {
   OrgUnit: 'Đơn vị',
   Role: 'Vai trò',
   SystemSetting: 'Tham số',
+  IntegrationSetting: 'Kết nối',
   CodeSequence: 'Dải mã',
   ApprovalWorkflow: 'Quy trình duyệt',
   Delegation: 'Uỷ quyền',
@@ -126,6 +129,10 @@ export const AUDIT_ENTITY_OPTIONS = AUDIT_ENTITY_TYPES.filter(
 }));
 
 export const AUDIT_FIELD_LABEL: Record<string, string> = {
+  baseUrl: 'Địa chỉ API',
+  username: 'Tên đăng nhập API',
+  password: 'Mật khẩu API',
+  enabled: 'Bật đồng bộ',
   fullName: 'Họ tên',
   isActive: 'Đang hoạt động',
   phone: 'Số điện thoại',

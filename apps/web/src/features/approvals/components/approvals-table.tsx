@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
+  ACTIVE_APPROVAL_KINDS,
   APPROVAL_KIND_LABEL,
   type ApprovalRow,
   type ApprovalTab,
@@ -17,10 +18,12 @@ import { ApprovalStatusBadge } from './approval-status-badge';
 const SECONDARY_COLUMN = 'max-md:hidden';
 const WRAP_COLUMN = 'min-w-56 whitespace-normal!';
 
-const KIND_OPTIONS = Object.entries(APPROVAL_KIND_LABEL).map(([value, label]) => ({
-  value,
-  label,
-}));
+const KIND_OPTIONS = Object.entries(APPROVAL_KIND_LABEL)
+  .filter(([value]) => ACTIVE_APPROVAL_KINDS.some((kind) => kind === value))
+  .map(([value, label]) => ({
+    value,
+    label,
+  }));
 
 function columns(tab: ApprovalTab): ColumnDef<ApprovalRow>[] {
   const list: ColumnDef<ApprovalRow>[] = [

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { FEATURES } from '@dms/contracts/features';
 import { Suspense } from 'react';
 import {
   currentVnMonth,
@@ -30,6 +32,8 @@ const TAB_LABEL: Record<SalesTargetTab, string> = {
 };
 
 export default async function SalesTargetsPage({ searchParams }: PageProps) {
+  // Chỉ tiêu tạm hold từ 19/11/2026 (features.ts).
+  if (!FEATURES.salesTargets) notFound();
   const user = await requirePermission('sales.target.read');
   const tabs: SalesTargetTab[] = [];
   if (can(user, 'sales.target.register')) tabs.push('cua-toi');

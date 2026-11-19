@@ -1,3 +1,4 @@
+import { FEATURES } from '@dms/contracts/features';
 import { NextResponse } from 'next/server';
 import { mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { countPendingForApprover } from '@/server/services/approvals';
@@ -15,7 +16,8 @@ export const GET = mobileRoute(async (request: Request) => {
     user: profile,
     canCheckIn: user.permissions.has('sales.check-in.create'),
     // K3a, A10b (17/11/2026). App cũ bỏ qua các trường này.
-    canRegisterTarget: user.permissions.has('sales.target.register'),
+    // Chỉ tiêu tạm hold từ 19/11/2026 (features.ts): app không hiện thẻ và màn Chỉ tiêu.
+    canRegisterTarget: FEATURES.salesTargets && user.permissions.has('sales.target.register'),
     canRegisterRoute: user.permissions.has('sales.route.register'),
     canReviewApprovals: canReview,
     pendingApprovalCount,

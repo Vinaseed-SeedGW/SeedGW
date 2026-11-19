@@ -1,6 +1,7 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
 import {
+  ACTIVE_APPROVAL_KINDS,
   APPROVAL_CODE_SEQUENCE_KEY,
   APPROVAL_STATUS_LABEL,
   PENDING_APPROVAL_STATUSES,
@@ -687,7 +688,10 @@ async function filterWhere(input: ListApprovalsInput): Promise<Prisma.ApprovalRe
   const q = input.q?.trim();
   return {
     status: { not: 'DRAFT' },
-    ...(input.kind ? { kind: input.kind } : {}),
+    kind:
+      input.kind && ACTIVE_APPROVAL_KINDS.includes(input.kind)
+        ? input.kind
+        : { in: [...ACTIVE_APPROVAL_KINDS] },
     ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
     ...(input.submittedById ? { submittedById: input.submittedById } : {}),
     ...(input.lateOnly ? { isLate: true } : {}),
@@ -760,7 +764,11 @@ export async function listApprovals(
 
 export async function countPendingForApprover(approverId: string): Promise<number> {
   return db.approvalRequest.count({
-    where: { currentApproverId: approverId, status: { in: PENDING } },
+    where: {
+      currentApproverId: approverId,
+      status: { in: PENDING },
+      kind: { in: [...ACTIVE_APPROVAL_KINDS] },
+    },
   });
 }
 
@@ -788,7 +796,8 @@ export async function readApproval(viewer: ApprovalViewer, code: string): Promis
       },
     },
   });
-  if (!record || record.status === 'DRAFT') {
+  // Phiếu của loại đang hold (Chỉ tiêu) coi như không có.
+  if (!record || record.status === 'DRAFT' || !ACTIVE_APPROVAL_KINDS.includes(record.kind)) {
     throw new DomainError('NOT_FOUND', 'Không tìm thấy phiếu');
   }
   const involved =
