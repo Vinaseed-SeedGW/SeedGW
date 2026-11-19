@@ -9,6 +9,7 @@ import {
 } from '@dms/contracts/dealers';
 import { formatDateTime } from '@dms/contracts/format';
 import { DealerEditForm } from './dealer-edit-form';
+import { APP_NAME } from '@dms/config/brand';
 
 type Props = {
   dealer: DealerDetail;
@@ -97,7 +98,7 @@ export function DealerProfile({ dealer, backHref, editOptions, visits }: Props) 
 
       {editOptions ? (
         <section className="mt-5 rounded-md border border-border bg-surface p-4">
-          <h2 className="text-lg font-bold">Sửa thông tin trên DMS</h2>
+          <h2 className="text-lg font-bold">Sửa thông tin trên {APP_NAME}</h2>
           <div className="mt-3">
             <DealerEditForm dealer={dealer} options={editOptions} />
           </div>

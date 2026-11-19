@@ -253,6 +253,7 @@ Quy tắc tính:
 
 | Khái niệm | Nhãn trên giao diện | Ghi chú |
 |---|---|---|
+| Tên phần mềm (quyết định 34) | **SeedGW** | Tiêu đề tab web, màn đăng nhập app, tên dưới biểu tượng. "DMS cũ" là hệ thống cũ, giữ nguyên |
 | Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 2: Kinh doanh, Quản trị |
 | Trao đổi giữa CBNV và quản trị | **Hỗ trợ**, mỗi lần gửi là một **Yêu cầu** | Loại: Hỏi đáp, Báo lỗi, Góp ý. Không gọi là "ticket" |
 | Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |

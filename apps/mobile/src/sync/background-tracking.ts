@@ -13,6 +13,7 @@ import {
   recordTaskError,
   type SessionEndReason,
 } from './track-db';
+import { APP_NAME } from '@dms/config/brand';
 
 export const TRACKING_TASK = 'dms-ghi-hanh-trinh';
 
@@ -86,7 +87,7 @@ export async function startTracking(): Promise<StartResult> {
       activityType: Location.ActivityType.AutomotiveNavigation,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
-        notificationTitle: 'DMS đang ghi hành trình',
+        notificationTitle: `${APP_NAME} đang ghi hành trình`,
         notificationBody: 'Ghi vị trí trong giờ làm việc để tính km giữa các điểm check-in.',
         notificationColor: COLORS.brand,
         killServiceOnDestroy: false,

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DMS Vinaseed",
+    "name": "SeedGW",
     "slug": "check-in-app",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -29,7 +29,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "DMS Vinaseed dùng máy ảnh để chụp ảnh check-in tại đại lý, khách hàng hoặc điểm làm việc. Ảnh có in giờ và vị trí.",
+          "cameraPermission": "SeedGW dùng máy ảnh để chụp ảnh check-in tại đại lý, khách hàng hoặc điểm làm việc. Ảnh có in giờ và vị trí.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
         }
@@ -37,9 +37,9 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "DMS Vinaseed dùng vị trí để ghi điểm check-in và in toạ độ lên ảnh check-in.",
-          "locationAlwaysAndWhenInUsePermission": "DMS Vinaseed ghi vị trí trong giờ làm việc, từ lượt check-in đầu tiên tới khi bạn bấm Kết thúc ngày, để tính km giữa các điểm check-in. Chọn Luôn luôn để hành trình không bị đứt khi tắt màn hình.",
-          "locationAlwaysPermission": "DMS Vinaseed ghi vị trí trong giờ làm việc để tính km giữa các điểm check-in.",
+          "locationWhenInUsePermission": "SeedGW dùng vị trí để ghi điểm check-in và in toạ độ lên ảnh check-in.",
+          "locationAlwaysAndWhenInUsePermission": "SeedGW ghi vị trí trong giờ làm việc, từ lượt check-in đầu tiên tới khi bạn bấm Kết thúc ngày, để tính km giữa các điểm check-in. Chọn Luôn luôn để hành trình không bị đứt khi tắt màn hình.",
+          "locationAlwaysPermission": "SeedGW ghi vị trí trong giờ làm việc để tính km giữa các điểm check-in.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true

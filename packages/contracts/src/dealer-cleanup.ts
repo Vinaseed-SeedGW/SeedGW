@@ -175,7 +175,7 @@ export function mergeBlockReason(
 ): string | null {
   const withCode = [kept, ...merged].filter((dealer) => dealer.code);
   if (withCode.length > 1) {
-    return 'Có từ hai đại lý cùng có mã FAST. Cần gộp trên FAST trước, rồi đồng bộ về DMS';
+    return 'Có từ hai đại lý cùng có mã FAST. Cần gộp trên FAST trước, rồi đồng bộ về SeedGW';
   }
   if (withCode.length === 1 && !kept.code) {
     return 'Chọn đại lý có mã FAST làm bản giữ lại';

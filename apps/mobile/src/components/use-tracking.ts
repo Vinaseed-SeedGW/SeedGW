@@ -9,6 +9,7 @@ import {
   type StartResult,
 } from '../sync/background-tracking';
 import { getConsentAt, getLastPointAt } from '../sync/track-db';
+import { APP_NAME } from '@dms/config/brand';
 
 // iOS dừng ghi vị trí khi người dùng vuốt tắt app. App mở lại từ đầu (không phải từ chạy nền)
 // trong lúc đang ghi mà điểm cuối đã cũ thì báo đoạn bị đứt, để người dùng biết và lần sau không tắt app.
@@ -34,7 +35,7 @@ export type PermissionLevel = Awaited<ReturnType<typeof describeLocationPermissi
 const START_ERRORS: Record<Exclude<StartResult, { ok: true }>['reason'], string> = {
   NO_CONSENT: 'Cần đồng ý cho ghi vị trí trong giờ làm việc trước khi ghi hành trình.',
   SERVICES_OFF: 'Định vị trên điện thoại đang tắt. Bật định vị rồi thử lại.',
-  FOREGROUND_DENIED: 'Chưa có quyền vị trí. Mở Cài đặt và cho phép DMS dùng vị trí.',
+  FOREGROUND_DENIED: `Chưa có quyền vị trí. Mở Cài đặt và cho phép ${APP_NAME} dùng vị trí.`,
   BACKGROUND_DENIED:
     Platform.OS === 'ios'
       ? 'Cần quyền vị trí Luôn luôn để ghi hành trình khi app chạy nền. Mở Cài đặt, chọn Vị trí, chọn Luôn luôn.'

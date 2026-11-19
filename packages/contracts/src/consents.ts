@@ -1,14 +1,15 @@
 import { z } from 'zod';
 
-// Lời đồng ý chia sẻ vị trí, người dùng duyệt câu chữ ngày 17/11/2026. Web và app dùng chung một nội dung.
+// Lời đồng ý chia sẻ vị trí, người dùng duyệt câu chữ ngày 17/11/2026; bản 19/11 chỉ đổi tên app thành
+// SeedGW (quyết định 34), nội dung thu thập giữ nguyên. Web và app dùng chung một nội dung.
 // Đổi câu chữ thì tăng phiên bản, mọi người sẽ được hỏi lại ở lần dùng tiếp theo.
-export const LOCATION_CONSENT_VERSION = '2026-11-17';
+export const LOCATION_CONSENT_VERSION = '2026-11-19';
 export const LOCATION_CONSENT_KIND = 'LOCATION';
 
 export const LOCATION_CONSENT = {
   title: 'Đồng ý chia sẻ vị trí khi làm việc',
   intro:
-    'Để phục vụ hoạt động sản xuất kinh doanh, Công ty Cổ phần Tập đoàn Giống cây trồng Việt Nam (Vinaseed) cần thu thập dữ liệu vị trí của bạn khi bạn dùng DMS Vinaseed trong công việc.',
+    'Để phục vụ hoạt động sản xuất kinh doanh, Công ty Cổ phần Tập đoàn Giống cây trồng Việt Nam (Vinaseed) cần thu thập dữ liệu vị trí của bạn khi bạn dùng SeedGW trong công việc.',
   sections: [
     {
       heading: 'Dữ liệu được thu thập',
@@ -16,7 +17,7 @@ export const LOCATION_CONSENT = {
         'Vị trí và thời điểm khi bạn check-in tại đại lý, khách hàng hoặc điểm làm việc.',
         'Hành trình di chuyển, tính từ lượt check-in đầu tiên trong ngày tới khi bạn bấm Kết thúc ngày, hoặc muộn nhất tới 20:00.',
         'Ảnh check-in có in giờ, toạ độ và địa chỉ.',
-        'Ngoài khoảng thời gian trên, app không ghi vị trí. Trang web DMS không lấy vị trí của bạn.',
+        'Ngoài khoảng thời gian trên, app không ghi vị trí. Trang web SeedGW không lấy vị trí của bạn.',
       ],
     },
     {

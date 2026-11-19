@@ -14,6 +14,7 @@ import { Form } from '@dms/ui/form';
 import { CodeSequenceStatus } from '@/features/settings/components/code-sequence-status';
 import { SettingsSection } from '@/features/settings/components/settings-section';
 import { saveCodeSequenceAction } from '@/server/actions/settings';
+import { APP_NAME } from '@dms/config/brand';
 
 const ISSUED_HINT = 'Đã cấp mã nên không đổi được.';
 const LOCKED_INPUT = 'bg-surface-subtle';
@@ -50,7 +51,7 @@ export function CodeSequenceForm({ sequence }: { sequence: CodeSequenceView }) {
 
   return (
     <Form.Root form={form} action={saveCodeSequenceAction} successMessage="Đã lưu dải mã">
-      <SettingsSection title="Dải mã khách hàng của DMS">
+      <SettingsSection title={`Dải mã khách hàng của ${APP_NAME}`}>
         <CodeSequenceStatus sequence={sequence} />
         <div className="mt-3.5 grid items-start gap-3.5 sm:grid-cols-2">
           <div>

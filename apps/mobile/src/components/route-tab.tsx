@@ -10,6 +10,7 @@ import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
 import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
+import { APP_NAME } from '@dms/config/brand';
 
 const VISIBLE_RESULTS = 30;
 const DAY_MS = 86_400_000;
@@ -106,7 +107,7 @@ export function RouteTab({ onPick, onOpenRoutes, refreshKey }: Props) {
         </Text>
         {denied ? (
           <Text style={styles.danger}>
-            Chưa có quyền vị trí. Mở Cài đặt và cho phép DMS dùng vị trí.
+            {`Chưa có quyền vị trí. Mở Cài đặt và cho phép ${APP_NAME} dùng vị trí.`}
           </Text>
         ) : null}
         {!denied && !point ? <Text style={styles.muted}>Đang lấy vị trí</Text> : null}

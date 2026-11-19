@@ -5,6 +5,7 @@ import { login } from '../api/client';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { AppFooter } from './app-footer';
+import { APP_NAME } from '@dms/config/brand';
 
 // M1: cùng tài khoản web. Máy đầu tiên dùng được ngay, máy thứ hai chờ quản trị duyệt.
 export function LoginScreen() {
@@ -32,7 +33,7 @@ export function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.brand}>DMS Vinaseed</Text>
+        <Text style={styles.brand}>{APP_NAME}</Text>
         <Text style={styles.title}>Đăng nhập</Text>
         <Text style={styles.muted}>Dùng mã nhân viên và mật khẩu như trên web.</Text>
 

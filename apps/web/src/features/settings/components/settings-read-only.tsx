@@ -2,6 +2,7 @@ import { formatNumber } from '@dms/contracts/format';
 import { SETTING_GROUPS, formatSequenceCode, type SettingsOverview } from '@dms/contracts/settings';
 import { CodeSequenceStatus } from '@/features/settings/components/code-sequence-status';
 import { SettingsSection } from '@/features/settings/components/settings-section';
+import { APP_NAME } from '@dms/config/brand';
 
 function ReadOnlyValue({ label, value }: { label: string; value: string }) {
   return (
@@ -32,7 +33,7 @@ export function SettingsReadOnly({ overview }: { overview: SettingsOverview }) {
           </dl>
         </SettingsSection>
       ))}
-      <SettingsSection title="Dải mã khách hàng của DMS">
+      <SettingsSection title={`Dải mã khách hàng của ${APP_NAME}`}>
         <CodeSequenceStatus sequence={codeSequence} />
         <dl className="mt-3.5 grid gap-3.5 sm:grid-cols-2">
           <ReadOnlyValue label="Mã đầu dải" value={code(codeSequence.rangeStart)} />

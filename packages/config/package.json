@@ -5,7 +5,8 @@
   "exports": {
     "./eslint": "./eslint.base.mjs",
     "./tsconfig.base.json": "./tsconfig.base.json",
-    "./footer": "./src/footer.ts"
+    "./footer": "./src/footer.ts",
+    "./brand": "./src/brand.ts"
   },
   "dependencies": {
     "typescript-eslint": "^8.72.1"

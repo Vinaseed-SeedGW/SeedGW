@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from './text';
 import { formatCoord, formatVnDate, formatVnTime } from '../sync/geo';
 import { COLORS, FONT } from '../theme';
+import { APP_NAME } from '@dms/config/brand';
 
 export type StripLocation = { lat: number; lng: number; accuracy: number | null };
 
@@ -44,7 +45,7 @@ export function WatermarkStrip({ at, location, address, width }: Props) {
           : 'Đang lấy vị trí'}
         {accuracy != null ? `   Sai số ${Math.round(accuracy)} m` : ''}
       </Text>
-      <Text style={[styles.text, styles.brand, small]}>DMS Vinaseed, bản thử R3</Text>
+      <Text style={[styles.text, styles.brand, small]}>{`${APP_NAME}, bản thử R3`}</Text>
     </View>
   );
 }

@@ -2,6 +2,8 @@
 
 Nguồn duy nhất về logo, font và màu của phần mềm. Căn cứ: `0813 Vinaseed_Brand Guideline.pdf` (số trang là số trang của file PDF) và file `Logo chuẩn CMYK.ai`. Bản xem trực quan: [brand/brand-preview.html](brand/brand-preview.html).
 
+**Tên sản phẩm** (quyết định 34): **SeedGW**. Viết đúng chữ S, G, W hoa, liền nhau, không thêm dấu cách. Tên đặt cạnh hoặc dưới logo Vinaseed bằng font UTM Neo Sans Intel, không ghép vào logo, không thay logo. Code lấy tên từ `APP_NAME` trong `@dms/config/brand`.
+
 ## 1. Logo
 
 ### File AI chứa gì

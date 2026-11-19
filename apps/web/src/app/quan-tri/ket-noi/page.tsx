@@ -11,6 +11,7 @@ import { FastConnectionFormEdit } from '@/features/connections/components/fast-c
 import { FastSyncNowButton } from '@/features/connections/components/fast-sync-now';
 import { can, requirePermission } from '@/server/auth/can';
 import { getFastOverview } from '@/server/queries/fast';
+import { APP_NAME } from '@dms/config/brand';
 
 export const metadata: Metadata = { title: 'Kết nối' };
 
@@ -75,9 +76,9 @@ export default async function ConnectionsPage() {
     <>
       <h1 className="text-2xl font-bold text-brand">Kết nối</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
-        Đồng bộ danh mục khách hàng từ FAST Business Online sang DMS theo API FAST cấp (đặc tả bản
-        1.7). FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế, trạng thái; DMS giữ toạ độ, nhân
-        viên phụ trách và cấp đại lý. Công nợ, hoá đơn tạm chưa đồng bộ.
+        Đồng bộ danh mục khách hàng từ FAST Business Online sang {APP_NAME} theo API FAST cấp (đặc
+        tả bản 1.7). FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế, trạng thái; {APP_NAME}{' '}
+        giữ toạ độ, nhân viên phụ trách và cấp đại lý. Công nợ, hoá đơn tạm chưa đồng bộ.
       </p>
 
       <div className="mt-5 grid max-w-5xl gap-4 xl:grid-cols-2">
@@ -101,8 +102,14 @@ export default async function ConnectionsPage() {
         <Section title="Đồng bộ khách hàng" aside={canManage ? <FastSyncNowButton /> : null}>
           <dl className="grid grid-cols-2 gap-3">
             <Stat label="Khách hàng nhận từ FAST" value={formatNumber(stats.fastCustomers)} />
-            <Stat label="Đã ghép với đại lý DMS" value={formatNumber(stats.matchedDealers)} />
-            <Stat label="Đại lý DMS có mã FAST" value={formatNumber(stats.dealersWithCode)} />
+            <Stat
+              label={`Đã ghép với đại lý ${APP_NAME}`}
+              value={formatNumber(stats.matchedDealers)}
+            />
+            <Stat
+              label={`Đại lý ${APP_NAME} có mã FAST`}
+              value={formatNumber(stats.dealersWithCode)}
+            />
             <Stat
               label="Có mã nhưng chưa có trên FAST"
               value={

@@ -45,4 +45,4 @@ export type PushSendJob = { messageIds: string[] };
 export type PushReceiptJob = { tickets: Array<{ ticketId: string; token: string }> };
 
 /** Kênh thông báo Android, đặt tên tiếng Việt cho người dùng thấy trong Cài đặt. */
-export const ANDROID_PUSH_CHANNEL = { id: 'mac-dinh', name: 'Thông báo DMS Vinaseed' } as const;
+export const ANDROID_PUSH_CHANNEL = { id: 'mac-dinh', name: 'Thông báo SeedGW' } as const;

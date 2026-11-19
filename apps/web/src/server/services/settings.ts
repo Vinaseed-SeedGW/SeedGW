@@ -12,6 +12,7 @@ import {
 } from '@dms/contracts/settings';
 import { db } from '@dms/db/client';
 import { DomainError } from '@/server/services/domain-error';
+import { APP_NAME } from '@dms/config/brand';
 
 export type SettingOutcome = { id: string; label: string; changes: AuditChanges };
 
@@ -120,7 +121,7 @@ export async function saveDealerCodeSequence(
     },
     next,
   );
-  const outcome = { id: current.id, label: 'Dải mã khách hàng của DMS', changes };
+  const outcome = { id: current.id, label: `Dải mã khách hàng của ${APP_NAME}`, changes };
   if (Object.keys(changes).length === 0) return outcome;
 
   const { count } = await db.codeSequence.updateMany({

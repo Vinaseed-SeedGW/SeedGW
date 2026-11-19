@@ -4,9 +4,10 @@ import { SIDEBAR_INIT_SCRIPT } from '@dms/ui/sidebar-storage';
 import { ToastProvider } from '@dms/ui/toast';
 import { brandFont } from './fonts';
 import './globals.css';
+import { APP_NAME } from '@dms/config/brand';
 
 export const metadata: Metadata = {
-  title: { default: 'DMS Vinaseed', template: '%s - DMS Vinaseed' },
+  title: { default: APP_NAME, template: `%s - ${APP_NAME}` },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

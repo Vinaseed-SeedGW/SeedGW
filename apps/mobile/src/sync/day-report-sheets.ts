@@ -14,6 +14,7 @@ import {
   type SheetImage,
   type SheetRow,
 } from './xlsx';
+import { APP_NAME } from '@dms/config/brand';
 
 // Dựng file Excel báo cáo cự ly một ngày. Tách khỏi phần đọc máy và chia sẻ để chạy thử được trên máy tính.
 
@@ -102,7 +103,7 @@ function reportSheet(
     {
       cells: [
         text(
-          `Ngày ${formatVnDate(dayStart)}. Xuất từ app DMS bản thử R3 lúc ${hhmm(generatedAt)} ngày ${formatVnDate(generatedAt)}.`,
+          `Ngày ${formatVnDate(dayStart)}. Xuất từ app ${APP_NAME} bản thử R3 lúc ${hhmm(generatedAt)} ngày ${formatVnDate(generatedAt)}.`,
           'plain',
         ),
       ],

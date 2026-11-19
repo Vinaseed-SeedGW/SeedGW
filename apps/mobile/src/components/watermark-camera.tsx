@@ -38,6 +38,7 @@ import { checkInRadiusM, type DealerChoice } from '../api/dealers';
 import { serverNow } from '../api/server-clock';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
+import { APP_NAME } from '@dms/config/brand';
 
 const LONG_EDGE_PX = 1600;
 const JPEG_QUALITY = 0.7;
@@ -109,7 +110,9 @@ export function WatermarkCamera({ presetDealer = null, onClose, onSaved }: Props
   if (!permission.granted) {
     return (
       <View style={[styles.fill, styles.center]}>
-        <Text style={styles.message}>DMS cần quyền dùng máy ảnh để chụp ảnh check-in.</Text>
+        <Text style={styles.message}>
+          {`${APP_NAME} cần quyền dùng máy ảnh để chụp ảnh check-in.`}
+        </Text>
         <Button label="Cho phép dùng máy ảnh" onPress={requestPermission} />
         <Button label="Quay lại" onPress={onClose} variant="ghost" />
       </View>
@@ -234,7 +237,7 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
         {denied ? (
           <Banner
             tone="danger"
-            text="Chưa có quyền vị trí. Mở Cài đặt và cho phép DMS dùng vị trí."
+            text={`Chưa có quyền vị trí. Mở Cài đặt và cho phép ${APP_NAME} dùng vị trí.`}
           />
         ) : null}
         {!denied && imprecise ? (
