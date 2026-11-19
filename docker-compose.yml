@@ -1,11 +1,14 @@
+# Tên dự án Docker cố định, không phụ thuộc tên thư mục repo.
+name: seedgw
+
 services:
   postgres:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_USER: dms
-      POSTGRES_PASSWORD: dms_dev_password
-      POSTGRES_DB: dms
+      POSTGRES_USER: seedgw
+      POSTGRES_PASSWORD: seedgw_dev_password
+      POSTGRES_DB: seedgw
     ports:
       - '5432:5432'
     volumes:
@@ -25,8 +28,8 @@ services:
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-dms}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-dms_dev_password}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-seedgw}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-seedgw_dev_password}
     ports:
       - '9000:9000'
       - '9001:9001'

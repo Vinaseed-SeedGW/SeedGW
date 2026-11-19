@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Khôi phục máy chủ thử từ bản sao lưu. GHI ĐÈ toàn bộ dữ liệu hiện có.
-#   deploy/staging/restore.sh /srv/dms-backup/db/dms-20261113-0130.dump [/srv/dms-backup/photos/minio-20261113-0130.tar.gz]
+#   deploy/staging/restore.sh /srv/seedgw-backup/db/seedgw-20261113-0130.dump [/srv/seedgw-backup/photos/minio-20261113-0130.tar.gz]
 set -euo pipefail
 
 DB_DUMP="${1:?Cần đường dẫn file .dump}"
 PHOTOS_TAR="${2:-}"
-DMS_ENV_FILE="${DMS_ENV_FILE:-/opt/dms/staging.env}"
-export DMS_ENV_FILE
-PROJECT=dms-staging
+SEEDGW_ENV_FILE="${SEEDGW_ENV_FILE:-/opt/seedgw/staging.env}"
+export SEEDGW_ENV_FILE
+PROJECT=seedgw-staging
 COMPOSE=(docker compose -f "$(dirname "$0")/docker-compose.yml" -p "$PROJECT")
 TAR_IMAGE=alpine:3.20
 

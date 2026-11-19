@@ -43,18 +43,18 @@ jobs:
   deploy-staging:
     name: Triển khai máy chủ thử
     # Chạy trên runner cài sẵn trong máy chủ thử (mạng nội bộ), GitHub không cần vào được máy chủ.
-    runs-on: [self-hosted, dms-staging]
+    runs-on: [self-hosted, seedgw-staging]
     timeout-minutes: 30
     needs: docker
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: staging
     env:
-      DMS_ENV_FILE: /opt/dms/staging.env
+      SEEDGW_ENV_FILE: /opt/seedgw/staging.env
       APP_VERSION: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - name: Build và khởi động lại
-        run: docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build --remove-orphans
+        run: docker compose -f deploy/staging/docker-compose.yml -p seedgw-staging up -d --build --remove-orphans
       - name: Chờ trang kiểm tra sức khoẻ trả về ok
         run: deploy/staging/wait-healthy.sh
       - name: Dọn image cũ

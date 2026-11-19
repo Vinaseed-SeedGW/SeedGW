@@ -13,16 +13,16 @@ FROM base AS build
 COPY . .
 # Chỉ cài thư viện cho web, worker và database, không cài phần app điện thoại.
 RUN pnpm install --frozen-lockfile \
-  --filter "@dms/web..." --filter "@dms/worker..." --filter "@dms/db..."
+  --filter "@seedgw/web..." --filter "@seedgw/worker..." --filter "@seedgw/db..."
 ARG APP_VERSION=dev
 ENV NEXT_TELEMETRY_DISABLED=1 APP_VERSION=${APP_VERSION}
 # Giá trị tạm chỉ có trong lệnh build, không nằm lại trong image. Biến thật lấy từ file .env trên máy chủ.
 RUN AUTH_SECRET=build-only DATABASE_URL=postgresql://build:build@localhost:5432/build \
-  pnpm --filter @dms/web exec next build
+  pnpm --filter @seedgw/web exec next build
 
 FROM build AS tools
 ENV NODE_ENV=production
-CMD ["pnpm", "--filter", "@dms/db", "exec", "prisma", "migrate", "deploy"]
+CMD ["pnpm", "--filter", "@seedgw/db", "exec", "prisma", "migrate", "deploy"]
 
 FROM node:22-bookworm-slim AS web
 RUN apt-get update \

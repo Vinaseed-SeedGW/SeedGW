@@ -1,10 +1,10 @@
-# Máy chủ thử (staging) DMS Vinaseed. Chạy trên máy chủ nội bộ, Caddy tự lấy chứng chỉ HTTPS.
+# Máy chủ thử (staging) SeedGW. Chạy trên máy chủ nội bộ, Caddy tự lấy chứng chỉ HTTPS.
 # Chạy từ thư mục gốc repo:
-#   DMS_ENV_FILE=/opt/dms/staging.env docker compose -f deploy/staging/docker-compose.yml -p dms-staging up -d --build
+#   SEEDGW_ENV_FILE=/opt/seedgw/staging.env docker compose -f deploy/staging/docker-compose.yml -p seedgw-staging up -d --build
 # Chỉ Caddy mở cổng ra ngoài (80, 443; 8080 chỉ trong máy cho Cloudflare Tunnel). Database, Redis, MinIO chỉ nằm trong mạng nội bộ của Docker.
 
 x-app-env: &app-env
-  env_file: ${DMS_ENV_FILE:-./staging.env}
+  env_file: ${SEEDGW_ENV_FILE:-./staging.env}
 
 services:
   postgres:
@@ -44,7 +44,7 @@ services:
       target: tools
       args:
         APP_VERSION: ${APP_VERSION:-staging}
-    image: dms-tools:staging
+    image: seedgw-tools:staging
     <<: *app-env
     restart: 'no'
     depends_on:
@@ -58,7 +58,7 @@ services:
       target: web
       args:
         APP_VERSION: ${APP_VERSION:-staging}
-    image: dms-web:staging
+    image: seedgw-web:staging
     restart: unless-stopped
     <<: *app-env
     environment:
@@ -72,10 +72,10 @@ services:
         condition: service_started
 
   worker:
-    image: dms-tools:staging
+    image: seedgw-tools:staging
     restart: unless-stopped
     <<: *app-env
-    command: ['pnpm', '--filter', '@dms/worker', 'exec', 'tsx', 'src/index.ts']
+    command: ['pnpm', '--filter', '@seedgw/worker', 'exec', 'tsx', 'src/index.ts']
     environment:
       OSRM_URL: http://osrm:5000
     depends_on:

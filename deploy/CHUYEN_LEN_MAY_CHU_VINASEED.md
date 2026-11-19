@@ -32,7 +32,7 @@ Vẫn giữ trên máy cá nhân, chỉ để phát triển: `pnpm dev`, databas
 
 | Biến | Máy cá nhân | Máy chủ Vinaseed |
 |---|---|---|
-| `DMS_DOMAIN` | `localhost` | Tên miền IT cấp, ví dụ `dms.vinaseed.com.vn` |
+| `SEEDGW_DOMAIN` | `localhost` | Tên miền IT cấp, ví dụ `seedgw.vinaseed.com.vn` |
 | `AUTH_URL`, `S3_PUBLIC_ENDPOINT` | `https://localhost` | `https://<tên miền>` |
 | `POSTGRES_PASSWORD`, `AUTH_SECRET`, `MINIO_ROOT_PASSWORD` | Chuỗi ngẫu nhiên của bản thử | Tạo mới: `openssl rand -base64 32` |
 | `DATABASE_URL` | Chứa mật khẩu cũ | Theo mật khẩu database mới |

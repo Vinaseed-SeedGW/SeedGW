@@ -4,8 +4,8 @@ App gửi thông báo qua dịch vụ đẩy của Expo. Expo chuyển sang Goog
 
 ## Android: Firebase (người có tài khoản Google của công ty làm)
 
-1. Vào https://console.firebase.google.com, tạo dự án, ví dụ `dms-vinaseed`. Không cần bật Google Analytics.
-2. Trong dự án chọn Thêm ứng dụng, chọn Android. Tên gói nhập đúng `vn.vinaseed.dms`. Tải tệp `google-services.json`.
+1. Vào https://console.firebase.google.com, tạo dự án tên `SeedGW` (quyết định 34). Không cần bật Google Analytics.
+2. Trong dự án chọn Thêm ứng dụng, chọn Android. Tên gói nhập đúng `vn.vinaseed.seedgw` (mã gói mới theo quyết định 34), biệt danh `SeedGW Android`. Tải tệp `google-services.json`.
 3. Vào Cài đặt dự án, thẻ Tài khoản dịch vụ, bấm Tạo khoá riêng tư mới. Tải tệp khoá dạng JSON. Tệp này là bí mật, không gửi qua chat, không đưa vào git.
 4. Đưa hai tệp lên EAS từ thư mục `apps/mobile` (Claude làm cùng nếu cần):
    - Tệp cấu hình app, dạng biến môi trường tệp:

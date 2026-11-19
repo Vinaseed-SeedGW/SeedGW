@@ -1,10 +1,10 @@
-# Cổng vào duy nhất từ Internet. Caddy tự lấy và gia hạn chứng chỉ Let's Encrypt cho DMS_DOMAIN
-# (cần cổng 80 và 443 mở tới máy này). Máy thử không có tên miền thật thì đặt DMS_DOMAIN=localhost.
+# Cổng vào duy nhất từ Internet. Caddy tự lấy và gia hạn chứng chỉ Let's Encrypt cho SEEDGW_DOMAIN
+# (cần cổng 80 và 443 mở tới máy này). Máy thử không có tên miền thật thì đặt SEEDGW_DOMAIN=localhost.
 {
 	email {$ACME_EMAIL}
 }
 
-{$DMS_DOMAIN} {
+{$SEEDGW_DOMAIN} {
 	encode zstd gzip
 
 	header {
