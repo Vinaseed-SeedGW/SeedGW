@@ -115,7 +115,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 - **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
 - **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên nút nổi Hỗ trợ (trả lời chưa đọc, với nhân viên), trên Quản trị › Hỗ trợ (yêu cầu chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
 - **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Quản trị › Hỗ trợ 2 cột thu thành 1 cột theo bước (danh sách yêu cầu → chi tiết và trao đổi). Nút nổi Hỗ trợ dời sát góc (cách mép 16 px), trang chừa khoảng trống cuối để nút không che chân trang. Bảng dữ liệu ẩn bớt cột phụ.
-- **App điện thoại**: 4 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Tôi); màn hình **Hỗ trợ** riêng mở từ đầu tab Tôi, tab Tôi có số đỏ khi quản trị trả lời; nút nổi Hỗ trợ ở góc dưới bên phải cả 4 tab, ngay trên thanh tab (quyết định 32), không hiện khi mở máy ảnh check-in; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
+- **App điện thoại**: 4 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Tôi); màn hình **Hỗ trợ** riêng mở từ đầu tab Tôi, tab Tôi có số đỏ khi quản trị trả lời; nút nổi Hỗ trợ ở góc dưới bên phải cả 4 tab, ngay trên thanh tab (quyết định 32), không hiện khi mở máy ảnh check-in; thông báo đẩy (M7): bấm thông báo mở đúng màn (Hỗ trợ, Cần duyệt, Tuyến, Hôm nay), tab Tôi có dòng Thông báo; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
