@@ -21,6 +21,7 @@ import { db } from '@dms/db/client';
 import { getOrgUnitTreeIds } from '@dms/db/org-units';
 import type { ScopedDb } from '@dms/db/scoped-client';
 import { DomainError } from './domain-error';
+import { notifyApprovalChange } from './push-events';
 
 type Tx = Prisma.TransactionClient;
 
@@ -335,7 +336,7 @@ export async function approveRequest(
   now = new Date(),
   override = false,
 ): Promise<ApprovalOutcome> {
-  return db.$transaction(async (tx) => {
+  const outcome = await db.$transaction(async (tx): Promise<ApprovalOutcome> => {
     const request = await findForDecision(tx, code);
     if (!PENDING.includes(request.status)) throw new DomainError('CONFLICT', STALE_MESSAGE);
     const assignee = request.currentApproverId;
@@ -395,6 +396,8 @@ export async function approveRequest(
       ),
     };
   });
+  notifyApprovalChange(outcome.requestId, actorId);
+  return outcome;
 }
 
 /** Trả lại kèm lý do. Bản đã duyệt trước đó (nếu có) vẫn giữ hiệu lực. */
@@ -405,7 +408,7 @@ export async function returnRequest(
   now = new Date(),
   override = false,
 ): Promise<ApprovalOutcome> {
-  return db.$transaction(async (tx) => {
+  const outcome = await db.$transaction(async (tx): Promise<ApprovalOutcome> => {
     const request = await findForDecision(tx, code);
     if (!PENDING.includes(request.status)) throw new DomainError('CONFLICT', STALE_MESSAGE);
     const assignee = request.currentApproverId;
@@ -440,6 +443,8 @@ export async function returnRequest(
       ),
     };
   });
+  notifyApprovalChange(outcome.requestId, actorId);
+  return outcome;
 }
 
 /** Rút lại được khi chưa ai duyệt: đang chờ Quản lý, hoặc chờ Lãnh đạo mà phiếu không qua bước Quản lý. */

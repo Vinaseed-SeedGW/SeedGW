@@ -32,6 +32,7 @@ import { db } from '@dms/db/client';
 import type { ScopedDb } from '@dms/db/scoped-client';
 import { applyApproved, isUniqueViolation, isWithdrawable, submitApproval } from './approvals';
 import { DomainError } from './domain-error';
+import { notifyApprovalChange } from './push-events';
 import { readSystemSettings } from './settings';
 
 // Kỳ đã qua hiện thêm 4 tuyến gần nhất để xem lại.
@@ -116,7 +117,7 @@ export async function submitRoutePlan(
   const activeDays = input.days.filter((day) => day.dealerIds.length > 0).length;
 
   try {
-    return await db.$transaction(async (tx) => {
+    const outcome = await db.$transaction(async (tx) => {
       const existing = await tx.routePlan.findUnique({
         where: { userId_kind_periodStart: { userId, kind, periodStart: input.periodStart } },
         select: { id: true, currentRevision: true, approvedRevision: true, note: true },
@@ -200,6 +201,8 @@ export async function submitRoutePlan(
         ),
       };
     });
+    notifyApprovalChange(outcome.requestId, actorId);
+    return outcome;
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new DomainError('CONFLICT', 'Tuyến kỳ này vừa được gửi, vui lòng tải lại');

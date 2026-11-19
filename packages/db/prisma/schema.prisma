@@ -102,6 +102,8 @@ model User {
   supportMessages        SupportMessage[]
   supportEvents          SupportEvent[]
   supportReads           SupportRead[]
+  pushTokens             PushToken[]
+  pushMessages           PushMessage[]
   createdAt              DateTime                 @default(now()) @map("created_at")
   updatedAt              DateTime                 @updatedAt @map("updated_at")
 
@@ -911,4 +913,42 @@ model FastCustomer {
 
   @@index([fastUpdatedAt])
   @@map("fast_customers")
+}
+
+// ---------- Thông báo đẩy (M7, 19/11/2026) ----------
+
+// Mã nhận thông báo Expo của từng máy. Một máy một mã; đăng xuất hoặc Expo báo hết hiệu lực thì xoá.
+model PushToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  token      String   @unique
+  userId     String   @map("user_id") @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId   String?  @map("device_id") @db.Uuid
+  platform   String
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastSeenAt DateTime @map("last_seen_at")
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+// Nhật ký thông báo: khoá chống gửi trùng theo việc và người nhận, trạng thái gửi, lỗi.
+model PushMessage {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind           String
+  title          String
+  body           String
+  data           Json      @default("{}")
+  idempotencyKey String    @unique @map("idempotency_key")
+  status         String    @default("PENDING")
+  error          String?
+  attempts       Int       @default(0)
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("push_messages")
 }

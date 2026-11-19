@@ -12,6 +12,7 @@ import { db } from '@dms/db/client';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
 import { DomainError } from './domain-error';
+import { notifyLocationReview } from './push-events';
 
 const PROPOSAL_SELECT = {
   id: true,
@@ -112,6 +113,7 @@ export async function reviewProposal(
       status: true,
       lat: true,
       lng: true,
+      proposedById: true,
       dealer: { select: { id: true, name: true, lat: true, lng: true } },
     },
   });
@@ -144,6 +146,7 @@ export async function reviewProposal(
     }
   });
 
+  notifyLocationReview(proposal.proposedById, proposal.id, proposal.dealer.name, approved);
   const before = coordinateText(proposal.dealer.lat, proposal.dealer.lng);
   return {
     dealerId: proposal.dealer.id,

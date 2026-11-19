@@ -44,6 +44,13 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#005b36",
+          "defaultChannel": "mac-dinh"
+        }
       ]
     ],
     "extra": {

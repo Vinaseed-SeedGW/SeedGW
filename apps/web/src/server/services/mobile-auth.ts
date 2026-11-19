@@ -187,10 +187,21 @@ export async function refreshMobile(refreshToken: string): Promise<MobileSession
 }
 
 export async function logoutMobile(refreshToken: string): Promise<void> {
+  const tokenHash = hashRefreshToken(refreshToken);
+  const session = await db.mobileRefreshToken.findFirst({
+    where: { tokenHash },
+    select: { userId: true, deviceId: true },
+  });
   await db.mobileRefreshToken.updateMany({
-    where: { tokenHash: hashRefreshToken(refreshToken), revokedAt: null },
+    where: { tokenHash, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+  // M7: máy đăng xuất thì không nhận thông báo của người vừa đăng xuất nữa.
+  if (session) {
+    await db.pushToken.deleteMany({
+      where: { userId: session.userId, deviceId: session.deviceId },
+    });
+  }
 }
 
 export async function getMobileProfile(user: MobileUser): Promise<MobileProfile> {

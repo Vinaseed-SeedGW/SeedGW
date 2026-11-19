@@ -52,6 +52,7 @@ import {
   SUPPORT_FILE_PREFIX,
 } from '@/server/integrations/object-storage';
 import { DomainError } from './domain-error';
+import { notifySupportReply, notifySupportStatus } from './push-events';
 
 // Hỗ trợ (T1, T2, T5): yêu cầu CBNV gửi quản trị. Dùng chung cho web (Server Action) và app (API).
 
@@ -895,6 +896,7 @@ export async function replySupport(
   });
   const warnings = await attachAfterCommit(row.id, messageId, files);
   changed(base);
+  if (!isRequester) notifySupportReply(row.requesterId, row.code, messageId);
   return { ...base, created: true, warnings, changes: {}, messageId };
 }
 
@@ -1056,7 +1058,7 @@ export async function changeSupportStatus(
   if (row.status === input.status) {
     throw new DomainError('CONFLICT', `Yêu cầu đang ở ${SUPPORT_STATUS_LABEL[row.status]}`);
   }
-  return applyHandlerChange(
+  const result = await applyHandlerChange(
     actor,
     row,
     {
@@ -1072,6 +1074,9 @@ export async function changeSupportStatus(
     },
     now,
   );
+  if (row.requesterId !== actor.id)
+    notifySupportStatus(row.requesterId, row.code, input.status, now);
+  return result;
 }
 
 export async function reopenSupport(

@@ -1,7 +1,14 @@
 import { Queue, Worker, type Job } from 'bullmq';
 import { FAST_SYNC_QUEUE } from '@dms/contracts/fast';
+import {
+  PUSH_QUEUE,
+  PUSH_RECEIPT_DELAY_MS,
+  type PushReceiptJob,
+  type PushSendJob,
+} from '@dms/contracts/push';
 import { ROAD_DISTANCE_QUEUE, type RoadDistanceJob } from '@dms/contracts/road-distance';
 import { runFastCustomerSync } from './fast-sync';
+import { checkPushReceipts, createCheckInReminders, sendPushMessages } from './push';
 import { roadDistanceProvider } from './osrm';
 import { computeRoadDay, userDaysWithCheckIns } from './road-distance';
 import { autoCloseDone, purgeExpired } from './support';
@@ -91,6 +98,51 @@ async function startFastSync(connection: Connection): Promise<Array<Queue | Work
   return [queue, worker];
 }
 
+async function startPush(connection: Connection): Promise<Array<Queue | Worker>> {
+  const queue = new Queue(PUSH_QUEUE, { connection });
+  // Nhắc chưa check-in: đầu mỗi giờ thứ Hai tới thứ Bảy, job tự kiểm đúng giờ ở Tham số.
+  await queue.upsertJobScheduler(
+    'check-in-reminder',
+    { pattern: '0 * * * 1-6', tz: 'Asia/Ho_Chi_Minh' },
+    { name: 'reminder', data: {} },
+  );
+  const sendOptions = {
+    attempts: 5,
+    backoff: { type: 'exponential' as const, delay: 30_000 },
+    removeOnComplete: 1000,
+    removeOnFail: 1000,
+  };
+  const worker = new Worker(
+    PUSH_QUEUE,
+    async (job: Job) => {
+      if (job.name === 'reminder') {
+        const { day, messageIds } = await createCheckInReminders();
+        if (messageIds.length > 0) {
+          await queue.add('send', { messageIds } satisfies PushSendJob, sendOptions);
+        }
+        return { day, reminders: messageIds.length };
+      }
+      if (job.name === 'receipts') {
+        return checkPushReceipts((job.data as PushReceiptJob).tickets);
+      }
+      const result = await sendPushMessages((job.data as PushSendJob).messageIds);
+      if (result.receipts.length > 0) {
+        await queue.add('receipts', { tickets: result.receipts } satisfies PushReceiptJob, {
+          delay: PUSH_RECEIPT_DELAY_MS,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 60_000 },
+          removeOnComplete: 1000,
+          removeOnFail: 1000,
+        });
+      }
+      return { sent: result.sent, noToken: result.noToken, failed: result.failed };
+    },
+    { connection, concurrency: 2 },
+  );
+  logJobs(worker, 'Thông báo đẩy');
+  return [queue, worker];
+}
+
 function logJobs(worker: Worker, label: string) {
   worker.on('completed', (job, result) =>
     console.log(`${label}: xong ${job.name} ${job.id}`, JSON.stringify(result ?? null)),
@@ -111,6 +163,7 @@ async function main() {
     ...(await startRoadDistance(connection)),
     ...(await startSupport(connection)),
     ...(await startFastSync(connection)),
+    ...(await startPush(connection)),
   ];
   console.log('Worker đã sẵn sàng.');
 

@@ -22,6 +22,7 @@ import { cardStyle, InfoRow } from './info-row';
 import { Text, TextInput } from './text';
 import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
+import type { PushState } from '../sync/push';
 
 const PERMISSION_LABEL = {
   ALWAYS: 'Luôn cho phép',
@@ -38,10 +39,27 @@ type Props = {
   approvals: { pendingCount: number; onOpen: () => void } | null;
   /** Màn hình Hỗ trợ (T3); null ở bản thử chưa nối máy chủ. */
   support: { unreadCount: number; pendingCount: number; onOpen: () => void } | null;
+  /** Trạng thái thông báo đẩy (M7); null ở bản thử chưa nối máy chủ. */
+  notifications: { state: PushState | null; onRefresh: () => void } | null;
+};
+
+const PUSH_LABEL: Record<PushState, string> = {
+  GRANTED: 'Đang bật',
+  DENIED:
+    'Đang tắt. Bật trong Cài đặt của điện thoại để nhận trả lời Hỗ trợ, tuyến được duyệt, nhắc check-in.',
+  UNDETERMINED: 'Chưa bật',
+  UNSUPPORTED: 'Bản app đang cài chưa có thông báo, cần cài bản mới.',
 };
 
 /** Tab Tôi (IA): thông tin, Hỗ trợ, quyền vị trí, rút lại đồng ý, đăng xuất, thông tin kỹ thuật, chân trang. */
-export function MeTab({ control, account, onWithdrawConsent, approvals, support }: Props) {
+export function MeTab({
+  control,
+  account,
+  onWithdrawConsent,
+  approvals,
+  support,
+  notifications,
+}: Props) {
   const { state, actions } = control;
   const [showTech, setShowTech] = useState(false);
 
@@ -125,6 +143,22 @@ export function MeTab({ control, account, onWithdrawConsent, approvals, support 
           </Text>
         )}
       </View>
+
+      {notifications?.state ? (
+        <View style={styles.card}>
+          <Text style={styles.section}>Thông báo</Text>
+          <Text style={styles.body}>{PUSH_LABEL[notifications.state]}</Text>
+          {notifications.state === 'DENIED' ? (
+            <View style={styles.actions}>
+              <Button
+                label="Mở Cài đặt"
+                onPress={() => void Linking.openSettings().then(notifications.onRefresh)}
+                variant="ghost"
+              />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={styles.card}>
         <Text style={styles.section}>Quyền vị trí</Text>

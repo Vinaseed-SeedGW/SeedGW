@@ -221,11 +221,31 @@ const SUPPORT_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
+// M7 (19/11/2026): nhắc nhân viên có tuyến đã duyệt hôm nay mà tới giờ nhắc chưa check-in lượt nào.
+const NOTIFICATION_SETTINGS = [
+  {
+    key: 'checkInReminderEnabled',
+    label: 'Nhắc chưa check-in qua thông báo trên app (1 bật, 0 tắt)',
+    min: 0,
+    max: 1,
+    defaultValue: 1,
+    hint: 'Chỉ nhắc người có tuyến đã duyệt hôm nay, từ thứ Hai tới thứ Bảy, mỗi ngày một lần.',
+  },
+  {
+    key: 'checkInReminderHour',
+    label: 'Giờ nhắc chưa check-in (giờ Việt Nam)',
+    min: 7,
+    max: 15,
+    defaultValue: 10,
+  },
+] as const satisfies readonly SettingDefinition[];
+
 const ALL_SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
   { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
   { title: 'Ghi hành trình và km theo GPS', settings: TRACKING_SETTINGS },
   { title: 'Thời hạn xử lý yêu cầu hỗ trợ', settings: SUPPORT_SETTINGS },
+  { title: 'Thông báo trên app', settings: NOTIFICATION_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
@@ -240,6 +260,7 @@ const ALL_SETTINGS = [
   ...ROUTE_SETTINGS,
   ...TRACKING_SETTINGS,
   ...SUPPORT_SETTINGS,
+  ...NOTIFICATION_SETTINGS,
   ...FAST_SYNC_SETTINGS,
 ];
 

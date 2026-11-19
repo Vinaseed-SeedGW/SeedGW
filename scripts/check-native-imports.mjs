@@ -5,7 +5,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 // Thêm vào đây mỗi thư viện native mới, bỏ ra khi mọi máy đã cài bản app có nó.
-const OPTIONAL_NATIVE = ['expo-device'];
+const OPTIONAL_NATIVE = ['expo-device', 'expo-notifications'];
 const ROOTS = ['apps/mobile/App.tsx', 'apps/mobile/src'];
 
 function files(path) {

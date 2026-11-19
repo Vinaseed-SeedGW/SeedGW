@@ -526,11 +526,20 @@ function RequestRow({ item, onOpen }: { item: SupportSummary; onOpen: () => void
 export function SupportScreen({
   onClose,
   prefill,
+  openCode,
 }: {
   onClose: () => void;
   prefill: SupportPrefill | null;
+  /** Mở thẳng yêu cầu này, ví dụ khi bấm thông báo Quản trị đã trả lời (M7). */
+  openCode: string | null;
 }) {
-  const [view, setView] = useState<View_>(prefill ? { name: 'create' } : { name: 'list' });
+  const [view, setView] = useState<View_>(
+    openCode
+      ? { name: 'detail', code: openCode, requestClientId: openCode }
+      : prefill
+        ? { name: 'create' }
+        : { name: 'list' },
+  );
   const [list, setList] = useState<SupportSummary[] | null>(null);
   const [pending, setPending] = useState<PendingSupportItem[]>([]);
   const [error, setError] = useState<string | null>(null);

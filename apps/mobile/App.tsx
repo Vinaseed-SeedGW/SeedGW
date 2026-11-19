@@ -28,6 +28,7 @@ import { SupportScreen, type SupportPrefill } from './src/components/support-scr
 import { readSupportBadge } from './src/api/support';
 import { countPendingSupport } from './src/sync/support-outbox';
 import { rememberScreen } from './src/sync/support-screenshot';
+import { onPushOpened, readPushState, registerForPush, type PushState } from './src/sync/push';
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
 import { MeTab } from './src/components/me-tab';
@@ -86,6 +87,8 @@ function Main({ signedIn }: { signedIn: boolean }) {
   );
   const [supportPrefill, setSupportPrefill] = useState<SupportPrefill | null>(null);
   const [supportUnread, setSupportUnread] = useState(0);
+  const [supportCode, setSupportCode] = useState<string | null>(null);
+  const [pushState, setPushState] = useState<PushState | null>(null);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -101,7 +104,37 @@ function Main({ signedIn }: { signedIn: boolean }) {
     };
   }, [session, overlay, tab]);
 
-  // Số đỏ Hỗ trợ: hỏi khi mở app và mỗi 60 giây khi app đang mở (chưa có thông báo đẩy M7).
+  // Thông báo đẩy (M7): đã đồng ý chia sẻ vị trí và đăng nhập thì xin quyền, gửi mã lên máy chủ.
+  useEffect(() => {
+    if (!session || consent !== 'accepted') return;
+    let cancelled = false;
+    void registerForPush().then((state) => {
+      if (!cancelled) setPushState(state);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, consent]);
+
+  // Bấm thông báo thì mở đúng màn.
+  useEffect(() => {
+    if (!session) return;
+    return onPushOpened((target) => {
+      setSupportPrefill(null);
+      setSupportCode(null);
+      if (target.screen === 'support') {
+        setSupportCode(target.code);
+        setOverlay('support');
+      } else if (target.screen === 'approvals') setOverlay('approvals');
+      else if (target.screen === 'routes') setOverlay('routes');
+      else {
+        setOverlay(null);
+        setTab('today');
+      }
+    });
+  }, [session]);
+
+  // Số đỏ Hỗ trợ: hỏi khi mở app và mỗi 60 giây khi app đang mở.
   useEffect(() => {
     if (!session) return;
     let cancelled = false;
@@ -206,6 +239,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const closeOverlay = () => {
     setOverlay(null);
     setSupportPrefill(null);
+    setSupportCode(null);
     setRefreshKey((value) => value + 1);
   };
   if (overlay && account) {
@@ -216,7 +250,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
         {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
         {overlay === 'routes' ? <RoutesScreen onClose={closeOverlay} /> : null}
         {overlay === 'support' ? (
-          <SupportScreen onClose={closeOverlay} prefill={supportPrefill} />
+          <SupportScreen onClose={closeOverlay} prefill={supportPrefill} openCode={supportCode} />
         ) : null}
       </View>
     );
@@ -268,6 +302,14 @@ function Main({ signedIn }: { signedIn: boolean }) {
                     unreadCount: supportUnread,
                     pendingCount: countPendingSupport(),
                     onOpen: () => setOverlay('support'),
+                  }
+                : null
+            }
+            notifications={
+              account
+                ? {
+                    state: pushState,
+                    onRefresh: () => void readPushState().then(setPushState),
                   }
                 : null
             }
