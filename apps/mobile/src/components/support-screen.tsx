@@ -1,4 +1,3 @@
-import * as Device from 'expo-device';
 import * as Updates from 'expo-updates';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -28,6 +27,7 @@ import {
 import { freshAccessToken } from '../api/client';
 import { API_URL, newId } from '../api/session';
 import { listMySupport, readSupport, reopenSupport, supportFilePath } from '../api/support';
+import { getDeviceModel } from '../sync/device-integrity';
 import { formatVnDate, formatVnTime } from '../sync/geo';
 import {
   codeOfLocalRequest,
@@ -67,7 +67,8 @@ function when(at: number | string): string {
   return `${formatVnTime(time).slice(0, 5)} ${formatVnDate(time)}`;
 }
 
-function appContext(screen: string | undefined): SupportContext {
+// Không import thẳng expo-device: bản cài iPhone 17/11 chưa có phần native, import thẳng làm bản cập nhật lỗi lúc mở.
+function appContext(screen: string | undefined, device: string | undefined): SupportContext {
   const runtime = Updates.runtimeVersion ?? 'chạy thử';
   return {
     appVersion: Updates.updateId ? `${runtime}, cập nhật ${Updates.updateId.slice(0, 8)}` : runtime,
@@ -75,7 +76,7 @@ function appContext(screen: string | undefined): SupportContext {
       Platform.OS === 'ios'
         ? `iOS ${String(Platform.Version)}`
         : `Android ${String(Platform.Version)}`,
-    device: [Device.manufacturer, Device.modelName].filter(Boolean).join(' ') || undefined,
+    device,
     screen,
   };
 }
@@ -187,7 +188,7 @@ function CreateForm({
   const [attach, setAttach] = useState(Boolean(prefill?.screenshot));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function submit() {
+  async function submit() {
     const parsed = supportRequestForm.safeParse({ type, severity, title, body });
     if (!parsed.success) {
       setErrors(
@@ -209,7 +210,7 @@ function CreateForm({
       body: parsed.data.body,
       context: {
         ...(prefill?.context ?? {}),
-        ...appContext(prefill?.context.screen ?? shot?.screen),
+        ...appContext(prefill?.context.screen ?? shot?.screen, await getDeviceModel()),
       },
       files,
     });
@@ -259,7 +260,7 @@ function CreateForm({
         App tự gửi kèm phiên bản app và loại máy để quản trị dễ kiểm tra.
       </Text>
       <View style={styles.actions}>
-        <Button label="Gửi yêu cầu" onPress={submit} />
+        <Button label="Gửi yêu cầu" onPress={() => void submit()} />
       </View>
     </View>
   );

@@ -14,8 +14,9 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "check:glyphs": "node scripts/check-glyphs.mjs",
+    "check:native": "node scripts/check-native-imports.mjs",
     "map:thu": "node --env-file-if-exists=.env scripts/try-map-key.mjs",
-    "check": "pnpm format:check && pnpm check:glyphs && pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm format:check && pnpm check:glyphs && pnpm check:native && pnpm lint && pnpm typecheck && pnpm test",
     "db:migrate": "pnpm --filter @dms/db migrate",
     "db:deploy": "pnpm --filter @dms/db deploy:migrations",
     "db:seed": "pnpm --filter @dms/db seed"

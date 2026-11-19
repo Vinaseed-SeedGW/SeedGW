@@ -20,3 +20,19 @@ export function getDeviceIntegrity(): Promise<DeviceIntegrity> {
   })();
   return cached;
 }
+
+let model: Promise<string | undefined> | null = null;
+
+/** Hãng và đời máy để gắn vào yêu cầu hỗ trợ (T3). Bản cài chưa có phần native thì bỏ trống, không làm app tắt. */
+export function getDeviceModel(): Promise<string | undefined> {
+  model ??= (async () => {
+    if (!requireOptionalNativeModule('ExpoDevice')) return undefined;
+    try {
+      const Device = await import('expo-device');
+      return [Device.manufacturer, Device.modelName].filter(Boolean).join(' ') || undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  return model;
+}
