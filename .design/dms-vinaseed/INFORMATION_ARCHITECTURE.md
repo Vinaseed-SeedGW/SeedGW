@@ -80,7 +80,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
     - Tham số `/quan-tri/tham-so`
   - Hệ thống
-    - Kết nối `/quan-tri/ket-noi` (FAST: đại lý hai chiều, công nợ và Thực bán chỉ đọc · Mattermost, kèm trạng thái và lỗi đồng bộ gần nhất)
+    - Kết nối `/quan-tri/ket-noi` (FAST: cấu hình, Kiểm tra kết nối, đồng bộ danh mục khách hàng 5 phút một lần, Đồng bộ ngay, lịch sử và dòng lỗi; không còn Mattermost, công nợ và Thực bán tạm hold từ 19/11/2026)
     - Nhật ký `/quan-tri/nhat-ky`
 
 - **API (không có giao diện)**
