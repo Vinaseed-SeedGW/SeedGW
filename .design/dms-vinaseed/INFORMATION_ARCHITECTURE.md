@@ -115,17 +115,17 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 - **Điều hướng tiện ích** (thanh trên): chuyển bộ phận (quay về Hub hoặc sang bộ phận khác) · tìm kiếm Ctrl+K · chuông thông báo · tài khoản của tôi.
 - **Hiển thị có điều kiện**: mục nào không có quyền thì ẩn hẳn. Badge số việc chờ trên nút nổi Hỗ trợ (trả lời chưa đọc, với nhân viên), trên Quản trị › Hỗ trợ (yêu cầu chờ xử lý) và toạ độ, đại lý mới chờ duyệt.
 - **Web trên điện thoại/tablet**: dưới 1024px menu trái thành ngăn kéo. Quản trị › Hỗ trợ 2 cột thu thành 1 cột theo bước (danh sách yêu cầu → chi tiết và trao đổi). Nút nổi Hỗ trợ dời sát góc (cách mép 16 px), trang chừa khoảng trống cuối để nút không che chân trang. Bảng dữ liệu ẩn bớt cột phụ.
-- **App điện thoại**: 4 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Tôi); màn hình **Hỗ trợ** riêng mở từ đầu tab Tôi, tab Tôi có số đỏ khi quản trị trả lời; không dùng nút nổi vì che camera và bản đồ; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
+- **App điện thoại**: 4 tab dưới cùng (Hôm nay, Tuyến, Lịch sử, Tôi); màn hình **Hỗ trợ** riêng mở từ đầu tab Tôi, tab Tôi có số đỏ khi quản trị trả lời; nút nổi Hỗ trợ ở góc dưới bên phải cả 4 tab, ngay trên thanh tab (quyết định 32), không hiện khi mở máy ảnh check-in; không có menu trái, không có Hub (app chỉ phục vụ công việc ngoài thị trường).
 
 ### Trang đích khi bấm ô bộ phận
 
 | Vai trò | Kinh doanh | Quản trị | Hỗ trợ |
 |---|---|---|---|
-| Nhân viên kinh doanh | Dashboard (số của tôi) | không có | Nút nổi ở mọi trang web, màn hình Hỗ trợ trên app |
+| Nhân viên kinh doanh | Dashboard (số của tôi) | không có | Nút nổi ở mọi trang web và mọi tab trên app |
 | Quản lý | Dashboard (nhóm của tôi) | không có | Như NVKD |
 | Lãnh đạo đơn vị | Dashboard (đơn vị và đơn vị con) | không có | Như NVKD |
-| Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Trang Quản trị › Hỗ trợ |
-| Quản trị hệ thống | Dashboard | Tài khoản | Trang Quản trị › Hỗ trợ (yêu cầu được chuyển lên) |
+| Quản trị đơn vị | Check-in | Hỗ trợ (hộp chung của đơn vị) | Trang Quản trị › Hỗ trợ; nút nổi có lối vào hộp chung và gửi yêu cầu của mình tới Quản trị hệ thống (quyết định 32) |
+| Quản trị hệ thống | Dashboard | Tài khoản | Trang Quản trị › Hỗ trợ (yêu cầu được chuyển lên); nút nổi là lối vào trang này, kèm số chờ xử lý và quá hạn |
 
 ## 3. Dashboard và chỉ số
 
@@ -293,7 +293,7 @@ Quy tắc tính:
 | `DashboardGrid`, `MetricTile`, `ChartCard`, `DashboardFilters` | 3 dashboard và Báo cáo | Khối theo vai trò; mỗi khối một `<Suspense>` |
 | `SyncBadge` | Đại lý, Kết nối | Trạng thái đồng bộ từ FAST |
 | `MapView` / `MapPicker` | Check-in, Hồ sơ đại lý | Tải bằng `next/dynamic` |
-| `SupportButton` | Mọi trang web của Cán bộ nhân viên (Hub và các bộ phận) | Không hiện với người có quyền xử lý; không có trên trang đăng nhập |
+| `SupportButton` | Mọi trang web của mọi tài khoản (Hub và các bộ phận); app có `SupportFab` ở cả 4 tab | 3 biến thể theo vai trò: người gửi, Quản trị đơn vị, Quản trị hệ thống (quyết định 32); không có trên trang đăng nhập, máy ảnh check-in và màn mở chồng trên app |
 | `SupportThread` (compound) | Khung của nút nổi, trang Quản trị › Hỗ trợ, màn hình Hỗ trợ trên app | Thu thành 1 cột dưới 1024px |
 
 ## 8. Content Growth Plan
