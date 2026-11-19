@@ -1,4 +1,4 @@
-# Information Architecture: DMS Vinaseed
+# Information Architecture: SeedGW
 
 Ngày: 2026-11-09, cập nhật 2026-11-13 · Dựa trên: DESIGN_BRIEF.md · Task tương ứng: TASKS.md v4
 
@@ -72,7 +72,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Vai trò và quyền `/quan-tri/vai-tro`
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
   - Danh mục
-    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ DMS cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
+    - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ hệ thống cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
     - Đại lý trùng `/quan-tri/dai-ly/trung` (tab: Nghi trùng số điện thoại, Số dùng chung, Trùng mã số thuế; A7b)
     - Số điện thoại sai `/quan-tri/dai-ly/so-dien-thoai` (lọc theo nhóm: số rác, thiếu số, dư số, khác; A7b)
     - Duyệt toạ độ `/quan-tri/dai-ly/duyet-toa-do` (tab: Chờ duyệt · Đã xử lý; đề xuất toạ độ từ lần check-in đầu tại đại lý chưa có toạ độ, kèm ảnh, địa chỉ lúc chụp, cùng phố hay khác phố)
@@ -155,14 +155,14 @@ Một màn hình, không cuộn trên màn 1440px: Độ phủ đại lý · Lư
 
 | Chỉ số | Cách tính | Nguồn | Độ mới |
 |---|---|---|---|
-| Số lượt ghé thăm | Số check-in trong kỳ và phạm vi đang chọn, theo giờ chụp ảnh | DMS | Gần như tức thì |
-| Độ phủ đại lý | Số đại lý **khác nhau** có ≥ 1 check-in trong kỳ ÷ số đại lý đang hoạt động trong phạm vi | DMS | ≤ 15 phút |
-| Đại lý lâu chưa ghé thăm | Đại lý đang hoạt động, check-in gần nhất cách quá N ngày (N đặt ở Tham số) | DMS | ≤ 15 phút |
-| Tổng km đi thị trường | Tổng Khoảng cách (km) theo đường đi; chưa có thì dùng Khoảng cách theo GPS | DMS | ≤ 15 phút |
-| Tỉ lệ hoàn thành tuyến | Điểm đã check-in ÷ điểm trong kế hoạch | DMS | ≤ 15 phút |
+| Số lượt ghé thăm | Số check-in trong kỳ và phạm vi đang chọn, theo giờ chụp ảnh | SeedGW | Gần như tức thì |
+| Độ phủ đại lý | Số đại lý **khác nhau** có ≥ 1 check-in trong kỳ ÷ số đại lý đang hoạt động trong phạm vi | SeedGW | ≤ 15 phút |
+| Đại lý lâu chưa ghé thăm | Đại lý đang hoạt động, check-in gần nhất cách quá N ngày (N đặt ở Tham số) | SeedGW | ≤ 15 phút |
+| Tổng km đi thị trường | Tổng Khoảng cách (km) theo đường đi; chưa có thì dùng Khoảng cách theo GPS | SeedGW | ≤ 15 phút |
+| Tỉ lệ hoàn thành tuyến | Điểm đã check-in ÷ điểm trong kế hoạch | SeedGW | ≤ 15 phút |
 | Sản lượng thực bán | Số lượng trên hoá đơn bán **trừ hàng trả lại**, quy ra kg, theo ngày hoá đơn | FAST | Theo chu kỳ đồng bộ (15 đến 60 phút) |
 | Doanh thu thực bán | Tiền hàng sau chiết khấu, chưa VAT, trừ hàng trả lại | FAST | Như trên |
-| % hoàn thành chỉ tiêu | Thực bán ÷ Chỉ tiêu của kỳ và phạm vi đang chọn | FAST + DMS | Như trên |
+| % hoàn thành chỉ tiêu | Thực bán ÷ Chỉ tiêu của kỳ và phạm vi đang chọn | FAST + SeedGW | Như trên |
 
 Quy tắc tính:
 - Số liệu gắn với **đơn vị và nhân viên tại thời điểm phát sinh** (check-in lưu đơn vị lúc check-in), nên đổi vùng hay đổi người phụ trách không làm sai số quá khứ.
@@ -253,7 +253,7 @@ Quy tắc tính:
 
 | Khái niệm | Nhãn trên giao diện | Ghi chú |
 |---|---|---|
-| Tên phần mềm (quyết định 34) | **SeedGW** | Tiêu đề tab web, màn đăng nhập app, tên dưới biểu tượng. "DMS cũ" là hệ thống cũ, giữ nguyên |
+| Tên phần mềm (quyết định 34) | **SeedGW** | Tiêu đề tab web, màn đăng nhập app, tên dưới biểu tượng. Phần mềm cũ gọi là **hệ thống cũ**, ví dụ "Mã hệ thống cũ" |
 | Không gian làm việc cấp Hub | **Bộ phận** | Chỉ 2: Kinh doanh, Quản trị |
 | Trao đổi giữa CBNV và quản trị | **Hỗ trợ**, mỗi lần gửi là một **Yêu cầu** | Loại: Hỏi đáp, Báo lỗi, Góp ý. Không gọi là "ticket" |
 | Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |
@@ -261,7 +261,7 @@ Quy tắc tính:
 | Miền/Vùng/Khu vực trong cơ cấu | **Đơn vị** | Không gọi là "bộ phận" |
 | Bên mua và nhận hoá đơn, có mã FAST | **Đại lý** | Có trường Loại: Cấp 1, Cấp 2, Tổ chức |
 | Mã KH trên FAST | **Mã đại lý** | Một mã duy nhất |
-| Mã ở DMS cũ | **Mã cũ** | Chỉ để tra cứu |
+| Mã ở hệ thống cũ | **Mã cũ** | Chỉ để tra cứu |
 | Nông dân, HTX, hộ không có mã FAST | **Khách hàng** | Không dùng từ này cho đại lý |
 | Giao dịch bán | **Đơn hàng** | Không viết tắt là "đơn" trong nhãn |
 | Ghi nhận có mặt tại một điểm | **Check-in** | Điểm là Đại lý, Khách hàng hoặc Điểm khác |

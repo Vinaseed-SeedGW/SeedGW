@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { AuditAction } from '@dms/contracts/audit';
-import type { ActionResult } from '@dms/contracts/common';
+import type { AuditAction } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
 import {
   changeSupportStatusInput,
   createSupportRequestInput,
@@ -13,7 +13,7 @@ import {
   supportCodeInput,
   type SupportDetail,
   type SupportListResult,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';

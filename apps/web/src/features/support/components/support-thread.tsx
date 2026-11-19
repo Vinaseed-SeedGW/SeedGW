@@ -2,16 +2,16 @@
 
 import { FileText, Paperclip, X } from 'lucide-react';
 import { useRef, useState, useTransition, type ClipboardEvent } from 'react';
-import { formatDateTime } from '@dms/contracts/format';
-import type { SupportDetail } from '@dms/contracts/support';
+import { formatDateTime } from '@seedgw/contracts/format';
+import type { SupportDetail } from '@seedgw/contracts/support';
 import {
   formatFileSize,
   SUPPORT_FILE_ACCEPT,
   SUPPORT_FILE_RULE_TEXT,
   SUPPORT_MAX_FILES_PER_MESSAGE,
-} from '@dms/contracts/support-files';
-import { cn } from '@dms/ui/cn';
-import { useToast } from '@dms/ui/toast';
+} from '@seedgw/contracts/support-files';
+import { cn } from '@seedgw/ui/cn';
+import { useToast } from '@seedgw/ui/toast';
 import { replySupportAction } from '@/server/actions/support';
 
 // Khung trao đổi dùng chung cho nút nổi Hỗ trợ và trang Quản trị › Hỗ trợ (IA §7, SupportThread).

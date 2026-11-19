@@ -1,5 +1,5 @@
 {
-  "name": "@dms/config",
+  "name": "@seedgw/config",
   "private": true,
   "type": "module",
   "exports": {

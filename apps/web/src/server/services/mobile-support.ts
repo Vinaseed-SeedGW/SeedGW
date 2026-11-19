@@ -1,5 +1,5 @@
 import 'server-only';
-import type { AuditAction } from '@dms/contracts/audit';
+import type { AuditAction } from '@seedgw/contracts/audit';
 import type { MobileUser } from '@/server/auth/mobile';
 import { writeAudit } from './audit';
 import type { SupportMutation } from './support';

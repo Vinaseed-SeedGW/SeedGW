@@ -8,10 +8,10 @@ import {
   type ApprovalRow,
   type ApprovalTab,
   type ListApprovalsResult,
-} from '@dms/contracts/approvals';
-import { formatDateTime } from '@dms/contracts/format';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { DataTable, selectionColumn, useDataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/approvals';
+import { formatDateTime } from '@seedgw/contracts/format';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { DataTable, selectionColumn, useDataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { bulkApproveAction } from '@/server/actions/approvals';
 import { ApprovalStatusBadge } from './approval-status-badge';
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { formatNumber } from '@dms/contracts/format';
+import { formatNumber } from '@seedgw/contracts/format';
 import {
   targetPercent,
   type ListSalesTargetsResult,
   type SalesTargetRow,
-} from '@dms/contracts/sales-targets';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/sales-targets';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { TargetOnBehalfCreateButton, TargetOnBehalfEditButton } from './target-form-sheet';
 

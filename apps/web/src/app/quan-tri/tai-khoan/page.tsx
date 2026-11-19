@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { usersUrlParams, type ListUsersInput } from '@dms/contracts/users';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+import { usersUrlParams, type ListUsersInput } from '@seedgw/contracts/users';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { Can } from '@/features/auth/components/can';
 import { ManagedUsersTable } from '@/features/users/components/managed-users-table';
 import { UsersExportButton } from '@/features/users/components/users-export-button';

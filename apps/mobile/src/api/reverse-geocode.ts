@@ -23,7 +23,7 @@ export type GeocodeResult =
   | { ok: true; address: string }
   | { ok: false; reason: 'NO_KEY' | 'OFFLINE' | 'NOT_FOUND' | 'HTTP' };
 
-/** Có cách lấy địa chỉ: qua máy chủ DMS (bản chính thức) hoặc khoá gắn trong bản thử R3. */
+/** Có cách lấy địa chỉ: qua máy chủ SeedGW (bản chính thức) hoặc khoá gắn trong bản thử R3. */
 export function hasGeocodeKey(): boolean {
   return serverEnabled() || API_KEY.length > 0;
 }

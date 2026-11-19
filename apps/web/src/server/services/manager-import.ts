@@ -1,14 +1,14 @@
 import 'server-only';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import type { ExportedFile } from '@dms/contracts/common';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import type { ExportedFile } from '@seedgw/contracts/common';
 import {
   MANAGER_IMPORT_COLUMNS,
   validateManagerImportRows,
   type ManagerImportPreview,
   type ManagerImportRaw,
-} from '@dms/contracts/manager-import';
-import { MAX_IMPORT_ROWS } from '@dms/contracts/user-import';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/manager-import';
+import { MAX_IMPORT_ROWS } from '@seedgw/contracts/user-import';
+import { db } from '@seedgw/db/client';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { DomainError } from '@/server/services/domain-error';
 import { buildWorkbookBase64, readFirstSheet } from '@/server/services/excel';

@@ -1,4 +1,4 @@
-import { scopeWhere, type ScopeContext, type ScopeFields } from '@dms/contracts/access';
+import { scopeWhere, type ScopeContext, type ScopeFields } from '@seedgw/contracts/access';
 import { db } from './client';
 
 // Moi model co du lieu theo nguoi phu trach hoac don vi can khai bao o day.

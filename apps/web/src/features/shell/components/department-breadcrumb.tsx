@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { activeNavHref } from '@dms/contracts/access';
+import { activeNavHref } from '@seedgw/contracts/access';
 
 type DepartmentBreadcrumbProps = {
   departmentName: string;

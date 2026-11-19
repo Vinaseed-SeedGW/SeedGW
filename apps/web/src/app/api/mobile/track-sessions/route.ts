@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
-import { trackSessionInput } from '@dms/contracts/check-ins';
-import { vietnamToday } from '@dms/contracts/format';
+import { trackSessionInput } from '@seedgw/contracts/check-ins';
+import { vietnamToday } from '@seedgw/contracts/format';
 import { assertMobileCan, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { readJson } from '@/server/auth/mobile-request';
 import { recomputeDayDistances, saveTrackSession } from '@/server/services/check-ins';

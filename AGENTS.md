@@ -1,10 +1,10 @@
-# DMS Vinaseed - Quy tắc dự án
+# SeedGW - Quy tắc dự án
 
 Claude xây dựng toàn bộ Backend và Frontend. Cách làm việc nằm ở `CLAUDE.md`. Nếu có mâu thuẫn thì theo file này.
 
 ## 1. Dự án
 
-Phần mềm nội bộ của Vinaseed, gồm web và app điện thoại cho 300-400 người dùng. Tên hiện cho người dùng là **SeedGW** (`APP_NAME` trong `@dms/config/brand`); tên dự án, mã gói và package vẫn là DMS. Sau đăng nhập, người dùng luôn đi qua **Hub** chia 2 bộ phận: Kinh doanh, Quản trị. Cán bộ nhân viên gửi yêu cầu hỗ trợ bằng nút nổi trên web, quản trị xử lý ở Quản trị › Hỗ trợ. Hệ thống kết nối FAST Business Online, Mattermost và có dashboard chỉ số, chỉ tiêu.
+Phần mềm nội bộ của Vinaseed, gồm web và app điện thoại cho 300-400 người dùng. Tên hiện cho người dùng là **SeedGW** (`APP_NAME` trong `@seedgw/config/brand`), mã gói `vn.vinaseed.seedgw`, package `@seedgw/*`. Phần mềm cũ gọi là "hệ thống cũ". Sau đăng nhập, người dùng luôn đi qua **Hub** chia 2 bộ phận: Kinh doanh, Quản trị. Cán bộ nhân viên gửi yêu cầu hỗ trợ bằng nút nổi trên web, quản trị xử lý ở Quản trị › Hỗ trợ. Hệ thống kết nối FAST Business Online, Mattermost và có dashboard chỉ số, chỉ tiêu.
 
 ## 2. Nguồn sự thật
 
@@ -12,11 +12,11 @@ Phần mềm nội bộ của Vinaseed, gồm web và app điện thoại cho 30
 
 | Cần biết | Đọc ở |
 |---|---|
-| Mục tiêu, dữ liệu, tích hợp, quyết định đã chốt | `.design/dms-vinaseed/DESIGN_BRIEF.md` |
-| Trang, menu, thứ tự nội dung, luồng, tên gọi, URL, định nghĩa chỉ số | `.design/dms-vinaseed/INFORMATION_ARCHITECTURE.md` |
-| Danh sách việc và tiêu chí xong | `.design/dms-vinaseed/TASKS.md` |
-| Logo, font, màu, chân trang | `.design/dms-vinaseed/BRAND.md` |
-| Bản nhìn đúng kích thước thật | `.design/dms-vinaseed/brand/demo-giao-dien.html` |
+| Mục tiêu, dữ liệu, tích hợp, quyết định đã chốt | `.design/seedgw/DESIGN_BRIEF.md` |
+| Trang, menu, thứ tự nội dung, luồng, tên gọi, URL, định nghĩa chỉ số | `.design/seedgw/INFORMATION_ARCHITECTURE.md` |
+| Danh sách việc và tiêu chí xong | `.design/seedgw/TASKS.md` |
+| Logo, font, màu, chân trang | `.design/seedgw/BRAND.md` |
+| Bản nhìn đúng kích thước thật | `.design/seedgw/brand/demo-giao-dien.html` |
 | Mẫu code từng lớp | `docs/MAU_CODE.md` |
 | Trình tự khởi tạo | `docs/KHOI_TAO.md` |
 
@@ -30,7 +30,7 @@ Không đổi công nghệ, không thêm thư viện lớn nếu chưa được 
 - Dữ liệu: PostgreSQL 16, Prisma, Redis, BullMQ, MinIO.
 - Đăng nhập: Auth.js cho web, JWT cho app.
 - App: Expo, expo-location, expo-camera, expo-sqlite.
-- Tên package nội bộ: `@dms/db`, `@dms/contracts`, `@dms/ui`, `@dms/config`.
+- Tên package nội bộ: `@seedgw/db`, `@seedgw/contracts`, `@seedgw/ui`, `@seedgw/config`.
 
 ## 4. Cấu trúc và các lớp
 
@@ -52,8 +52,8 @@ Không đổi công nghệ, không thêm thư viện lớn nếu chưa được 
 
 Quy tắc giữa các lớp:
 
-1. Giao diện chỉ lấy và ghi dữ liệu qua `apps/web/src/server/queries`, `actions`, dùng kiểu trong `@dms/contracts`.
-2. Giao diện không import `@dms/db`, không gọi database, không tự kiểm quyền thay cho máy chủ. Ẩn nút chỉ để giao diện gọn, không phải bảo mật.
+1. Giao diện chỉ lấy và ghi dữ liệu qua `apps/web/src/server/queries`, `actions`, dùng kiểu trong `@seedgw/contracts`.
+2. Giao diện không import `@seedgw/db`, không gọi database, không tự kiểm quyền thay cho máy chủ. Ẩn nút chỉ để giao diện gọn, không phải bảo mật.
 3. File trong `server/` phải có `import 'server-only'`, riêng file Server Action dùng `'use server'`.
 4. Không tạo API nội bộ cho web tự gọi. Page dùng query, form dùng action. `app/api/**` chỉ dành cho app điện thoại, FAST, webhook và SSE.
 
@@ -87,7 +87,7 @@ Prettier và ESLint là chuẩn cuối cùng. Không định dạng tay trái v�
 - **Ngôn ngữ**: định danh trong code viết tiếng Anh. Chữ hiện cho người dùng, thông báo lỗi và URL viết tiếng Việt. Tên gọi trên giao diện theo đúng bảng IA §6.
 - **Từ vựng code**: Đại lý `Dealer`, Khách hàng `Customer`, Đơn hàng `Order`, Phiếu `Ticket`, Hội thoại `Conversation`, Đơn từ `AttendanceRequest`, Chỉ tiêu `SalesTarget`, Đơn vị `OrgUnit`, Bộ phận `Department`, Vụ `Season`, Sản lượng `quantityKg`.
 - **TypeScript**: `strict`, `noUncheckedIndexedAccess`. Không dùng `any`, không dùng `@ts-ignore`. Dùng `satisfies` cho dữ liệu mẫu.
-- **Import**: không tạo barrel file `index.ts`. Import đúng file, ví dụ `@dms/contracts/orders`. Trong `apps/web` dùng alias `@/`.
+- **Import**: không tạo barrel file `index.ts`. Import đúng file, ví dụ `@seedgw/contracts/orders`. Trong `apps/web` dùng alias `@/`.
 - **Export**: dùng named export, trừ các file Next.js bắt buộc default.
 - **Comment**: chỉ viết khi giải thích lý do không hiển nhiên, bằng tiếng Việt.
 - **Dữ liệu**:
@@ -113,7 +113,7 @@ Mẫu đầy đủ ở `docs/MAU_CODE.md`.
 ## 8. Bảo mật
 
 - Mỗi query, Server Action và Route Handler kiểm đăng nhập và quyền ở đầu hàm, áp phạm vi dữ liệu `own`, `orgUnit`, `orgUnitTree`, `all` ngay trong truy vấn.
-- Trang mới: thêm quy tắc vào `ROUTE_RULES` trong `@dms/contracts/access`, trang gọi `requirePermission` ở đầu. Server Action gọi `assertCan`. Query nghiệp vụ dùng `getScopedDb()`, model mới có dữ liệu theo người hoặc đơn vị phải khai báo trong `SCOPED_MODELS`.
+- Trang mới: thêm quy tắc vào `ROUTE_RULES` trong `@seedgw/contracts/access`, trang gọi `requirePermission` ở đầu. Server Action gọi `assertCan`. Query nghiệp vụ dùng `getScopedDb()`, model mới có dữ liệu theo người hoặc đơn vị phải khai báo trong `SCOPED_MODELS`.
 - Validate mọi đầu vào bằng Zod ở máy chủ, kể cả dữ liệu từ form đã validate ở client.
 - Ghi `AuditLog` cho mọi thao tác tạo, sửa, xoá, duyệt.
 - Không commit `.env`, khoá API, mật khẩu, token. Biến mới phải thêm vào `.env.example` với giá trị giả.
@@ -133,7 +133,7 @@ Mẫu đầy đủ ở `docs/MAU_CODE.md`.
 
 Chi tiết ở `BRAND.md`. Các điểm không được vi phạm:
 
-- **Màu**: chủ đạo `#005b36` và trắng. Chỉ dùng token, không viết mã màu trực tiếp trong component. Token ở `.design/dms-vinaseed/brand/tokens.css`. Chưa làm giao diện tối, chưa có màu riêng từng bộ phận.
+- **Màu**: chủ đạo `#005b36` và trắng. Chỉ dùng token, không viết mã màu trực tiếp trong component. Token ở `.design/seedgw/brand/tokens.css`. Chưa làm giao diện tối, chưa có màu riêng từng bộ phận.
 - **Font**: mọi chữ dùng UTM Neo Sans Intel, chỉ weight 400 và 700. Đặt `font-synthesis: none`.
 - **Ký tự font không có, cấm dùng trong chữ hiển thị**: ký hiệu đồng, gạch dài, chấm giữa, dấu đầu dòng, dấu nhân, mũi tên, nhỏ hơn hoặc bằng, lớn hơn hoặc bằng, dấu độ, ngoặc kép góc, dấu cách không ngắt. Không dùng dấu `|` vì nét bị lỗi. Cách thay ở `BRAND.md` §2.
 - **Tiền**: dùng `formatVnd()`, ra dạng `48.750.000 đ`. Không dùng `Intl.NumberFormat` kiểu `currency`.

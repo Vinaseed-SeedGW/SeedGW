@@ -4,7 +4,7 @@ import type {
   ListBadPhonesInput,
   ListDuplicatesInput,
   ListDuplicatesResult,
-} from '@dms/contracts/dealer-cleanup';
+} from '@seedgw/contracts/dealer-cleanup';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

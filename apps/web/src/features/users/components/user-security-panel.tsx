@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { formatDateTime } from '@dms/contracts/format';
-import type { UserDetail } from '@dms/contracts/users';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
+import { formatDateTime } from '@seedgw/contracts/format';
+import type { UserDetail } from '@seedgw/contracts/users';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import { TemporaryPasswordDialog } from '@/features/users/components/temporary-password-dialog';
 import { UserStatusBadge } from '@/features/users/components/user-status-badge';
 import {

@@ -1,8 +1,12 @@
-import { formatNumber } from '@dms/contracts/format';
-import { SETTING_GROUPS, formatSequenceCode, type SettingsOverview } from '@dms/contracts/settings';
+import { formatNumber } from '@seedgw/contracts/format';
+import {
+  SETTING_GROUPS,
+  formatSequenceCode,
+  type SettingsOverview,
+} from '@seedgw/contracts/settings';
 import { CodeSequenceStatus } from '@/features/settings/components/code-sequence-status';
 import { SettingsSection } from '@/features/settings/components/settings-section';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 function ReadOnlyValue({ label, value }: { label: string; value: string }) {
   return (

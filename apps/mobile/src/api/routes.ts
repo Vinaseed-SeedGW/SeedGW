@@ -1,4 +1,4 @@
-import type { MyRoutesResult, SubmitRoutePlanInput } from '@dms/contracts/route-plans';
+import type { MyRoutesResult, SubmitRoutePlanInput } from '@seedgw/contracts/route-plans';
 import { apiCall } from './client';
 import type { Loaded } from './targets';
 

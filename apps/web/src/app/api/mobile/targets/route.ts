@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
-import { APPROVAL_STATUS_LABEL } from '@dms/contracts/approvals';
-import { upsertSalesTargetInput } from '@dms/contracts/sales-targets';
+import { APPROVAL_STATUS_LABEL } from '@seedgw/contracts/approvals';
+import { upsertSalesTargetInput } from '@seedgw/contracts/sales-targets';
 import { assertMobileCan, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { writeAuditMany } from '@/server/services/audit';

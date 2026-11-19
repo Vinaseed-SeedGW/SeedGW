@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
 
 export const metadata: Metadata = { title: 'Không có quyền' };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { RoleMatrixRole } from '@dms/contracts/roles';
+import type { RoleMatrixRole } from '@seedgw/contracts/roles';
 import {
   RoleMatrix,
   draftsFromRoles,

@@ -2,15 +2,15 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { widestDataScope, type DataScope } from '@dms/contracts/access';
-import { CHANGE_PASSWORD_PATH } from '@dms/contracts/auth';
+import { widestDataScope, type DataScope } from '@seedgw/contracts/access';
+import { CHANGE_PASSWORD_PATH } from '@seedgw/contracts/auth';
 import {
   CONSENT_LATER_COOKIE,
   LOCATION_CONSENT_KIND,
   LOCATION_CONSENT_PATH,
   LOCATION_CONSENT_VERSION,
-} from '@dms/contracts/consents';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/consents';
+import { db } from '@seedgw/db/client';
 import { auth } from './auth';
 import { findActiveImpersonation } from './impersonation';
 

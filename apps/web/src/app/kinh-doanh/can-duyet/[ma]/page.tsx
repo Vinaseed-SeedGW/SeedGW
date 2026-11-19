@@ -7,8 +7,8 @@ import {
   APPROVAL_KIND_LABEL,
   APPROVAL_STEP_LABEL,
   type ApprovalDetail,
-} from '@dms/contracts/approvals';
-import { formatDateTime } from '@dms/contracts/format';
+} from '@seedgw/contracts/approvals';
+import { formatDateTime } from '@seedgw/contracts/format';
 import {
   ApprovalReviewButtons,
   ApprovalWithdrawButton,

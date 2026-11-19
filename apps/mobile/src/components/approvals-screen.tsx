@@ -5,7 +5,7 @@ import {
   APPROVAL_KIND_LABEL,
   APPROVAL_STEP_LABEL,
   type ApprovalRow,
-} from '@dms/contracts/approvals';
+} from '@seedgw/contracts/approvals';
 import {
   decideApproval,
   listMyApprovals,

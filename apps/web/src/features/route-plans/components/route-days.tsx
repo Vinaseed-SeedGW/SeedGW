@@ -1,10 +1,10 @@
-import { formatNumber } from '@dms/contracts/format';
+import { formatNumber } from '@seedgw/contracts/format';
 import {
   countStops,
   mapsDirectionLinks,
   type RouteCompletion,
   type RouteDayView,
-} from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/route-plans';
 
 export function CompletionText({ completion }: { completion: RouteCompletion | null }) {
   if (!completion || completion.planned === 0) {

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { mobileError, mobileRoute, mobileScopedDb, requireMobileUser } from '@/server/auth/mobile';
 import { readJson } from '@/server/auth/mobile-request';
 import { replySupport } from '@/server/services/support';
-import { isSupportCode, replySupportInput } from '@dms/contracts/support';
+import { isSupportCode, replySupportInput } from '@seedgw/contracts/support';
 
 type Context = { params: Promise<{ code: string }> };
 

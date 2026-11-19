@@ -1,5 +1,5 @@
 {
-  "name": "@dms/worker",
+  "name": "@seedgw/worker",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,15 +8,15 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@dms/config": "workspace:*",
+    "@seedgw/config": "workspace:*",
     "@types/node": "^24",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vitest": "^5.1.0"
   },
   "dependencies": {
-    "@dms/contracts": "workspace:*",
-    "@dms/db": "workspace:*",
+    "@seedgw/contracts": "workspace:*",
+    "@seedgw/db": "workspace:*",
     "bullmq": "^6.7.7",
     "ioredis": "^6.0.0"
   }

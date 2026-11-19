@@ -1,9 +1,9 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import type { AuditChanges } from '@dms/contracts/audit';
-import { auditChanges } from '@dms/contracts/audit';
-import type { ExportedFile } from '@dms/contracts/common';
-import { formatDateOnly } from '@dms/contracts/format';
+import type { AuditChanges } from '@seedgw/contracts/audit';
+import { auditChanges } from '@seedgw/contracts/audit';
+import type { ExportedFile } from '@seedgw/contracts/common';
+import { formatDateOnly } from '@seedgw/contracts/format';
 import {
   MAX_IMPORT_ROWS,
   USER_IMPORT_COLUMNS,
@@ -11,8 +11,8 @@ import {
   type ParsedUserImportRow,
   type UserImportPreview,
   type UserImportRaw,
-} from '@dms/contracts/user-import';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/user-import';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { generateTemporaryPassword, hashPassword } from '@/server/services/credentials';

@@ -8,7 +8,7 @@ Dùng tính năng Đơn hàng làm ví dụ. Mọi tính năng khác viết theo
 
 ```json
 {
-  "name": "@dms/contracts",
+  "name": "@seedgw/contracts",
   "private": true,
   "type": "module",
   "exports": { "./*": "./src/*.ts" },
@@ -174,7 +174,7 @@ export const ordersFixture = {
 
 ```ts
 import 'server-only';
-import type { ListOrdersInput, ListOrdersResult } from '@dms/contracts/orders';
+import type { ListOrdersInput, ListOrdersResult } from '@seedgw/contracts/orders';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 
@@ -205,12 +205,12 @@ export async function listOrders(input: ListOrdersInput): Promise<ListOrdersResu
 'use server';
 
 import { after } from 'next/server';
-import type { ActionResult } from '@dms/contracts/common';
-import { createOrderInput } from '@dms/contracts/orders';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { createOrderInput } from '@seedgw/contracts/orders';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
-import { auditChanges } from '@dms/contracts/audit';
+import { auditChanges } from '@seedgw/contracts/audit';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import { createOrder } from '@/server/services/orders';
 
@@ -249,7 +249,7 @@ export async function createOrderAction(raw: unknown): Promise<ActionResult<{ co
 
 ```tsx
 import { Suspense } from 'react';
-import { ordersUrlParams, type ListOrdersInput } from '@dms/contracts/orders';
+import { ordersUrlParams, type ListOrdersInput } from '@seedgw/contracts/orders';
 import { OrdersTable } from '@/features/orders/components/orders-table';
 import { OrdersTableSkeleton } from '@/features/orders/components/orders-table-skeleton';
 import { listOrders } from '@/server/queries/orders';
@@ -285,7 +285,7 @@ async function OrdersResults({ input }: { input: ListOrdersInput }) {
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createOrderInput, type CreateOrderInput } from '@dms/contracts/orders';
+import { createOrderInput, type CreateOrderInput } from '@seedgw/contracts/orders';
 import { createOrderAction } from '@/server/actions/orders';
 
 export function OrderFormCreate({ onCreated }: { onCreated: (code: string) => void }) {
@@ -385,7 +385,7 @@ Khi hiển thị, ký hiệu © được phóng to theo `BRAND.md` §2.
 
 ```ts
 import { NextResponse } from 'next/server';
-import { createCheckInInput } from '@dms/contracts/check-ins';
+import { createCheckInInput } from '@seedgw/contracts/check-ins';
 import { requireMobileUser } from '@/server/auth/mobile';
 import { saveCheckIn } from '@/server/services/check-ins';
 

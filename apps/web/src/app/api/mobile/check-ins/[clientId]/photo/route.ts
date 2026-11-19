@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { MAX_PHOTO_BYTES } from '@dms/contracts/check-ins';
+import { MAX_PHOTO_BYTES } from '@seedgw/contracts/check-ins';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { saveCheckInPhoto } from '@/server/services/check-ins';
 import { readMyCheckInPhoto } from '@/server/services/mobile-history';

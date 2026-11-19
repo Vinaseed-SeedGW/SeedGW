@@ -1,7 +1,7 @@
 'use client';
 
-import type { ListUsersInput } from '@dms/contracts/users';
-import { DataTable } from '@dms/ui/data-table';
+import type { ListUsersInput } from '@seedgw/contracts/users';
+import { DataTable } from '@seedgw/ui/data-table';
 import { exportUsersAction } from '@/server/actions/users';
 
 type UsersExportButtonProps = {

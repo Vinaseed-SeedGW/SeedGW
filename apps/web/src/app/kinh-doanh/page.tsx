@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { departmentLanding } from '@dms/contracts/access';
+import { departmentLanding } from '@seedgw/contracts/access';
 import { requireDepartmentAccess } from '@/server/auth/can';
 
 export default async function KinhDoanhPage() {

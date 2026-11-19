@@ -10,8 +10,8 @@ import {
   supportSeverity,
   supportType,
   type SupportRequestForm,
-} from '@dms/contracts/support';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/support';
+import { Form } from '@seedgw/ui/form';
 import { createSupportRequestAction } from '@/server/actions/support';
 import { AttachmentField, useAttachmentPicker } from './support-thread';
 

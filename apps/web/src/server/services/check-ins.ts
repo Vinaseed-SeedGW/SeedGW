@@ -1,6 +1,6 @@
 import 'server-only';
-import { speedFlaggedIds } from '@dms/contracts/check-in-speed';
-import { trackFilterOf, trackingSettingsFrom } from '@dms/contracts/tracking-settings';
+import { speedFlaggedIds } from '@seedgw/contracts/check-in-speed';
+import { trackFilterOf, trackingSettingsFrom } from '@seedgw/contracts/tracking-settings';
 import {
   CLOCK_SKEW_FLAG_MINUTES,
   type CheckInFlag,
@@ -8,17 +8,17 @@ import {
   type CreateCheckInInput,
   type TrackPointsBatchInput,
   type TrackSessionInput,
-} from '@dms/contracts/check-ins';
-import { isSameStreet, PROPOSAL_MAX_ACCURACY_M } from '@dms/contracts/dealer-locations';
-import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@dms/contracts/format';
+} from '@seedgw/contracts/check-ins';
+import { isSameStreet, PROPOSAL_MAX_ACCURACY_M } from '@seedgw/contracts/dealer-locations';
+import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
 import {
   cumulativeAt,
   distanceMeters,
   FILTER,
   filterTrack,
   segmentOf,
-} from '@dms/contracts/track-distance';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/track-distance';
+import { db } from '@seedgw/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
 import { scheduleRoadDistance } from '@/server/integrations/road-distance-queue';

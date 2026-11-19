@@ -1,4 +1,4 @@
-export { distanceMeters, type GeoPoint } from '@dms/contracts/track-distance';
+export { distanceMeters, type GeoPoint } from '@seedgw/contracts/track-distance';
 
 // Việt Nam không đổi giờ theo mùa nên cộng cố định 7 giờ là đủ, không phụ thuộc Intl của máy.
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;

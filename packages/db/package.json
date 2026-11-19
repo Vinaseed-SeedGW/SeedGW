@@ -1,5 +1,5 @@
 {
-  "name": "@dms/db",
+  "name": "@seedgw/db",
   "private": true,
   "type": "module",
   "exports": {
@@ -17,11 +17,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dms/contracts": "workspace:*",
+    "@seedgw/contracts": "workspace:*",
     "@prisma/client": "~6.19.3"
   },
   "devDependencies": {
-    "@dms/config": "workspace:*",
+    "@seedgw/config": "workspace:*",
     "@types/node": "^24",
     "argon2": "^0.45.2",
     "dotenv-cli": "^11.1.0",

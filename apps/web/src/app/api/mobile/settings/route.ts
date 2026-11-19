@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { trackingSettingsFrom } from '@dms/contracts/tracking-settings';
+import { trackingSettingsFrom } from '@seedgw/contracts/tracking-settings';
 import { mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { readSystemSettings } from '@/server/services/settings';
 

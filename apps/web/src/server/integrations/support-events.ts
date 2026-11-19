@@ -1,7 +1,7 @@
 import 'server-only';
 import { EventEmitter } from 'node:events';
 import { Redis } from 'ioredis';
-import { SUPPORT_EVENTS_CHANNEL, type SupportChangeEvent } from '@dms/contracts/support';
+import { SUPPORT_EVENTS_CHANNEL, type SupportChangeEvent } from '@seedgw/contracts/support';
 
 // Cập nhật tức thì cho Hỗ trợ (T1): mỗi thay đổi phát qua Redis để mọi tiến trình web cùng biết,
 // mỗi tiến trình giữ một kết nối nghe chung rồi chia cho các trình duyệt đang mở SSE.

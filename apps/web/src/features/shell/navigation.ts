@@ -20,7 +20,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import type { DepartmentSlug } from '@dms/contracts/departments';
+import type { DepartmentSlug } from '@seedgw/contracts/departments';
 
 export type NavItem = { label: string; href: string; icon: LucideIcon };
 export type NavGroup = { label?: string; items: NavItem[] };

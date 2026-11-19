@@ -1,7 +1,7 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
 import ExcelJS from 'exceljs';
-import { auditChanges } from '@dms/contracts/audit';
+import { auditChanges } from '@seedgw/contracts/audit';
 import {
   MAX_DEALER_IMPORT_ROWS,
   normalizeVnPhone,
@@ -12,15 +12,15 @@ import {
   type DealerImportUnit,
   type DealerImportUnitChoice,
   type DealerLevel,
-} from '@dms/contracts/dealers';
-import { toNewProvince } from '@dms/contracts/provinces';
-import { normalizeSearchText } from '@dms/contracts/text';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/dealers';
+import { toNewProvince } from '@seedgw/contracts/provinces';
+import { normalizeSearchText } from '@seedgw/contracts/text';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { writeAudit } from './audit';
 import { DomainError } from './domain-error';
 
-// Nhập file "Danh sách khách hàng" xuất từ DMS cũ (A7). Tìm cột theo tên tiêu đề nên đổi thứ tự cột vẫn đọc được.
+// Nhập file "Danh sách khách hàng" xuất từ hệ thống cũ (A7). Tìm cột theo tên tiêu đề nên đổi thứ tự cột vẫn đọc được.
 
 const HEADER = {
   legacyCode: 'mã khách hàng (tự sinh)',
@@ -44,7 +44,7 @@ type Field = keyof typeof HEADER;
 const HEADER_ALIASES: Partial<Record<Field, string[]>> = { province: ['tỉnh/thành phố'] };
 const MAX_LISTED_ISSUES = 200;
 const UPSERT_CHUNK = 1000;
-// Đơn vị dùng để thử trên DMS cũ, mặc định bỏ qua khi nhập.
+// Đơn vị dùng để thử trên hệ thống cũ, mặc định bỏ qua khi nhập.
 const TEST_UNIT_PATTERN = /test|thu viec|dao tao/;
 
 export type ParsedDealerRow = {
@@ -82,7 +82,10 @@ export async function parseDealerFile(buffer: ArrayBuffer): Promise<ParsedDealer
   try {
     await workbook.xlsx.load(buffer);
   } catch {
-    throw new DomainError('VALIDATION', 'Không đọc được file. Hãy chọn file .xlsx xuất từ DMS cũ');
+    throw new DomainError(
+      'VALIDATION',
+      'Không đọc được file. Hãy chọn file .xlsx xuất từ hệ thống cũ',
+    );
   }
 
   for (const sheet of workbook.worksheets) {
@@ -148,7 +151,7 @@ export async function parseDealerFile(buffer: ArrayBuffer): Promise<ParsedDealer
   }
   throw new DomainError(
     'VALIDATION',
-    'Không thấy cột "Mã khách hàng (tự sinh)". Hãy dùng file Danh sách khách hàng xuất từ DMS cũ',
+    'Không thấy cột "Mã khách hàng (tự sinh)". Hãy dùng file Danh sách khách hàng xuất từ hệ thống cũ',
   );
 }
 
@@ -164,7 +167,7 @@ async function analyze(rows: ParsedDealerRow[]): Promise<Analysis> {
   const seenLegacy = new Set<string>();
   const seenFast = new Map<string, string>();
 
-  // Mã FAST đã gắn cho đại lý khác trong DMS thì không gán lại, tránh trùng mã.
+  // Mã FAST đã gắn cho đại lý khác trong SeedGW thì không gán lại, tránh trùng mã.
   const existingFast = new Map(
     (
       await db.dealer.findMany({
@@ -398,8 +401,8 @@ function adminArea(row: ParsedDealerRow): string | null {
 }
 
 /**
- * Lưu đại lý theo mã DMS cũ. Nhập lại lần sau chỉ cập nhật tên, mã FAST, mã số thuế và thông tin cũ;
- * các trường đã sửa trên DMS mới (điện thoại, địa chỉ, đơn vị, nhân viên, toạ độ) giữ nguyên.
+ * Lưu đại lý theo mã hệ thống cũ. Nhập lại lần sau chỉ cập nhật tên, mã FAST, mã số thuế và thông tin cũ;
+ * các trường đã sửa trên SeedGW (điện thoại, địa chỉ, đơn vị, nhân viên, toạ độ) giữ nguyên.
  */
 export async function commitDealerImport(
   actor: CurrentUser,
@@ -510,7 +513,7 @@ export async function commitDealerImport(
   return { ...result, errorCount: errors.length };
 }
 
-/** Ghép lại nhân viên phụ trách theo tên DMS cũ cho đại lý chưa gán, dùng sau khi nhập thêm tài khoản. */
+/** Ghép lại nhân viên phụ trách theo tên hệ thống cũ cho đại lý chưa gán, dùng sau khi nhập thêm tài khoản. */
 export async function rematchDealerAssignees(): Promise<number> {
   const [users, dealers] = await Promise.all([
     loadUserIndex(),

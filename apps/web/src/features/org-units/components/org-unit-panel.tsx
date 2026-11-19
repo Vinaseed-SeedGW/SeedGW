@@ -3,8 +3,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { buildOrgTree, checkOrgUnitMove, flattenOrgTree } from '@dms/contracts/org-tree';
-import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@dms/contracts/route-plans';
+import { buildOrgTree, checkOrgUnitMove, flattenOrgTree } from '@seedgw/contracts/org-tree';
+import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@seedgw/contracts/route-plans';
 import {
   createOrgUnitInput,
   moveOrgUnitInput,
@@ -14,10 +14,10 @@ import {
   type MoveOrgUnitInput,
   type OrgUnitRow,
   type UpdateOrgUnitInput,
-} from '@dms/contracts/org-units';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { Form } from '@dms/ui/form';
-import { FormSheet } from '@dms/ui/form-sheet';
+} from '@seedgw/contracts/org-units';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { Form } from '@seedgw/ui/form';
+import { FormSheet } from '@seedgw/ui/form-sheet';
 import {
   createOrgUnitAction,
   deleteOrgUnitAction,

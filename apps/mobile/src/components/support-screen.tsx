@@ -23,7 +23,7 @@ import {
   type SupportStatus,
   type SupportSummary,
   type SupportType,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { freshAccessToken } from '../api/client';
 import { API_URL, newId } from '../api/session';
 import { listMySupport, readSupport, reopenSupport, supportFilePath } from '../api/support';

@@ -1,5 +1,5 @@
 import 'server-only';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   FastApiError,
   fastLogin,
@@ -7,14 +7,14 @@ import {
   type FastConnectionView,
   type FastOverview,
   type SaveFastConnectionInput,
-} from '@dms/contracts/fast';
-import { resolveSystemSettings } from '@dms/contracts/settings';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/fast';
+import { resolveSystemSettings } from '@seedgw/contracts/settings';
+import { db } from '@seedgw/db/client';
 import {
   IntegrationKeyMissingError,
   readFastConfig,
   writeFastConfig,
-} from '@dms/db/integration-settings';
+} from '@seedgw/db/integration-settings';
 import { DomainError } from './domain-error';
 
 // Trang Kết nối FAST (A8). Mật khẩu không bao giờ trả về trình duyệt, chỉ báo đã lưu hay chưa.

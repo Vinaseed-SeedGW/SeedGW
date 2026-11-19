@@ -6,11 +6,11 @@ import {
   type BadPhoneRow,
   type BadPhonesResult,
   type PhoneIssueKind,
-} from '@dms/contracts/dealer-cleanup';
-import { formatNumber } from '@dms/contracts/format';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
-import { useToast } from '@dms/ui/toast';
+} from '@seedgw/contracts/dealer-cleanup';
+import { formatNumber } from '@seedgw/contracts/format';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
+import { useToast } from '@seedgw/ui/toast';
 import { clearDealerPhonesAction, fixDealerPhoneAction } from '@/server/actions/dealer-cleanup';
 
 const SMALL =

@@ -4,7 +4,7 @@ import {
   supportInboxView,
   supportInboxViewSlug,
   type SupportInboxView,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 
 /** Nhóm yêu cầu ở Quản trị › Hỗ trợ, thêm tab Thống kê (T4). */
 export function SupportInboxTabs({ active }: { active: SupportInboxView | 'STATS' }) {

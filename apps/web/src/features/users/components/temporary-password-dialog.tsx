@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useModalDialog } from '@dms/ui/use-modal-dialog';
+import { useModalDialog } from '@seedgw/ui/use-modal-dialog';
 
 type TemporaryPasswordDialogProps = {
   title: string;

@@ -7,8 +7,8 @@ import {
   saveFastConnectionInput,
   type FastConnectionView,
   type SaveFastConnectionInput,
-} from '@dms/contracts/fast';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/fast';
+import { Form } from '@seedgw/ui/form';
 import { saveFastConnectionAction, testFastConnectionAction } from '@/server/actions/fast';
 
 /** Cấu hình kết nối FAST cho Quản trị hệ thống. Mật khẩu đã lưu không hiện lại, để trống là giữ nguyên. */

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { APPROVAL_PAGE_SIZE } from '@dms/contracts/approvals';
+import { APPROVAL_PAGE_SIZE } from '@seedgw/contracts/approvals';
 import { assertMobileCan, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { listApprovals } from '@/server/services/approvals';
 import { mobileApprovalViewer } from '@/server/services/mobile-approvals';

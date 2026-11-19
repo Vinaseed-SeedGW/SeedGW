@@ -1,10 +1,10 @@
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
+import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
 import {
   targetPercent,
   type ApprovedTargetValues,
   type SalesTargetSnapshot,
   type TargetProgress,
-} from '@dms/contracts/sales-targets';
+} from '@seedgw/contracts/sales-targets';
 
 type Metric = {
   label: string;

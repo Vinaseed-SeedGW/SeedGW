@@ -1,7 +1,7 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { isoDateToDisplay } from '@dms/contracts/format';
+import { isoDateToDisplay } from '@seedgw/contracts/format';
 
 type Props = { data: { day: string; visits: number }[] };
 

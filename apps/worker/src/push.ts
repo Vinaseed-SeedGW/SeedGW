@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { ANDROID_PUSH_CHANNEL, type PushReceiptJob } from '@dms/contracts/push';
-import { mondayOf } from '@dms/contracts/route-plans';
-import { resolveSystemSettings } from '@dms/contracts/settings';
-import { db } from '@dms/db/client';
+import { ANDROID_PUSH_CHANNEL, type PushReceiptJob } from '@seedgw/contracts/push';
+import { mondayOf } from '@seedgw/contracts/route-plans';
+import { resolveSystemSettings } from '@seedgw/contracts/settings';
+import { db } from '@seedgw/db/client';
 
 // Gửi thông báo đẩy qua dịch vụ đẩy của Expo (M7). Expo chuyển tiếp sang Google (Android) và Apple (iPhone).
 // EXPO_ACCESS_TOKEN là tuỳ chọn, bật "Push security" trên tài khoản Expo thì bắt buộc.

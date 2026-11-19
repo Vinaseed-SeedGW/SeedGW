@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { AuditAction, AuditEntityType } from '@dms/contracts/audit';
-import type { ActionResult } from '@dms/contracts/common';
-import { saveCodeSequenceInput, saveSystemSettingsInput } from '@dms/contracts/settings';
+import type { AuditAction, AuditEntityType } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { saveCodeSequenceInput, saveSystemSettingsInput } from '@seedgw/contracts/settings';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';

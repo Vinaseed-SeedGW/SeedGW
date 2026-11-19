@@ -10,7 +10,7 @@ Code nằm ở `apps/mobile`. Đây là bản thử để đo trên máy thật.
 |---|---|---|
 | Máy ảnh trong app | Mở máy ảnh ngay trong app, không chọn được ảnh có sẵn. Khung ngắm hiện giờ, ngày, toạ độ, sai số. Sai số trên 50 m thì báo "Đang chờ định vị chính xác" | `src/components/watermark-camera.tsx` |
 | In thông tin lên ảnh | Ảnh thu về cạnh dài 1600 px, ghép với dải thông tin rồi lưu thành một JPEG chất lượng 70%. Màn xem lại báo dung lượng ảnh | `src/components/watermark-strip.tsx` |
-| Ghi hành trình chạy nền | 5 giây một lần, chỉ khi đã đi thêm 10 m, độ chính xác High. Android hiện thông báo cố định "DMS đang ghi hành trình". Tự dừng lúc 20:00 | `src/sync/background-tracking.ts` |
+| Ghi hành trình chạy nền | 5 giây một lần, chỉ khi đã đi thêm 10 m, độ chính xác High. Android hiện thông báo cố định "SeedGW đang ghi hành trình". Tự dừng lúc 20:00 | `src/sync/background-tracking.ts` |
 | Lưu trên máy | SQLite: điểm GPS, ảnh, phiên ghi, lỗi chạy nền. Tắt mạng vẫn ghi | `src/sync/track-db.ts` |
 | Màn theo dõi | Số điểm GPS (bao nhiêu điểm khi app ở nền), điểm gần nhất, km theo GPS đã lọc, điểm sai số kém, điểm giả lập, số đoạn đứt, ảnh đã chụp | `src/components/tracking-panel.tsx` |
 | Xuất dữ liệu | Nút "Xuất vết GPS hôm nay" gửi file CSV qua Gmail, Zalo để phân tích ở R4 | `exportDayCsv` |
@@ -113,7 +113,7 @@ Google Play và Apple đều duyệt kỹ quyền vị trí chạy nền. Google
 
 ### Google Play (Permissions Declaration, mục Location permissions)
 
-> DMS Vinaseed is an internal app for Vinaseed sales staff. After the first customer check-in of the workday, the app records the staff member's location in the background until the staff member taps "End day" or until 20:00. The recorded route is used only to calculate the road distance travelled between consecutive check-ins, which appears in the visit report used by the company's accountants for travel allowances. A persistent notification is shown the whole time location is recorded. Users see a consent screen explaining this before any location is recorded. The app does not record location outside working hours and does not share it with third parties.
+> SeedGW is an internal app for Vinaseed sales staff. After the first customer check-in of the workday, the app records the staff member's location in the background until the staff member taps "End day" or until 20:00. The recorded route is used only to calculate the road distance travelled between consecutive check-ins, which appears in the visit report used by the company's accountants for travel allowances. A persistent notification is shown the whole time location is recorded. Users see a consent screen explaining this before any location is recorded. The app does not record location outside working hours and does not share it with third parties.
 
 ### Apple (App Review notes)
 

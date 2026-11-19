@@ -1,7 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
-import { getOrgUnitTreeIds, getTeamUserIds } from '@dms/db/org-units';
-import { scopedDb } from '@dms/db/scoped-client';
+import { getOrgUnitTreeIds, getTeamUserIds } from '@seedgw/db/org-units';
+import { scopedDb } from '@seedgw/db/scoped-client';
 import { requireUser } from './current-user';
 
 const getTreeIds = cache(async (orgUnitId: string) => getOrgUnitTreeIds(orgUnitId));

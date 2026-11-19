@@ -9,12 +9,12 @@ import {
   saveCodeSequenceInput,
   type CodeSequenceView,
   type SaveCodeSequenceInput,
-} from '@dms/contracts/settings';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/settings';
+import { Form } from '@seedgw/ui/form';
 import { CodeSequenceStatus } from '@/features/settings/components/code-sequence-status';
 import { SettingsSection } from '@/features/settings/components/settings-section';
 import { saveCodeSequenceAction } from '@/server/actions/settings';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 const ISSUED_HINT = 'Đã cấp mã nên không đổi được.';
 const LOCKED_INPUT = 'bg-surface-subtle';

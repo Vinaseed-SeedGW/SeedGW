@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mobileLoginInput } from '@dms/contracts/check-ins';
+import { mobileLoginInput } from '@seedgw/contracts/check-ins';
 import { mobileRoute } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { loginMobile } from '@/server/services/mobile-auth';

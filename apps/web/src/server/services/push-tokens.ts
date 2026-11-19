@@ -1,6 +1,6 @@
 import 'server-only';
-import type { RegisterPushTokenInput } from '@dms/contracts/push';
-import { db } from '@dms/db/client';
+import type { RegisterPushTokenInput } from '@seedgw/contracts/push';
+import { db } from '@seedgw/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 
 // Mã nhận thông báo của máy (M7). Máy đổi người đăng nhập thì mã chuyển sang người mới.

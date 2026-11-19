@@ -1,4 +1,4 @@
-import type { MobileAuthReason, MobileSession } from '@dms/contracts/check-ins';
+import type { MobileAuthReason, MobileSession } from '@seedgw/contracts/check-ins';
 import { noteServerDate } from './server-clock';
 import { API_URL, getDeviceIdentity, loadSession, saveSession } from './session';
 

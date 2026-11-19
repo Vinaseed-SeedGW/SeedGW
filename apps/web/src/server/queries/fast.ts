@@ -1,5 +1,5 @@
 import 'server-only';
-import type { FastOverview } from '@dms/contracts/fast';
+import type { FastOverview } from '@seedgw/contracts/fast';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { readFastOverview } from '@/server/services/fast';

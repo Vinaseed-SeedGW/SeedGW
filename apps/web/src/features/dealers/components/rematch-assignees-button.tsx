@@ -1,10 +1,10 @@
 'use client';
 
 import { useTransition } from 'react';
-import { useToast } from '@dms/ui/toast';
+import { useToast } from '@seedgw/ui/toast';
 import { rematchDealerAssigneesAction } from '@/server/actions/dealers';
 
-/** Dùng sau khi nhập thêm tài khoản: ghép đại lý đang chờ gán với nhân viên theo tên ghi trên DMS cũ. */
+/** Dùng sau khi nhập thêm tài khoản: ghép đại lý đang chờ gán với nhân viên theo tên ghi trên hệ thống cũ. */
 export function RematchAssigneesButton() {
   const { actions: toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -24,7 +24,7 @@ export function RematchAssigneesButton() {
                   message:
                     result.data.matched > 0
                       ? `Đã gán nhân viên cho ${result.data.matched} đại lý`
-                      : 'Không ghép thêm được đại lý nào. Kiểm tra tên tài khoản có khớp tên trên DMS cũ không',
+                      : 'Không ghép thêm được đại lý nào. Kiểm tra tên tài khoản có khớp tên trên hệ thống cũ không',
                 }
               : { tone: 'error', message: result.message },
           );

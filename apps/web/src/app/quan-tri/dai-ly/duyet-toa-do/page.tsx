@@ -5,8 +5,8 @@ import {
   dealerLocationUrlParams,
   type DealerLocationTab,
   type ListDealerLocationProposalsInput,
-} from '@dms/contracts/dealer-locations';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/dealer-locations';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { DealerLocationsTable } from '@/features/dealers/components/dealer-locations-table';
 import { requirePermission } from '@/server/auth/can';
 import { listDealerLocationProposals } from '@/server/queries/dealer-locations';

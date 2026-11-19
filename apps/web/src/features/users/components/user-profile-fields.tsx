@@ -1,7 +1,7 @@
 'use client';
 
-import type { UserFormOptions } from '@dms/contracts/users';
-import { Form } from '@dms/ui/form';
+import type { UserFormOptions } from '@seedgw/contracts/users';
+import { Form } from '@seedgw/ui/form';
 
 export function UserProfileFields({ options }: { options: UserFormOptions }) {
   return (

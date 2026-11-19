@@ -1,5 +1,5 @@
 {
-  "name": "@dms/web",
+  "name": "@seedgw/web",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,10 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@dms/config": "workspace:*",
-    "@dms/contracts": "workspace:*",
-    "@dms/db": "workspace:*",
-    "@dms/ui": "workspace:*",
+    "@seedgw/config": "workspace:*",
+    "@seedgw/contracts": "workspace:*",
+    "@seedgw/db": "workspace:*",
+    "@seedgw/ui": "workspace:*",
     "@hookform/resolvers": "~5.9.2",
     "@prisma/client": "~6.19.3",
     "argon2": "^0.45.2",

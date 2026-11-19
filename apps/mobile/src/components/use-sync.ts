@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import type { MobileSession } from '@dms/contracts/check-ins';
+import type { MobileSession } from '@seedgw/contracts/check-ins';
 import { loadSession, onSessionChange, serverEnabled } from '../api/session';
 import { syncNow } from '../sync/sync-queue';
 import { countPending, saveTesterProfile, type PendingCounts } from '../sync/track-db';

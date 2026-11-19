@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { createContext, use, useCallback, useMemo, useState } from 'react';
-import { MAX_ORG_DEPTH, buildOrgTree, checkOrgUnitMove } from '@dms/contracts/org-tree';
-import type { ManagerOption, OrgUnitRow } from '@dms/contracts/org-units';
-import { TreeView } from '@dms/ui/tree-view';
+import { MAX_ORG_DEPTH, buildOrgTree, checkOrgUnitMove } from '@seedgw/contracts/org-tree';
+import type { ManagerOption, OrgUnitRow } from '@seedgw/contracts/org-units';
+import { TreeView } from '@seedgw/ui/tree-view';
 import { OrgNodeList, type OrgNode } from '@/features/org-units/components/org-tree';
 import type { OrgPanel } from '@/features/org-units/components/org-unit-panel';
 

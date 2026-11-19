@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
-import { auditChanges } from '@dms/contracts/audit';
-import { LOCATION_CONSENT_VERSION, mobileConsentInput } from '@dms/contracts/consents';
+import { auditChanges } from '@seedgw/contracts/audit';
+import { LOCATION_CONSENT_VERSION, mobileConsentInput } from '@seedgw/contracts/consents';
 import { mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { writeAudit } from '@/server/services/audit';

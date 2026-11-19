@@ -1,6 +1,6 @@
 import 'server-only';
-import type { DayMapFilterOptions } from '@dms/contracts/check-ins';
-import type { DashboardInput, DashboardResult } from '@dms/contracts/dashboard';
+import type { DayMapFilterOptions } from '@seedgw/contracts/check-ins';
+import type { DashboardInput, DashboardResult } from '@seedgw/contracts/dashboard';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getPeopleFilterOptions } from '@/server/queries/people-filters';

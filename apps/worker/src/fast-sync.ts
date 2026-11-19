@@ -1,4 +1,4 @@
-import { normalizeVnPhone } from '@dms/contracts/dealers';
+import { normalizeVnPhone } from '@seedgw/contracts/dealers';
 import {
   FastApiError,
   fastCustomerActive,
@@ -7,13 +7,13 @@ import {
   fastLogin,
   parseFastDateTime,
   type FastCustomerRecord,
-} from '@dms/contracts/fast';
-import { resolveSystemSettings } from '@dms/contracts/settings';
-import { db } from '@dms/db/client';
-import { readFastConfig } from '@dms/db/integration-settings';
+} from '@seedgw/contracts/fast';
+import { resolveSystemSettings } from '@seedgw/contracts/settings';
+import { db } from '@seedgw/db/client';
+import { readFastConfig } from '@seedgw/db/integration-settings';
 
-// Đồng bộ danh mục khách hàng FAST sang DMS (A8). FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế,
-// trạng thái; DMS giữ toạ độ, nhân viên phụ trách, chủ đại lý, cấp. Ghép theo mã FAST (cột dealers.code).
+// Đồng bộ danh mục khách hàng FAST sang SeedGW (A8). FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế,
+// trạng thái; SeedGW giữ toạ độ, nhân viên phụ trách, chủ đại lý, cấp. Ghép theo mã FAST (cột dealers.code).
 
 export type FastSyncTrigger = 'SCHEDULE' | 'MANUAL';
 
@@ -81,7 +81,7 @@ async function applyRecord(
     } else outcome = 'unchanged';
     dealerId = dealer.id;
   } else {
-    // Khách hàng mới trên FAST: thêm vào DMS, chờ gán đơn vị và nhân viên. Cấp chưa biết (câu hỏi 7 gửi FAST),
+    // Khách hàng mới trên FAST: thêm vào SeedGW, chờ gán đơn vị và nhân viên. Cấp chưa biết (câu hỏi 7 gửi FAST),
     // tạm để cấp 1 vì mã FAST chỉ có ở khách mua hàng trực tiếp của Vinaseed.
     const created = await db.dealer.create({
       data: {

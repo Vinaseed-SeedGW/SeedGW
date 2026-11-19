@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { FormPage } from '@dms/ui/form-page';
+import { FormPage } from '@seedgw/ui/form-page';
 import { UserDevicesPanel } from '@/features/users/components/user-devices-panel';
 import { UserEditForm } from '@/features/users/components/user-edit-form';
 import { UserSecurityPanel } from '@/features/users/components/user-security-panel';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { registerPushTokenInput, unregisterPushTokenInput } from '@dms/contracts/push';
+import { registerPushTokenInput, unregisterPushTokenInput } from '@seedgw/contracts/push';
 import { mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { readJson } from '@/server/auth/mobile-request';
 import { registerPushToken, unregisterPushToken } from '@/server/services/push-tokens';

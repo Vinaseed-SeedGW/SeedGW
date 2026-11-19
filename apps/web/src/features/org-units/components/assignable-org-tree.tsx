@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { createContext, use, useMemo, useState } from 'react';
-import { buildOrgTree } from '@dms/contracts/org-tree';
-import type { OrgUnitAssignScope, OrgUnitRow } from '@dms/contracts/org-units';
-import { TreeView } from '@dms/ui/tree-view';
+import { buildOrgTree } from '@seedgw/contracts/org-tree';
+import type { OrgUnitAssignScope, OrgUnitRow } from '@seedgw/contracts/org-units';
+import { TreeView } from '@seedgw/ui/tree-view';
 import { OrgNodeList, type OrgNode } from '@/features/org-units/components/org-tree';
 
 // Form va Zod chi tai khi can thao tac.

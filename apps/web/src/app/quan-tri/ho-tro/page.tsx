@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { supportInboxUrlParams, type ListSupportInboxInput } from '@dms/contracts/support';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+import { supportInboxUrlParams, type ListSupportInboxInput } from '@seedgw/contracts/support';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { SupportInboxTabs } from '@/features/support/components/support-inbox-tabs';
 import { SupportInboxTable } from '@/features/support/components/support-inbox-table';
 import { SupportLiveRefresh } from '@/features/support/components/support-live-refresh';

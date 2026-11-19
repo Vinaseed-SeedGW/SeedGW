@@ -2,8 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { changePasswordInput, type ChangePasswordInput } from '@dms/contracts/auth';
-import { Form } from '@dms/ui/form';
+import { changePasswordInput, type ChangePasswordInput } from '@seedgw/contracts/auth';
+import { Form } from '@seedgw/ui/form';
 import { changePasswordAction } from '@/server/actions/auth';
 
 export function ChangePasswordForm() {

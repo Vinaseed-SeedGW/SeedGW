@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
 import type {
   ListUsersInput,
   ListUsersResult,
@@ -8,8 +8,8 @@ import type {
   UserDetail,
   UserFormOptions,
   UserSummary,
-} from '@dms/contracts/users';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/users';
+import { db } from '@seedgw/db/client';
 import { z } from 'zod';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

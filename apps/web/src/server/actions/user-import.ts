@@ -2,12 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { ActionResult, ExportedFile } from '@dms/contracts/common';
+import type { ActionResult, ExportedFile } from '@seedgw/contracts/common';
 import {
   commitUserImportInput,
   MAX_IMPORT_FILE_BYTES,
   type UserImportPreview,
-} from '@dms/contracts/user-import';
+} from '@seedgw/contracts/user-import';
 import { validationError, toActionError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

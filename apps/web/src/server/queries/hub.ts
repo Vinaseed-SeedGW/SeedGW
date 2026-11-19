@@ -1,7 +1,7 @@
 import 'server-only';
-import { canAccessDepartment } from '@dms/contracts/access';
-import { DEPARTMENTS, type DepartmentSlug } from '@dms/contracts/departments';
-import type { HubSummary } from '@dms/contracts/hub';
+import { canAccessDepartment } from '@seedgw/contracts/access';
+import { DEPARTMENTS, type DepartmentSlug } from '@seedgw/contracts/departments';
+import type { HubSummary } from '@seedgw/contracts/hub';
 import { requireUser } from '@/server/auth/current-user';
 import { getPendingApprovalCount } from '@/server/queries/approvals';
 import { getSupportOverdueCount, getSupportPendingCount } from '@/server/queries/support';

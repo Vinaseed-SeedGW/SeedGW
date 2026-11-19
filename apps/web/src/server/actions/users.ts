@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
 import { z } from 'zod';
-import type { ActionResult, ExportedFile } from '@dms/contracts/common';
-import { MAX_EXPORT_ROWS } from '@dms/contracts/common';
-import { formatDate } from '@dms/contracts/format';
+import type { ActionResult, ExportedFile } from '@seedgw/contracts/common';
+import { MAX_EXPORT_ROWS } from '@seedgw/contracts/common';
+import { formatDate } from '@seedgw/contracts/format';
 import {
   MOBILE_DEVICE_STATUS_LABEL,
   createUserInput,
@@ -17,7 +17,7 @@ import {
   type CreatedUser,
   type MobileDeviceStatus,
   type UserSummary,
-} from '@dms/contracts/users';
+} from '@seedgw/contracts/users';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

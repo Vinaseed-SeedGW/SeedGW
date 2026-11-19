@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Kết nối FAST Business Online (A8, 19/11/2026) theo "Đặc tả kỹ thuật FAST, DMS" bản 1.7 (27/02/2023).
-// Chỉ làm chiều FAST sang DMS cho danh mục khách hàng; công nợ, hoá đơn tạm hold (features.ts).
+// Kết nối FAST Business Online (A8, 19/11/2026) theo đặc tả kỹ thuật API của FAST bản 1.7 (27/02/2023).
+// Chỉ làm chiều FAST sang SeedGW cho danh mục khách hàng; công nợ, hoá đơn tạm hold (features.ts).
 
 const VN_OFFSET_MS = 7 * 3_600_000;
 const FAST_TIMEOUT_MS = 30_000;

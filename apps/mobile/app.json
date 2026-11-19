@@ -2,12 +2,12 @@
   "expo": {
     "name": "SeedGW",
     "slug": "check-in-app",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/images/app-icon.png",
     "ios": {
-      "bundleIdentifier": "vn.vinaseed.dms",
+      "bundleIdentifier": "vn.vinaseed.seedgw",
       "buildNumber": "1",
       "supportsTablet": false,
       "infoPlist": {
@@ -17,7 +17,7 @@
       }
     },
     "android": {
-      "package": "vn.vinaseed.dms",
+      "package": "vn.vinaseed.seedgw",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-foreground.png",
         "backgroundColor": "#005b36"

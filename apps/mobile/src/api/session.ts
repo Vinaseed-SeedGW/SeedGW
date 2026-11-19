@@ -1,16 +1,16 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
-import type { MobileProfile, MobileSession } from '@dms/contracts/check-ins';
+import type { MobileProfile, MobileSession } from '@seedgw/contracts/check-ins';
 
-// Địa chỉ máy chủ DMS. Để trống thì app chạy kiểu bản thử R3: dữ liệu chỉ nằm trên máy, không cần đăng nhập.
+// Địa chỉ máy chủ SeedGW. Để trống thì app chạy kiểu bản thử R3: dữ liệu chỉ nằm trên máy, không cần đăng nhập.
 export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 export function serverEnabled(): boolean {
   return API_URL.length > 0;
 }
 
-const SESSION_KEY = 'dms_session';
-const DEVICE_KEY = 'dms_device_key';
+const SESSION_KEY = 'seedgw_session';
+const DEVICE_KEY = 'seedgw_device_key';
 
 let cached: MobileSession | null | undefined;
 const listeners = new Set<(session: MobileSession | null) => void>();
@@ -29,7 +29,7 @@ export function newId(): string {
 export async function getDeviceIdentity() {
   let key = await SecureStore.getItemAsync(DEVICE_KEY);
   if (!key) {
-    key = `dms-${newId()}`;
+    key = `seedgw-${newId()}`;
     await SecureStore.setItemAsync(DEVICE_KEY, key);
   }
   return {

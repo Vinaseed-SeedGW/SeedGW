@@ -1,7 +1,7 @@
 import { normalizeSearchText } from './text';
 
 // 34 tỉnh, thành phố sau sắp xếp đơn vị hành chính có hiệu lực từ 01/07/2025 (Nghị quyết 202/2025/QH15).
-// Dữ liệu DMS cũ còn dùng 63 tỉnh, nên khi nhập đại lý đổi tên tỉnh cũ sang tỉnh mới theo bảng dưới.
+// Dữ liệu hệ thống cũ còn dùng 63 tỉnh, nên khi nhập đại lý đổi tên tỉnh cũ sang tỉnh mới theo bảng dưới.
 export const PROVINCES = [
   'Thành phố Hà Nội',
   'Thành phố Huế',

@@ -1,8 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-import { exportCheckInsInput } from '@dms/contracts/check-ins';
-import { MAX_EXPORT_ROWS, type ActionResult, type ExportedFile } from '@dms/contracts/common';
+import { exportCheckInsInput } from '@seedgw/contracts/check-ins';
+import { MAX_EXPORT_ROWS, type ActionResult, type ExportedFile } from '@seedgw/contracts/common';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

@@ -1,5 +1,5 @@
 import { formatCoord, formatVnDate, formatVnTime } from './geo';
-import { cumulativeAt, FILTER, type FilteredTrack } from '@dms/contracts/track-distance';
+import { cumulativeAt, FILTER, type FilteredTrack } from '@seedgw/contracts/track-distance';
 import { getTrackingSettings } from './track-db';
 import type { PhotoRecord, PlaceKind, SessionRow, TesterProfile, TrackPoint } from './track-db';
 import {
@@ -14,7 +14,7 @@ import {
   type SheetImage,
   type SheetRow,
 } from './xlsx';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 // Dựng file Excel báo cáo cự ly một ngày. Tách khỏi phần đọc máy và chia sẻ để chạy thử được trên máy tính.
 

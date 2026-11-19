@@ -2,9 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { ActionResult, ExportedFile } from '@dms/contracts/common';
-import { commitManagerImportInput, type ManagerImportPreview } from '@dms/contracts/manager-import';
-import { MAX_IMPORT_FILE_BYTES } from '@dms/contracts/user-import';
+import type { ActionResult, ExportedFile } from '@seedgw/contracts/common';
+import {
+  commitManagerImportInput,
+  type ManagerImportPreview,
+} from '@seedgw/contracts/manager-import';
+import { MAX_IMPORT_FILE_BYTES } from '@seedgw/contracts/user-import';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

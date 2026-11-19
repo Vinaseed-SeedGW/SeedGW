@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
 
 type AuthPageLayoutProps = {
   title: string;

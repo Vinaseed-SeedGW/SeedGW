@@ -3,13 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import { z } from 'zod';
-import { APPROVAL_STATUS_LABEL } from '@dms/contracts/approvals';
-import type { ActionResult } from '@dms/contracts/common';
+import { APPROVAL_STATUS_LABEL } from '@seedgw/contracts/approvals';
+import type { ActionResult } from '@seedgw/contracts/common';
 import {
   routeDealerSearchInput,
   submitRoutePlanInput,
   type RouteDealerOption,
-} from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/route-plans';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

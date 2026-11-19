@@ -10,9 +10,9 @@ import {
   type AuditEntityType,
   type ListAuditLogsInput,
   type ListAuditLogsResult,
-} from '@dms/contracts/audit';
-import { vietnamDayStart, vietnamNextDayStart } from '@dms/contracts/format';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
+} from '@seedgw/contracts/audit';
+import { vietnamDayStart, vietnamNextDayStart } from '@seedgw/contracts/format';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

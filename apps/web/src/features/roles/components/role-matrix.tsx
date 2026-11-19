@@ -1,14 +1,14 @@
 'use client';
 
 import { createContext, use, type ComponentType } from 'react';
-import type { DataScope } from '@dms/contracts/access';
+import type { DataScope } from '@seedgw/contracts/access';
 import {
   DATA_SCOPE_LABEL,
   DATA_SCOPE_OPTIONS,
   PERMISSION_GROUPS,
   type RoleMatrixRole,
-} from '@dms/contracts/roles';
-import { cn } from '@dms/ui/cn';
+} from '@seedgw/contracts/roles';
+import { cn } from '@seedgw/ui/cn';
 
 export type RoleDraft = { dataScope: DataScope; codes: ReadonlySet<string> };
 export type RoleDrafts = ReadonlyMap<string, RoleDraft>;

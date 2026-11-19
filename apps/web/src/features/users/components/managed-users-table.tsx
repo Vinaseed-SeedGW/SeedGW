@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import type { ListUsersResult, UserSummary } from '@dms/contracts/users';
-import type { ColumnDef } from '@dms/ui/data-table';
+import type { ListUsersResult, UserSummary } from '@seedgw/contracts/users';
+import type { ColumnDef } from '@seedgw/ui/data-table';
 import { UsersBulkActions } from '@/features/users/components/users-bulk-actions';
 import {
   CODE_COLUMN,

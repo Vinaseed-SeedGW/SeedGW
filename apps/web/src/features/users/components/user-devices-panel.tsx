@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { formatDateTime } from '@dms/contracts/format';
-import { MOBILE_DEVICE_STATUS_LABEL, type UserDevice } from '@dms/contracts/users';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
+import { formatDateTime } from '@seedgw/contracts/format';
+import { MOBILE_DEVICE_STATUS_LABEL, type UserDevice } from '@seedgw/contracts/users';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import { setMobileDeviceStatusAction } from '@/server/actions/users';
 
 type DeviceDialog = { device: UserDevice; status: 'ACTIVE' | 'REVOKED' };

@@ -3,9 +3,9 @@ import {
   checkInFlag,
   earliestCheckInDate,
   type MobileHistoryResult,
-} from '@dms/contracts/check-ins';
-import { vietnamDayStart, vietnamToday } from '@dms/contracts/format';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/check-ins';
+import { vietnamDayStart, vietnamToday } from '@seedgw/contracts/format';
+import { db } from '@seedgw/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, getObject } from '@/server/integrations/object-storage';
 import { DomainError } from './domain-error';

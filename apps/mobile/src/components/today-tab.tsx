@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import * as Location from 'expo-location';
-import type { MobileDealerOption } from '@dms/contracts/dealers';
+import type { MobileDealerOption } from '@seedgw/contracts/dealers';
 import { searchDealers, type DealerChoice } from '../api/dealers';
 import { formatKm, formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import { computeDayStats, getOpenSession, readLocalHistory } from '../sync/track-db';

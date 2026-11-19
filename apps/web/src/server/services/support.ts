@@ -1,8 +1,8 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import type { DataScope } from '@dms/contracts/access';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import { resolveSystemSettings } from '@dms/contracts/settings';
+import type { DataScope } from '@seedgw/contracts/access';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import { resolveSystemSettings } from '@seedgw/contracts/settings';
 import {
   canReopenSupport,
   formatSupportCode,
@@ -31,19 +31,19 @@ import {
   type SupportStatus,
   type SupportSummary,
   type SupportType,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import {
   cleanFileName,
   detectSupportFile,
   SUPPORT_MAX_FILE_BYTES,
   SUPPORT_MAX_FILES_PER_MESSAGE,
   type SupportFileKind,
-} from '@dms/contracts/support-files';
-import { supportDueDates, supportDueOf } from '@dms/contracts/support-sla';
+} from '@seedgw/contracts/support-files';
+import { supportDueDates, supportDueOf } from '@seedgw/contracts/support-sla';
 import type { Prisma } from '@prisma/client';
-import { db } from '@dms/db/client';
-import { getOrgUnitAncestorIds, getOrgUnitTreeIds } from '@dms/db/org-units';
-import type { ScopedDb } from '@dms/db/scoped-client';
+import { db } from '@seedgw/db/client';
+import { getOrgUnitAncestorIds, getOrgUnitTreeIds } from '@seedgw/db/org-units';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { publishSupportChange } from '@/server/integrations/support-events';
 import {
   getObject,

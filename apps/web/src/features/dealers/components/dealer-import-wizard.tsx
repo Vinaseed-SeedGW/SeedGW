@@ -12,8 +12,8 @@ import {
   type DealerImportUnitAction,
   type DealerImportUnitChoice,
   type DealerOption,
-} from '@dms/contracts/dealers';
-import { formatNumber } from '@dms/contracts/format';
+} from '@seedgw/contracts/dealers';
+import { formatNumber } from '@seedgw/contracts/format';
 import { commitDealerImportAction, previewDealerImportAction } from '@/server/actions/dealers';
 
 type Step =
@@ -210,16 +210,16 @@ function Preview({
       <div className="rounded-md border border-border bg-surface p-4">
         <h2 className="text-lg font-bold">Đơn vị phụ trách</h2>
         <p className="mt-1 text-sm text-text-muted">
-          Mặc định tạo đơn vị mới đúng tên trên DMS cũ, đặt dưới đơn vị gốc. Sau này đổi tên, gộp,
-          chuyển vị trí ở trang Cơ cấu tổ chức, hoặc chuyển đại lý sang đơn vị khác bằng nút Đổi đơn
-          vị ở danh sách đại lý.
+          Mặc định tạo đơn vị mới đúng tên trên hệ thống cũ, đặt dưới đơn vị gốc. Sau này đổi tên,
+          gộp, chuyển vị trí ở trang Cơ cấu tổ chức, hoặc chuyển đại lý sang đơn vị khác bằng nút
+          Đổi đơn vị ở danh sách đại lý.
         </p>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr>
                 {[
-                  'Đơn vị trên DMS cũ',
+                  'Đơn vị trên hệ thống cũ',
                   'Số đại lý',
                   'Cách xử lý',
                   'Mã đơn vị mới hoặc đơn vị có sẵn',

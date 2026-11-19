@@ -8,9 +8,9 @@ import {
   formatMonthLabel,
   upsertSalesTargetInput,
   type SalesTargetSnapshot,
-} from '@dms/contracts/sales-targets';
-import { Form } from '@dms/ui/form';
-import { FormSheet } from '@dms/ui/form-sheet';
+} from '@seedgw/contracts/sales-targets';
+import { Form } from '@seedgw/ui/form';
+import { FormSheet } from '@seedgw/ui/form-sheet';
 import { submitSalesTargetAction } from '@/server/actions/sales-targets';
 
 type FormValues = z.input<typeof upsertSalesTargetInput>;

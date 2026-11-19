@@ -1,11 +1,11 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import type { CheckInPlaceKind } from '@dms/contracts/check-ins';
-import type { DashboardInput, DashboardResult } from '@dms/contracts/dashboard';
-import type { DealerLevel } from '@dms/contracts/dealers';
-import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@dms/contracts/format';
-import { db } from '@dms/db/client';
-import { getOrgUnitTreeIds } from '@dms/db/org-units';
+import type { CheckInPlaceKind } from '@seedgw/contracts/check-ins';
+import type { DashboardInput, DashboardResult } from '@seedgw/contracts/dashboard';
+import type { DealerLevel } from '@seedgw/contracts/dealers';
+import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
+import { db } from '@seedgw/db/client';
+import { getOrgUnitTreeIds } from '@seedgw/db/org-units';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { readSystemSettings } from './settings';
 

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
-import { MAIN_CONTENT_ID, SkipLink } from '@dms/ui/skip-link';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
+import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { requirePermission } from '@/server/auth/can';
 

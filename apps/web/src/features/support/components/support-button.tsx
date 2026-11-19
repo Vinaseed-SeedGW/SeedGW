@@ -12,11 +12,11 @@ import {
   useTransition,
   type ReactNode,
 } from 'react';
-import { FOOTER } from '@dms/config/footer';
-import { formatDateTime } from '@dms/contracts/format';
-import type { SupportDetail, SupportListResult } from '@dms/contracts/support';
-import { FormSheet } from '@dms/ui/form-sheet';
-import { useToast } from '@dms/ui/toast';
+import { FOOTER } from '@seedgw/config/footer';
+import { formatDateTime } from '@seedgw/contracts/format';
+import type { SupportDetail, SupportListResult } from '@seedgw/contracts/support';
+import { FormSheet } from '@seedgw/ui/form-sheet';
+import { useToast } from '@seedgw/ui/toast';
 import {
   loadMySupportAction,
   loadSupportButtonSummaryAction,

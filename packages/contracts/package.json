@@ -1,5 +1,5 @@
 {
-  "name": "@dms/contracts",
+  "name": "@seedgw/contracts",
   "private": true,
   "type": "module",
   "exports": {
@@ -13,7 +13,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@dms/config": "workspace:*",
+    "@seedgw/config": "workspace:*",
     "typescript": "~5.9.3",
     "vitest": "^5.1.0"
   }

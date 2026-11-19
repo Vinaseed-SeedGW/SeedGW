@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import type { DepartmentSlug } from '@dms/contracts/departments';
+import type { DepartmentSlug } from '@seedgw/contracts/departments';
 import { findNavItem } from '@/features/shell/navigation';
 import { requirePathAccess } from '@/server/auth/can';
 

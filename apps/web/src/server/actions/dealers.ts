@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import { z } from 'zod';
-import { auditChanges } from '@dms/contracts/audit';
-import { MAX_EXPORT_ROWS, type ActionResult, type ExportedFile } from '@dms/contracts/common';
+import { auditChanges } from '@seedgw/contracts/audit';
+import { MAX_EXPORT_ROWS, type ActionResult, type ExportedFile } from '@seedgw/contracts/common';
 import {
   bulkAssignDealersInput,
   bulkMoveDealersInput,
@@ -17,7 +17,7 @@ import {
   type DealerImportPreview,
   type DealerImportResult,
   type DealerLevel,
-} from '@dms/contracts/dealers';
+} from '@seedgw/contracts/dealers';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan, can, ForbiddenError } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';
@@ -167,7 +167,7 @@ type ExportRow = {
 
 const EXPORT_COLUMNS: ExcelColumn<ExportRow>[] = [
   { header: 'Mã đại lý (FAST)', width: 16, value: (r) => r.code ?? '', numberFormat: '@' },
-  { header: 'Mã DMS cũ', width: 18, value: (r) => r.legacyCode ?? '', numberFormat: '@' },
+  { header: 'Mã hệ thống cũ', width: 18, value: (r) => r.legacyCode ?? '', numberFormat: '@' },
   { header: 'Tên đại lý', width: 34, value: (r) => r.name },
   { header: 'Cấp', width: 8, value: (r) => DEALER_LEVEL_LABEL[r.level as DealerLevel] },
   {
@@ -204,7 +204,7 @@ const EXPORT_COLUMNS: ExcelColumn<ExportRow>[] = [
       r.assignedUser
         ? `${r.assignedUser.employeeCode} - ${r.assignedUser.fullName}`
         : r.legacyAssigneeName
-          ? `Chờ gán (DMS cũ: ${r.legacyAssigneeName})`
+          ? `Chờ gán (hệ thống cũ: ${r.legacyAssigneeName})`
           : '',
   },
 ];

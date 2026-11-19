@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { LOCATION_CONSENT } from '@dms/contracts/consents';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
+import { LOCATION_CONSENT } from '@seedgw/contracts/consents';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import {
   acceptLocationConsentAction,

@@ -10,8 +10,8 @@ import {
   submitRoutePlanInput,
   type MyRoutePeriod,
   type RouteDealerOption,
-} from '@dms/contracts/route-plans';
-import { useToast } from '@dms/ui/toast';
+} from '@seedgw/contracts/route-plans';
+import { useToast } from '@seedgw/ui/toast';
 import { searchRouteDealersAction, submitRoutePlanAction } from '@/server/actions/route-plans';
 
 type Stop = Pick<RouteDealerOption, 'id' | 'name' | 'code' | 'address' | 'lat' | 'lng'>;

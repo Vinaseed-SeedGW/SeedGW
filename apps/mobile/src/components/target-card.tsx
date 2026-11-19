@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { currentVnMonth, type MyTargetMonth } from '@dms/contracts/sales-targets';
+import { currentVnMonth, type MyTargetMonth } from '@seedgw/contracts/sales-targets';
 import { loadMyTargets } from '../api/targets';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';

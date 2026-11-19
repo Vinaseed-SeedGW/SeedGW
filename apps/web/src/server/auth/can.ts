@@ -5,8 +5,8 @@ import {
   canAccessDepartment,
   canAccessPath,
   type PermissionCode,
-} from '@dms/contracts/access';
-import type { DepartmentSlug } from '@dms/contracts/departments';
+} from '@seedgw/contracts/access';
+import type { DepartmentSlug } from '@seedgw/contracts/departments';
 import { requireUser, type CurrentUser } from './current-user';
 
 export class ForbiddenError extends Error {

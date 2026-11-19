@@ -1,4 +1,4 @@
-// Giá trị lấy đúng từ .design/dms-vinaseed/brand/tokens.css. Component chỉ dùng các hằng này.
+// Giá trị lấy đúng từ .design/seedgw/brand/tokens.css. Component chỉ dùng các hằng này.
 export const COLORS = {
   brand: '#005b36',
   brandDark: '#00512d',

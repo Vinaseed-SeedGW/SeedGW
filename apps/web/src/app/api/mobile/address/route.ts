@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addressQuery } from '@dms/contracts/check-ins';
+import { addressQuery } from '@seedgw/contracts/check-ins';
 import { mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { reverseGeocode } from '@/server/integrations/vietmap';
 

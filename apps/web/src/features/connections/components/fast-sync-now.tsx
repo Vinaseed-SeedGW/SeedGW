@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import { useToast } from '@dms/ui/toast';
+import { useToast } from '@seedgw/ui/toast';
 import { syncFastNowAction } from '@/server/actions/fast';
 
 /** Nút Đồng bộ ngay: xếp việc cho worker, vài giây sau tải lại để thấy lần chạy mới. */

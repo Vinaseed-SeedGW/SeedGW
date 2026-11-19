@@ -166,7 +166,7 @@ importers:
 
   .:
     devDependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:packages/config
       eslint:
@@ -184,10 +184,10 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@dms/contracts':
+      '@seedgw/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       '@types/react':
@@ -248,24 +248,24 @@ importers:
 
   apps/web:
     dependencies:
-      '@dms/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@dms/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@dms/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@dms/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@hookform/resolvers':
         specifier: ~5.9.2
         version: 5.9.2(@sinclair/typebox@0.27.12)(@standard-schema/spec@1.1.0)(effect@3.21.0)(react-hook-form@7.91.0(@types/react@19.1.17)(react@19.1.10))(zod@4.6.7)
       '@prisma/client':
         specifier: ~6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+      '@seedgw/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@seedgw/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@seedgw/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@seedgw/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       argon2:
         specifier: ^0.45.2
         version: 0.45.2
@@ -339,10 +339,10 @@ importers:
 
   apps/worker:
     dependencies:
-      '@dms/contracts':
+      '@seedgw/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@dms/db':
+      '@seedgw/db':
         specifier: workspace:*
         version: link:../../packages/db
       bullmq:
@@ -352,7 +352,7 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0(supports-color@8.1.1)
     devDependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -383,7 +383,7 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:../config
       typescript:
@@ -395,14 +395,14 @@ importers:
 
   packages/db:
     dependencies:
-      '@dms/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@prisma/client':
         specifier: ~6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+      '@seedgw/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:../config
       '@types/node':
@@ -426,10 +426,10 @@ importers:
 
   packages/ui:
     dependencies:
-      '@dms/config':
+      '@seedgw/config':
         specifier: workspace:*
         version: link:../config
-      '@dms/contracts':
+      '@seedgw/contracts':
         specifier: workspace:*
         version: link:../contracts
       '@tanstack/react-table':

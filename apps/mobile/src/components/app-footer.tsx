@@ -2,7 +2,7 @@ import * as Updates from 'expo-updates';
 import { Image, StyleSheet, View } from 'react-native';
 import logoColor from '../../assets/images/logo-color-s.png';
 import { Text } from './text';
-import { FOOTER } from '@dms/config/footer';
+import { FOOTER } from '@seedgw/config/footer';
 import { COLORS, SPACE } from '../theme';
 
 // Chân trang theo BRAND.md: app đặt ở cuối màn Tôi (ở bản thử là cuối màn hành trình).

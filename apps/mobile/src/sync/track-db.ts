@@ -1,22 +1,22 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import type { LocationObject } from 'expo-location';
 import { newId } from '../api/session';
-import { LOCATION_CONSENT_VERSION } from '@dms/contracts/consents';
+import { LOCATION_CONSENT_VERSION } from '@seedgw/contracts/consents';
 import {
   DEFAULT_TRACKING_SETTINGS,
   mobileTrackingSettings,
   trackFilterOf,
   type MobileTrackingSettings,
-} from '@dms/contracts/tracking-settings';
+} from '@seedgw/contracts/tracking-settings';
 import {
   filterTrack,
   segmentOf,
   type FilteredTrack,
   type RawPoint,
-} from '@dms/contracts/track-distance';
+} from '@seedgw/contracts/track-distance';
 
 // Bản thử R3: dữ liệu chỉ nằm trên máy để đo GPS, pin và vết đứt. Đồng bộ lên máy chủ làm ở M3, M12.
-const DB_NAME = 'dms-r3.db';
+const DB_NAME = 'seedgw-r3.db';
 const DAY_MS = 86_400_000;
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
 

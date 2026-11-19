@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
 import { z } from 'zod';
-import { dealerFilter, dealersUrlParams, type ListDealersInput } from '@dms/contracts/dealers';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+import { dealerFilter, dealersUrlParams, type ListDealersInput } from '@seedgw/contracts/dealers';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { requirePermission } from '@/server/auth/can';
 import {
   getDealer,

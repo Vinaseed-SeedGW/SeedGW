@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from './text';
 import { formatCoord, formatVnDate, formatVnTime } from '../sync/geo';
 import { COLORS, FONT } from '../theme';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 export type StripLocation = { lat: number; lng: number; accuracy: number | null };
 

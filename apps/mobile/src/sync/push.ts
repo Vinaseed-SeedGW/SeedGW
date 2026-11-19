@@ -1,6 +1,6 @@
 import { requireOptionalNativeModule } from 'expo';
 import { Platform } from 'react-native';
-import { ANDROID_PUSH_CHANNEL, pushTarget, type PushTarget } from '@dms/contracts/push';
+import { ANDROID_PUSH_CHANNEL, pushTarget, type PushTarget } from '@seedgw/contracts/push';
 import appConfig from '../../app.json';
 import { apiCall } from '../api/client';
 

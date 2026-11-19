@@ -1,4 +1,4 @@
-# Build Tasks: DMS Vinaseed (Hub: Kinh doanh, Quản trị + Hỗ trợ + App check-in)
+# Build Tasks: SeedGW (Hub: Kinh doanh, Quản trị + Hỗ trợ + App check-in)
 
 Dựa trên: DESIGN_BRIEF.md (quyết định 1 đến 30), INFORMATION_ARCHITECTURE.md, CHECK_IN_PLAN.md
 Bản v5, 13/11/2026: bỏ đơn hàng (quyết định 27); 3 vai trò, bỏ CSKH, thêm Trao đổi, đại lý đồng bộ 2 chiều với FAST (quyết định 28).
@@ -27,7 +27,7 @@ Cập nhật 16/11 chiều: thêm G1a (nhập nhân viên thật, bạn gửi da
 | F3 | Phân quyền, phạm vi dữ liệu, 3 vai trò | Quản trị hệ thống, Quản trị đơn vị, Cán bộ nhân viên. Chức danh ghi ở hồ sơ tài khoản |
 | F4 | Bảng dữ liệu dùng chung | |
 | F5 | Form dùng chung, nhật ký thao tác, thông báo | |
-| A1 | Cơ cấu tổ chức | Đã thêm 19 đơn vị từ DMS cũ, sửa tên và vị trí sau |
+| A1 | Cơ cấu tổ chức | Đã thêm 19 đơn vị từ hệ thống cũ, sửa tên và vị trí sau |
 | A2 | Tài khoản CBNV, nhập Excel, thiết bị di động | Có ô Chức danh. Đã nhập 291 nhân viên thật vào máy chủ thử (G1a) |
 | A3 | Vai trò và ma trận quyền | |
 | A9 | Tham số hệ thống | Mốc lâu chưa ghé thăm theo cấp đại lý: cấp 1 14 ngày, cấp 2 30 ngày, cấp 3 45 ngày |
@@ -79,9 +79,9 @@ Mục tiêu buổi demo: người xem thấy trọn một vòng làm việc th�
 
 ### Kịch bản demo 27/11 (khoảng 20 phút)
 
-1. **Bài toán** (2 phút): quản lý thị trường hiện nay rời rạc; DMS mới gom check-in, đại lý, báo cáo vào một chỗ.
+1. **Bài toán** (2 phút): quản lý thị trường hiện nay rời rạc; SeedGW gom check-in, đại lý, báo cáo vào một chỗ.
 2. **Web, đăng nhập và Hub** (2 phút): 3 vai trò, mỗi người chỉ thấy dữ liệu trong phạm vi của mình.
-3. **Danh mục đại lý** (3 phút): 15.819 đại lý từ DMS cũ, tìm không dấu, 3 cấp, 34 tỉnh mới, gán nhân viên phụ trách.
+3. **Danh mục đại lý** (3 phút): 15.819 đại lý từ hệ thống cũ, tìm không dấu, 3 cấp, 34 tỉnh mới, gán nhân viên phụ trách.
 4. **App check-in** (5 phút, làm trực tiếp): đăng nhập, chọn đại lý, chụp ảnh có giờ và địa chỉ, ghi hành trình, lịch sử và km, xuất Excel. Mất mạng vẫn check-in được.
 5. **Web, báo cáo và bản đồ** (4 phút): lượt check-in vừa làm hiện trên web trong 1 phút; bản đồ hành trình; xuất Excel đúng mẫu.
 6. **Dashboard** (2 phút): lượt ghé thăm, độ phủ, đại lý lâu chưa ghé thăm, km.
@@ -140,16 +140,16 @@ Làm sớm ngày 18/11/2026, trước demo (duyệt theo đề xuất 18/11).
 
 Phụ thuộc FAST gửi tài liệu API đọc và ghi khách hàng trước 11/12. Chậm thì làm giai đoạn 5 trước.
 
-- [ ] **R1. Thử API FAST** (2 buổi): đọc danh mục khách hàng, công nợ và hạn mức, hoá đơn bán và hàng trả lại; **ghi** khách hàng mới với mã do DMS cấp (dải `DL`) và cập nhật thông tin liên hệ. Không có API thì dùng file Excel.
+- [ ] **R1. Thử API FAST** (2 buổi): đọc danh mục khách hàng, công nợ và hạn mức, hoá đơn bán và hàng trả lại; **ghi** khách hàng mới với mã do SeedGW cấp (dải `DL`) và cập nhật thông tin liên hệ. Không có API thì dùng file Excel.
 - [ ] **F8. Worker chạy nền** (1 buổi): chuyển tính km, lấy địa chỉ, đồng bộ FAST sang hàng đợi BullMQ có thử lại, chống gửi trùng và nhật ký. Cần trước khi quá 30 người dùng.
-- [x] **A8. Kết nối FAST, đồng bộ đại lý và khách hàng** (xong 19/11, 1,5 buổi; đổi phạm vi 19/11: bỏ Mattermost, chỉ đồng bộ danh mục khách hàng): theo "Đặc tả kỹ thuật FAST, DMS" bản 1.7 (27/02/2023, có `POST /login`, `GET /customers?ngay_sua_tu=`, `POST /createCustomer`). Trang `/quan-tri/ket-noi`: địa chỉ API, tài khoản FAST mã hoá AES-256-GCM bằng `INTEGRATION_SECRET_KEY`, Kiểm tra kết nối, Bật/Tắt, Đồng bộ ngay, lịch sử 15 lần, dòng lỗi; quyền mới `admin.connection.manage` chỉ Quản trị hệ thống. Worker 5 phút một lần (chu kỳ ở Tham số, mặc định 5 phút): lần đầu lấy toàn bộ, sau đó lấy phần sửa từ mốc lần trước lùi 1 phút; ghép theo mã FAST; FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế, trạng thái; DMS giữ toạ độ, nhân viên phụ trách, cấp; khách hàng mới trên FAST thêm vào DMS cấp 1, chờ gán đơn vị và nhân viên; giữ bản sao `fast_customers` để phân loại lại khi FAST trả lời. Đã thử trên máy chủ thử với máy chủ FAST giả theo đúng JSON mẫu (sai mật khẩu, mã hoá, lấy toàn bộ, lấy phần sửa, dòng lỗi, quyền), dữ liệu thử đã xoá.
-  - Còn: FAST cấp địa chỉ, tài khoản API và trả lời 14 câu hỏi (môi trường thử, chia trang, múi giờ, phân biệt đại lý, nhóm `nh_kh`, nhân viên phụ trách, `ma_dvcs`, mã tỉnh huyện, cập nhật khách hàng, dải mã `DL`, IP). Chiều DMS tạo khách hàng sang FAST làm cùng M10 khi FAST trả lời.
-  - Chỉ 3.219 trên 15.819 đại lý trong DMS có mã FAST, có mã sai dạng; đại lý có mã nhưng không thấy trên FAST hiện số đếm ở trang Kết nối sau lần lấy toàn bộ.
+- [x] **A8. Kết nối FAST, đồng bộ đại lý và khách hàng** (xong 19/11, 1,5 buổi; đổi phạm vi 19/11: bỏ Mattermost, chỉ đồng bộ danh mục khách hàng): theo đặc tả kỹ thuật API của FAST bản 1.7 (27/02/2023, có `POST /login`, `GET /customers?ngay_sua_tu=`, `POST /createCustomer`). Trang `/quan-tri/ket-noi`: địa chỉ API, tài khoản FAST mã hoá AES-256-GCM bằng `INTEGRATION_SECRET_KEY`, Kiểm tra kết nối, Bật/Tắt, Đồng bộ ngay, lịch sử 15 lần, dòng lỗi; quyền mới `admin.connection.manage` chỉ Quản trị hệ thống. Worker 5 phút một lần (chu kỳ ở Tham số, mặc định 5 phút): lần đầu lấy toàn bộ, sau đó lấy phần sửa từ mốc lần trước lùi 1 phút; ghép theo mã FAST; FAST là gốc cho tên, địa chỉ, điện thoại, mã số thuế, trạng thái; SeedGW giữ toạ độ, nhân viên phụ trách, cấp; khách hàng mới trên FAST thêm vào SeedGW cấp 1, chờ gán đơn vị và nhân viên; giữ bản sao `fast_customers` để phân loại lại khi FAST trả lời. Đã thử trên máy chủ thử với máy chủ FAST giả theo đúng JSON mẫu (sai mật khẩu, mã hoá, lấy toàn bộ, lấy phần sửa, dòng lỗi, quyền), dữ liệu thử đã xoá.
+  - Còn: FAST cấp địa chỉ, tài khoản API và trả lời 14 câu hỏi (môi trường thử, chia trang, múi giờ, phân biệt đại lý, nhóm `nh_kh`, nhân viên phụ trách, `ma_dvcs`, mã tỉnh huyện, cập nhật khách hàng, dải mã `DL`, IP). Chiều SeedGW tạo khách hàng sang FAST làm cùng M10 khi FAST trả lời.
+  - Chỉ 3.219 trên 15.819 đại lý trong SeedGW có mã FAST, có mã sai dạng; đại lý có mã nhưng không thấy trên FAST hiện số đếm ở trang Kết nối sau lần lấy toàn bộ.
 - [ ] **S10. Đồng bộ đại lý 2 chiều với FAST** (3 buổi):
-  - FAST sang DMS: theo chu kỳ ở Tham số và nút **Đồng bộ FAST** ở Quản trị, Đại lý; đại lý mới bên FAST tự vào DMS, chờ gán nhân viên.
-  - DMS sang FAST: đại lý mới đã duyệt (M10) được cấp mã theo dải `DL` rồi tạo bên FAST đúng mã đó; sửa tên, điện thoại, địa chỉ trên DMS thì gửi yêu cầu cập nhật sang FAST, không ghi đè cục bộ trường FAST làm gốc.
+  - FAST sang SeedGW: theo chu kỳ ở Tham số và nút **Đồng bộ FAST** ở Quản trị, Đại lý; đại lý mới bên FAST tự vào SeedGW, chờ gán nhân viên.
+  - SeedGW sang FAST: đại lý mới đã duyệt (M10) được cấp mã theo dải `DL` rồi tạo bên FAST đúng mã đó; sửa tên, điện thoại, địa chỉ trên SeedGW thì gửi yêu cầu cập nhật sang FAST, không ghi đè cục bộ trường FAST làm gốc.
   - Trang **Đồng bộ FAST** trong Quản trị, Đại lý: lần đồng bộ gần nhất, dòng lỗi, nút gửi lại; lỗi kéo dài báo vào Mattermost.
-  - **Xong khi**: tạo đại lý mới trên app, duyệt, 10 phút sau có trên FAST đúng mã; đại lý kế toán tạo trên FAST hiện trong DMS sau một chu kỳ.
+  - **Xong khi**: tạo đại lý mới trên app, duyệt, 10 phút sau có trên FAST đúng mã; đại lý kế toán tạo trên FAST hiện trong SeedGW sau một chu kỳ.
 - [ ] **S11. Công nợ và hạn mức từ FAST** (tạm hold từ 19/11, 1 buổi): hiện ở hồ sơ đại lý và app; đại lý vượt ngưỡng ở Tham số vào mục Cần chú ý.
 - [ ] **K2. Doanh số Thực bán từ FAST** (tạm hold từ 19/11, 2 buổi): hoá đơn bán và hàng trả lại theo chu kỳ, quy ra kg, gắn đại lý và nhân viên phụ trách.
 
@@ -191,7 +191,7 @@ Chỉ số theo INFORMATION_ARCHITECTURE §3: lượt ghé thăm, độ phủ đ
 
 ## Kế hoạch module Hỗ trợ (giai đoạn 3)
 
-Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị và Quản trị hệ thống ngay trong DMS, có người nhận, có trạng thái, thay cho nhắn rời rạc qua Zalo. Không có nhắn tin giữa nhân viên với nhau.
+Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị và Quản trị hệ thống ngay trong SeedGW, có người nhận, có trạng thái, thay cho nhắn rời rạc qua Zalo. Không có nhắn tin giữa nhân viên với nhau.
 
 **Đã chốt 14/11/2026 (quyết định 29):**
 1. Gộp Tin nhắn và Báo lỗi thành một mục **Hỗ trợ**. Mỗi lần gửi là một **yêu cầu** có loại (Hỏi đáp, Báo lỗi, Góp ý), trạng thái và phần trao đổi bên trong.
@@ -250,7 +250,7 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 | Bạn | ~~Danh sách nhân viên~~ đã gửi 16/11, đã nhập | Xong |
 | Bạn | Địa chỉ cố định cho máy chủ thử: Vinaseed đã có `vinaseed.com.vn` nhưng tunnel có tên cần tên miền nằm trên Cloudflare. Chọn: giữ tunnel tạm tới demo, mua một tên miền riêng cho đợt thử, hay nhờ IT (để sau demo) | 18/11/2026 |
 | Bạn | Email Apple ID của người dùng iPhone trong buổi demo, có mặt để đăng nhập Apple khi build TestFlight | 20/11/2026 |
-| FAST và Kế toán | Đã có đặc tả API bản 1.7 (2023). Còn: địa chỉ và tài khoản API, môi trường thử, trả lời 14 câu hỏi ở A8; chốt dải mã `DL` cho đại lý tạo từ DMS | 11/12/2026 |
+| FAST và Kế toán | Đã có đặc tả API bản 1.7 (2023). Còn: địa chỉ và tài khoản API, môi trường thử, trả lời 14 câu hỏi ở A8; chốt dải mã `DL` cho đại lý tạo từ SeedGW | 11/12/2026 |
 | Lãnh đạo Kinh doanh | Lịch vụ, cách giao chỉ tiêu, mẫu chỉ tiêu đang dùng | 8/1/2027 |
 | Kế toán | Số liệu bán năm trước để so cùng kỳ | 8/1/2027 |
 | IT Vinaseed | Máy chủ Ubuntu, tên miền con, mở cổng 80 và 443, thư mục sao lưu (`deploy/README.md`) | 22/1/2027 |
@@ -264,7 +264,7 @@ Mục tiêu: CBNV hỏi đáp, báo lỗi, góp ý với Quản trị đơn vị
 | Dữ liệu thật ít vì chỉ 2 đến 3 người đi 8 ngày | Dashboard và bản đồ thưa | Nhóm thử đi nhiều điểm mỗi ngày, có thể thêm người thử; nói rõ khi demo đây là dữ liệu đợt thử |
 | Mạng phòng họp chập chờn, tunnel đổi địa chỉ đúng ngày demo | Check-in trực tiếp không lên web | App vẫn check-in khi mất mạng rồi gửi sau; không khởi động lại máy từ 26/11; quay sẵn video luồng app ở DM1 |
 | Trình duyệt cảnh báo chứng chỉ khi mở `https://localhost` trước người xem | Mất điểm khi trình bày | Xử lý ở DM1: bạn cài chứng chỉ gốc của máy chủ thử vào máy trình chiếu, hoặc mở sẵn trang trước giờ demo |
-| FAST không cho ghi khách hàng qua API | Không đẩy được đại lý mới sang FAST | Đề xuất đại lý mới vẫn duyệt trên DMS, kế toán tạo tay trên FAST, đồng bộ về tự ghép theo mã |
+| FAST không cho ghi khách hàng qua API | Không đẩy được đại lý mới sang FAST | Đề xuất đại lý mới vẫn duyệt trên SeedGW, kế toán tạo tay trên FAST, đồng bộ về tự ghép theo mã |
 | FAST không có API đọc | Chậm công nợ, Thực bán | Dùng file Excel xuất từ FAST, nhập theo lịch |
 | Máy cá nhân tắt hoặc chậm trong đợt thử | App không gửi được dữ liệu | App lưu trên máy và gửi lại sau, không mất check-in; đưa lên máy chủ IT sớm nếu cần mở rộng |
 | Apple duyệt app lâu hoặc từ chối quyền vị trí nền | Chậm phát hành iOS | Nộp sớm từ 25/1, đã có lời giải trình trong R3_THU_NGHIEM.md; Android đi trước |

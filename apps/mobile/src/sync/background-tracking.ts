@@ -13,9 +13,9 @@ import {
   recordTaskError,
   type SessionEndReason,
 } from './track-db';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
-export const TRACKING_TASK = 'dms-ghi-hanh-trinh';
+export const TRACKING_TASK = 'seedgw-ghi-hanh-trinh';
 
 // Số liệu cố định theo CHECK_IN_PLAN §3.1, §3.5. Chu kỳ ghi và giờ tự dừng lấy từ Tham số (A9b).
 export const TRACKING_CONFIG = {

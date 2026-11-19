@@ -8,10 +8,10 @@ import {
   type DuplicateMember,
   type DuplicateTab,
   type ListDuplicatesResult,
-} from '@dms/contracts/dealer-cleanup';
-import { DEALER_LEVEL_LABEL, type DealerLevel } from '@dms/contracts/dealers';
-import { formatNumber } from '@dms/contracts/format';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
+} from '@seedgw/contracts/dealer-cleanup';
+import { DEALER_LEVEL_LABEL, type DealerLevel } from '@seedgw/contracts/dealers';
+import { formatNumber } from '@seedgw/contracts/format';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import {
   clearSharedPhoneAction,
   dismissDuplicateAction,

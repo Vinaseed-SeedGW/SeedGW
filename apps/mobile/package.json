@@ -1,5 +1,5 @@
 {
-  "name": "@dms/mobile",
+  "name": "@seedgw/mobile",
   "private": true,
   "main": "index.ts",
   "scripts": {
@@ -12,8 +12,8 @@
     "typescript": "~5.9.3"
   },
   "dependencies": {
-    "@dms/config": "workspace:*",
-    "@dms/contracts": "workspace:*",
+    "@seedgw/config": "workspace:*",
+    "@seedgw/contracts": "workspace:*",
     "@types/react": "~19.3.0",
     "expo": "~58.0.23",
     "expo-camera": "~58.0.14",

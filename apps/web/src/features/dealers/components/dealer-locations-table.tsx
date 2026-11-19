@@ -7,10 +7,10 @@ import {
   type DealerLocationProposalRow,
   type DealerLocationTab,
   type ListDealerLocationProposalsResult,
-} from '@dms/contracts/dealer-locations';
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/dealer-locations';
+import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { reviewDealerLocationAction } from '@/server/actions/dealer-locations';
 
 const SECONDARY_COLUMN = 'max-md:hidden';

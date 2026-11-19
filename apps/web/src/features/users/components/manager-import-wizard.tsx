@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useTransition, type ChangeEvent } from 'react';
-import type { ManagerImportPreview, ManagerImportPreviewRow } from '@dms/contracts/manager-import';
-import { MAX_IMPORT_FILE_BYTES, MAX_IMPORT_ROWS } from '@dms/contracts/user-import';
-import { downloadFile } from '@dms/ui/download-file';
+import type {
+  ManagerImportPreview,
+  ManagerImportPreviewRow,
+} from '@seedgw/contracts/manager-import';
+import { MAX_IMPORT_FILE_BYTES, MAX_IMPORT_ROWS } from '@seedgw/contracts/user-import';
+import { downloadFile } from '@seedgw/ui/download-file';
 import {
   commitManagerImportAction,
   downloadManagerImportTemplateAction,

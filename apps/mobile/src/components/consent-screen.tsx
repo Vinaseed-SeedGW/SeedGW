@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { LOCATION_CONSENT } from '@dms/contracts/consents';
+import { LOCATION_CONSENT } from '@seedgw/contracts/consents';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { Text } from './text';

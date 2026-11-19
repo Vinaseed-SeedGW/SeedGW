@@ -1,5 +1,5 @@
 import 'server-only';
-import { db } from '@dms/db/client';
+import { db } from '@seedgw/db/client';
 import { pingStorage } from '@/server/integrations/object-storage';
 
 export type HealthReport = {

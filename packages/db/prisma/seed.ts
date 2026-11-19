@@ -1,6 +1,6 @@
 import { hash } from 'argon2';
 import { PrismaClient } from '@prisma/client';
-import { PERMISSIONS, ROLE_PRESETS } from '@dms/contracts/access';
+import { PERMISSIONS, ROLE_PRESETS } from '@seedgw/contracts/access';
 
 const SEED_USERS = [
   { employeeCode: 'ADMIN', fullName: 'Quản trị viên', roleCode: 'admin' },

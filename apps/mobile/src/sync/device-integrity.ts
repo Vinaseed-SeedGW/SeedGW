@@ -1,5 +1,5 @@
 import { requireOptionalNativeModule } from 'expo';
-import type { DeviceIntegrity } from '@dms/contracts/check-ins';
+import type { DeviceIntegrity } from '@seedgw/contracts/check-ins';
 
 let cached: Promise<DeviceIntegrity> | null = null;
 

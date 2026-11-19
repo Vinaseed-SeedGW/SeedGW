@@ -4,16 +4,16 @@ import {
   type DayMapCheckIn,
   type DayMapResult,
   type LatLng,
-} from '@dms/contracts/check-ins';
-import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@dms/contracts/format';
+} from '@seedgw/contracts/check-ins';
+import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
 import {
   distanceMeters,
   filterTrack,
   FILTER,
   segmentOf,
   type KeptPoint,
-} from '@dms/contracts/track-distance';
-import { trackFilterOf, trackingSettingsFrom } from '@dms/contracts/tracking-settings';
+} from '@seedgw/contracts/track-distance';
+import { trackFilterOf, trackingSettingsFrom } from '@seedgw/contracts/tracking-settings';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
 import { readSystemSettings } from './settings';

@@ -1,7 +1,7 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { PERMISSIONS, roleExceedsActor, type DataScope } from '@dms/contracts/access';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { PERMISSIONS, roleExceedsActor, type DataScope } from '@seedgw/contracts/access';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   DATA_SCOPE_LABEL,
   diffPermissionCodes,
@@ -10,8 +10,8 @@ import {
   roleLockReason,
   type CreateRoleInput,
   type SaveRoleMatrixInput,
-} from '@dms/contracts/roles';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/roles';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { DomainError } from '@/server/services/domain-error';
 import { isUniqueViolation } from '@/server/services/users';

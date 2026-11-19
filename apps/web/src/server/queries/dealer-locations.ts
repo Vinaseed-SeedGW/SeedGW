@@ -2,7 +2,7 @@ import 'server-only';
 import type {
   ListDealerLocationProposalsInput,
   ListDealerLocationProposalsResult,
-} from '@dms/contracts/dealer-locations';
+} from '@seedgw/contracts/dealer-locations';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { listProposals } from '@/server/services/dealer-locations';

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
-import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@dms/contracts/check-ins';
+import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@seedgw/contracts/check-ins';
 import {
   DASHBOARD_PERIOD_LABEL,
   dashboardUrlParams,
@@ -9,15 +9,15 @@ import {
   type Coverage,
   type DashboardInput,
   type DashboardResult,
-} from '@dms/contracts/dashboard';
-import { DEALER_LEVEL_LABEL } from '@dms/contracts/dealers';
+} from '@seedgw/contracts/dashboard';
+import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
 import {
   formatDate,
   formatDateTime,
   formatNumber,
   isoDateToDisplay,
   vietnamToday,
-} from '@dms/contracts/format';
+} from '@seedgw/contracts/format';
 import { DashboardFilters } from '@/features/dashboard/components/dashboard-filters';
 import { VisitsChartLazy } from '@/features/dashboard/components/visits-chart-lazy';
 import { requirePermission } from '@/server/auth/can';

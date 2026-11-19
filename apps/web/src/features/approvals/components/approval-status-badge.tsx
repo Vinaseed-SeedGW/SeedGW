@@ -1,4 +1,4 @@
-import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@dms/contracts/approvals';
+import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@seedgw/contracts/approvals';
 
 const TONE: Record<ApprovalStatus, string> = {
   DRAFT: 'bg-surface-subtle text-text-muted',

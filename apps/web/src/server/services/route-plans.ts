@@ -1,8 +1,8 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import type { ApprovalStatus } from '@dms/contracts/approvals';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@dms/contracts/format';
+import type { ApprovalStatus } from '@seedgw/contracts/approvals';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
 import {
   addDays,
   editableRoutePeriods,
@@ -26,10 +26,10 @@ import {
   type TodayRoute,
   ROUTE_DEALER_SEARCH_LIMIT,
   type RouteDealerOption,
-} from '@dms/contracts/route-plans';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
-import { db } from '@dms/db/client';
-import type { ScopedDb } from '@dms/db/scoped-client';
+} from '@seedgw/contracts/route-plans';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
+import { db } from '@seedgw/db/client';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { applyApproved, isUniqueViolation, isWithdrawable, submitApproval } from './approvals';
 import { DomainError } from './domain-error';
 import { notifyApprovalChange } from './push-events';

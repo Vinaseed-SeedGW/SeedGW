@@ -1,7 +1,7 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import type { PermissionCode } from '@dms/contracts/access';
-import type { CheckInRow } from '@dms/contracts/check-ins';
+import type { PermissionCode } from '@seedgw/contracts/access';
+import type { CheckInRow } from '@seedgw/contracts/check-ins';
 import type {
   DealerDetail,
   DealerFormOptions,
@@ -9,8 +9,8 @@ import type {
   DealerSummary,
   ListDealersInput,
   ListDealersResult,
-} from '@dms/contracts/dealers';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/dealers';
+import { db } from '@seedgw/db/client';
 import { mapTileConfig } from '@/server/integrations/map-tiles';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

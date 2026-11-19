@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { PermissionCode } from '@dms/contracts/access';
+import type { PermissionCode } from '@seedgw/contracts/access';
 import { can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 

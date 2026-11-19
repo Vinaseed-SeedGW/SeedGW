@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mobileDealersQuery, type MobileDealersResult } from '@dms/contracts/dealers';
+import { mobileDealersQuery, type MobileDealersResult } from '@seedgw/contracts/dealers';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { listMobileDealers } from '@/server/services/mobile-dealers';
 import { readSystemSettings } from '@/server/services/settings';

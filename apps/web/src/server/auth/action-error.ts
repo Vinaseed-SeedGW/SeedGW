@@ -1,6 +1,6 @@
 import 'server-only';
 import { unstable_rethrow } from 'next/navigation';
-import type { ActionResult } from '@dms/contracts/common';
+import type { ActionResult } from '@seedgw/contracts/common';
 import type { z } from 'zod';
 import { DomainError } from '@/server/services/domain-error';
 import { ForbiddenError } from './can';

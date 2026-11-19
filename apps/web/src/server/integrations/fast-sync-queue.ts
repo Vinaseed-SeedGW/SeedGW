@@ -1,6 +1,6 @@
 import 'server-only';
 import { Queue } from 'bullmq';
-import { FAST_SYNC_QUEUE } from '@dms/contracts/fast';
+import { FAST_SYNC_QUEUE } from '@seedgw/contracts/fast';
 import { DomainError } from '@/server/services/domain-error';
 
 // Nút Đồng bộ ngay: đẩy việc vào hàng đợi, worker gọi FAST (A8). Web không gọi FAST trực tiếp để đồng bộ.

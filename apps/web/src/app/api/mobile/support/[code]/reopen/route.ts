@@ -1,5 +1,5 @@
 import { after, NextResponse } from 'next/server';
-import { isSupportCode } from '@dms/contracts/support';
+import { isSupportCode } from '@seedgw/contracts/support';
 import { mobileError, mobileRoute, mobileScopedDb, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp } from '@/server/auth/mobile-request';
 import { auditMobileSupport } from '@/server/services/mobile-support';

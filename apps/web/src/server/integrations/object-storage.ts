@@ -8,7 +8,7 @@ const REGION = process.env.S3_REGION || 'us-east-1';
 const ENDPOINT = (process.env.S3_ENDPOINT || 'http://localhost:9000').replace(/\/$/, '');
 // Trình duyệt mở ảnh qua địa chỉ này. Máy chủ thật đặt sau tên miền nên khác địa chỉ nội bộ.
 const PUBLIC_ENDPOINT = (process.env.S3_PUBLIC_ENDPOINT || ENDPOINT).replace(/\/$/, '');
-const BUCKET = process.env.S3_BUCKET || 'dms';
+const BUCKET = process.env.S3_BUCKET || 'seedgw';
 const ACCESS_KEY = process.env.S3_ACCESS_KEY || process.env.MINIO_ROOT_USER || '';
 const SECRET_KEY = process.env.S3_SECRET_KEY || process.env.MINIO_ROOT_PASSWORD || '';
 

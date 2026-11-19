@@ -1,7 +1,7 @@
 import 'server-only';
-import type { MobileDealerOption, DealerLevel } from '@dms/contracts/dealers';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
-import { distanceMeters } from '@dms/contracts/track-distance';
+import type { MobileDealerOption, DealerLevel } from '@seedgw/contracts/dealers';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
+import { distanceMeters } from '@seedgw/contracts/track-distance';
 import { mobileScopedDb, type MobileUser } from '@/server/auth/mobile';
 
 const RESULT_LIMIT = 30;

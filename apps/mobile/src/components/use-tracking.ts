@@ -9,7 +9,7 @@ import {
   type StartResult,
 } from '../sync/background-tracking';
 import { getConsentAt, getLastPointAt } from '../sync/track-db';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 // iOS dừng ghi vị trí khi người dùng vuốt tắt app. App mở lại từ đầu (không phải từ chạy nền)
 // trong lúc đang ghi mà điểm cuối đã cũ thì báo đoạn bị đứt, để người dùng biết và lần sau không tắt app.

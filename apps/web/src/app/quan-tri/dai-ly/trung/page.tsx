@@ -6,9 +6,9 @@ import {
   DUPLICATE_TABS,
   duplicatesUrlParams,
   type ListDuplicatesInput,
-} from '@dms/contracts/dealer-cleanup';
-import { formatNumber } from '@dms/contracts/format';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/dealer-cleanup';
+import { formatNumber } from '@seedgw/contracts/format';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { DuplicateGroups } from '@/features/dealers/components/duplicate-groups';
 import { requirePermission } from '@/server/auth/can';
 import { getDuplicateGroups } from '@/server/queries/dealer-cleanup';

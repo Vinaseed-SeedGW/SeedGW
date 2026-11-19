@@ -17,7 +17,7 @@ export default async function QuanTriDealersPage({ searchParams }: PageProps) {
       entry="admin.dealer.read"
       basePath="/quan-tri/dai-ly"
       searchParams={searchParams}
-      description="Danh mục đại lý. Nhập từ DMS cũ, gán nhân viên và đơn vị phụ trách hàng loạt."
+      description="Danh mục đại lý. Nhập từ hệ thống cũ, gán nhân viên và đơn vị phụ trách hàng loạt."
       actions={
         canManage ? (
           <div className="flex flex-wrap items-center gap-2">

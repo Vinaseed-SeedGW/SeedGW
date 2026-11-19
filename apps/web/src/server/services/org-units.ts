@@ -1,15 +1,15 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import { MAX_ORG_DEPTH, checkOrgUnitMove, orgDepth } from '@dms/contracts/org-tree';
-import { ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import { MAX_ORG_DEPTH, checkOrgUnitMove, orgDepth } from '@seedgw/contracts/org-tree';
+import { ROUTE_KIND_LABEL } from '@seedgw/contracts/route-plans';
 import type {
   AssignOrgUnitManagerInput,
   CreateOrgUnitInput,
   MoveOrgUnitInput,
   UpdateOrgUnitInput,
-} from '@dms/contracts/org-units';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/org-units';
+import { db } from '@seedgw/db/client';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { DomainError } from '@/server/services/domain-error';
 

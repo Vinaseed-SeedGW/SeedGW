@@ -7,8 +7,8 @@ import {
   type SupportSeverity,
   type SupportStatus,
   type SupportType,
-} from '@dms/contracts/support';
-import { formatDateTime } from '@dms/contracts/format';
+} from '@seedgw/contracts/support';
+import { formatDateTime } from '@seedgw/contracts/format';
 
 const BADGE = 'inline-block rounded-sm px-1.5 text-sm font-bold whitespace-nowrap';
 

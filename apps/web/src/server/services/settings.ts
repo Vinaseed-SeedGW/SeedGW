@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   DEALER_CODE_SEQUENCE_KEY,
   issuedCodeCount,
@@ -9,10 +9,10 @@ import {
   type SaveCodeSequenceInput,
   type SaveSystemSettingsInput,
   type SystemSettingsView,
-} from '@dms/contracts/settings';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/settings';
+import { db } from '@seedgw/db/client';
 import { DomainError } from '@/server/services/domain-error';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 export type SettingOutcome = { id: string; label: string; changes: AuditChanges };
 

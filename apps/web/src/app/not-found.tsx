@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
 
 export default function NotFound() {
   return (

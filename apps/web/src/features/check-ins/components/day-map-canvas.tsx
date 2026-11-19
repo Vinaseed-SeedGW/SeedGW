@@ -8,8 +8,8 @@ import {
   dayMapLegText,
   type DayMapCheckIn,
   type DayMapResult,
-} from '@dms/contracts/check-ins';
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
+} from '@seedgw/contracts/check-ins';
+import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
 
 export type MapTiles = { url: string; attribution: string; maxZoom: number };
 

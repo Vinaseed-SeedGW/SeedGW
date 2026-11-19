@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FEATURES } from '@dms/contracts/features';
+import { FEATURES } from '@seedgw/contracts/features';
 import { Suspense } from 'react';
 import {
   currentVnMonth,
@@ -11,8 +11,8 @@ import {
   shiftMonth,
   type ListSalesTargetsInput,
   type SalesTargetTab,
-} from '@dms/contracts/sales-targets';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/sales-targets';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { MyTargets } from '@/features/sales-targets/components/my-targets';
 import { ScopeTargetsTable } from '@/features/sales-targets/components/scope-targets-table';
 import { can, requirePermission } from '@/server/auth/can';

@@ -38,7 +38,7 @@ import { checkInRadiusM, type DealerChoice } from '../api/dealers';
 import { serverNow } from '../api/server-clock';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 const LONG_EDGE_PX = 1600;
 const JPEG_QUALITY = 0.7;

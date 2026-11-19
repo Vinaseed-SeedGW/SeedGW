@@ -10,7 +10,7 @@ import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
 import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 const VISIBLE_RESULTS = 30;
 const DAY_MS = 86_400_000;

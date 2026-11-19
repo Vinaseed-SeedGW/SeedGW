@@ -1,6 +1,6 @@
 import tseslint from 'typescript-eslint';
 
-const DATABASE_LAYER = ['@dms/db', '@dms/db/*', '@prisma/client', '@prisma/client/*'];
+const DATABASE_LAYER = ['@seedgw/db', '@seedgw/db/*', '@prisma/client', '@prisma/client/*'];
 
 export default tseslint.config(
   {

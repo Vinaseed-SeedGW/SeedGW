@@ -348,7 +348,7 @@ enum DealerStatus {
   @@map("dealer_status")
 }
 
-// Danh muc dai ly (A7). code la ma khach hang tren FAST, legacyCode la ma DMS cu.
+// Danh muc dai ly (A7). code la ma khach hang tren FAST, legacyCode la ma he thong cu.
 model Dealer {
   id                 String                   @id @default(uuid()) @db.Uuid
   code               String?                  @unique
@@ -367,7 +367,7 @@ model Dealer {
   ownerPhone         String?                  @map("owner_phone")
   address            String
   provinceName       String?                  @map("province_name")
-  // Tinh, huyen, xa cu (truoc 01/07/2025) dung nguyen van tu DMS cu de tham khao.
+  // Tinh, huyen, xa cu (truoc 01/07/2025) dung nguyen van tu he thong cu de tham khao.
   legacyAdminArea    String?                  @map("legacy_admin_area")
   lat                Float?
   lng                Float?
@@ -378,7 +378,7 @@ model Dealer {
   orgUnit            OrgUnit?                 @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
   assignedUserId     String?                  @map("assigned_user_id") @db.Uuid
   assignedUser       User?                    @relation("dealer_assignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
-  // Ten don vi va nguoi phu trach ghi tren DMS cu, de ghep lai khi doi co cau hoac nhap them tai khoan.
+  // Ten don vi va nguoi phu trach ghi tren he thong cu, de ghep lai khi doi co cau hoac nhap them tai khoan.
   legacyOrgUnitName  String?                  @map("legacy_org_unit_name")
   legacyAssigneeName String?                  @map("legacy_assignee_name")
   // A7b: đại lý đã gộp vào đại lý khác (chuyển Ngừng hoạt động, không xoá).
@@ -818,7 +818,7 @@ model SupportRead {
   @@map("support_reads")
 }
 
-// Nhật ký gửi ra hệ thống ngoài (chiều DMS gọi FAST, làm sau): chống gửi trùng theo khoá, ghi lỗi để gửi lại.
+// Nhật ký gửi ra hệ thống ngoài (chiều SeedGW gọi FAST, làm sau): chống gửi trùng theo khoá, ghi lỗi để gửi lại.
 model IntegrationLog {
   id             String    @id @default(uuid()) @db.Uuid
   provider       String

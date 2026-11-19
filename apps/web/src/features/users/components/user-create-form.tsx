@@ -10,8 +10,8 @@ import {
   type CreatedUser,
   type CreateUserInput,
   type UserFormOptions,
-} from '@dms/contracts/users';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/users';
+import { Form } from '@seedgw/ui/form';
 import { TemporaryPasswordDialog } from '@/features/users/components/temporary-password-dialog';
 import { UserProfileFields } from '@/features/users/components/user-profile-fields';
 import { createUserAction } from '@/server/actions/users';

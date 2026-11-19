@@ -1,8 +1,8 @@
-import { buildRoadLegs } from '@dms/contracts/road-distance';
-import { resolveSystemSettings } from '@dms/contracts/settings';
-import { filterTrack, segmentOf } from '@dms/contracts/track-distance';
-import { trackFilterOf, trackingSettingsFrom } from '@dms/contracts/tracking-settings';
-import { db } from '@dms/db/client';
+import { buildRoadLegs } from '@seedgw/contracts/road-distance';
+import { resolveSystemSettings } from '@seedgw/contracts/settings';
+import { filterTrack, segmentOf } from '@seedgw/contracts/track-distance';
+import { trackFilterOf, trackingSettingsFrom } from '@seedgw/contracts/tracking-settings';
+import { db } from '@seedgw/db/client';
 import type { RoadDistanceProvider } from './osrm';
 
 const GENERAL_SETTINGS_KEY = 'general';

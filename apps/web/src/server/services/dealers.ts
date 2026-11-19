@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   DEALER_LEVEL_LABEL,
   DEALER_STATUS_LABEL,
@@ -11,9 +11,9 @@ import {
   type UpdateDealerInput,
   type VisitCutoffs,
   visitCutoffs,
-} from '@dms/contracts/dealers';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/dealers';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { DomainError } from './domain-error';

@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { formatNumber } from '@dms/contracts/format';
+import { formatNumber } from '@seedgw/contracts/format';
 import {
   ROUTE_KIND_LABEL,
   type ListRoutePlansResult,
   type RoutePlanRow,
-} from '@dms/contracts/route-plans';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/route-plans';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 
 const SECONDARY_COLUMN = 'max-md:hidden';

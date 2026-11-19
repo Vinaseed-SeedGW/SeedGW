@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { canAccessDepartment, canAccessPath } from '@dms/contracts/access';
-import { DEPARTMENTS, type DepartmentSlug } from '@dms/contracts/departments';
-import { AppFooter } from '@dms/ui/app-footer';
-import { AppShell } from '@dms/ui/app-shell';
+import { canAccessDepartment, canAccessPath } from '@seedgw/contracts/access';
+import { DEPARTMENTS, type DepartmentSlug } from '@seedgw/contracts/departments';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { AppShell } from '@seedgw/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';

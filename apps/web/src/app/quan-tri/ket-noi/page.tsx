@@ -5,13 +5,13 @@ import {
   FAST_SYNC_STATUS_LABEL,
   type FastOverview,
   type FastSyncStatus,
-} from '@dms/contracts/fast';
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
+} from '@seedgw/contracts/fast';
+import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
 import { FastConnectionFormEdit } from '@/features/connections/components/fast-connection-form';
 import { FastSyncNowButton } from '@/features/connections/components/fast-sync-now';
 import { can, requirePermission } from '@/server/auth/can';
 import { getFastOverview } from '@/server/queries/fast';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 export const metadata: Metadata = { title: 'Kết nối' };
 

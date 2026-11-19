@@ -10,9 +10,9 @@ import {
   updateDealerInput,
   type DealerDetail,
   type DealerFormOptions,
-} from '@dms/contracts/dealers';
-import { PROVINCES } from '@dms/contracts/provinces';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/dealers';
+import { PROVINCES } from '@seedgw/contracts/provinces';
+import { Form } from '@seedgw/ui/form';
 import { updateDealerAction } from '@/server/actions/dealers';
 import { DealerLocationPicker } from './dealer-location-picker';
 
@@ -30,7 +30,7 @@ const PROVINCE_OPTIONS = PROVINCES.map((name) => ({ value: name, label: name }))
 
 type Props = { dealer: DealerDetail; options: DealerFormOptions };
 
-/** Chỉ sửa trường thuộc DMS. Tên, mã FAST, mã số thuế thuộc FAST nên không sửa ở đây. */
+/** Chỉ sửa trường thuộc SeedGW. Tên, mã FAST, mã số thuế thuộc FAST nên không sửa ở đây. */
 export function DealerEditForm({ dealer, options }: Props) {
   const form = useForm<FormValues>({
     resolver: zodResolver(updateDealerInput),
@@ -81,7 +81,7 @@ export function DealerEditForm({ dealer, options }: Props) {
           <Form.Field
             name="parentCode"
             label="Đại lý cấp trên"
-            hint="Nhập mã FAST hoặc mã DMS cũ, để trống nếu không có"
+            hint="Nhập mã FAST hoặc mã hệ thống cũ, để trống nếu không có"
           >
             <Form.Input autoComplete="off" />
           </Form.Field>
@@ -92,7 +92,9 @@ export function DealerEditForm({ dealer, options }: Props) {
             name="phone"
             label="Số điện thoại"
             hint={
-              dealer.phoneRaw ? `Số trên DMS cũ không đúng dạng: ${dealer.phoneRaw}` : undefined
+              dealer.phoneRaw
+                ? `Số trên hệ thống cũ không đúng dạng: ${dealer.phoneRaw}`
+                : undefined
             }
           >
             <Form.Input inputMode="tel" autoComplete="off" />

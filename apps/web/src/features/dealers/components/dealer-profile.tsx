@@ -1,15 +1,15 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { CHECK_IN_PLACE_KIND_LABEL, formatKm, type CheckInRow } from '@dms/contracts/check-ins';
+import { CHECK_IN_PLACE_KIND_LABEL, formatKm, type CheckInRow } from '@seedgw/contracts/check-ins';
 import {
   DEALER_LEVEL_LABEL,
   DEALER_STATUS_LABEL,
   type DealerDetail,
   type DealerFormOptions,
-} from '@dms/contracts/dealers';
-import { formatDateTime } from '@dms/contracts/format';
+} from '@seedgw/contracts/dealers';
+import { formatDateTime } from '@seedgw/contracts/format';
 import { DealerEditForm } from './dealer-edit-form';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 type Props = {
   dealer: DealerDetail;
@@ -49,7 +49,7 @@ export function DealerProfile({ dealer, backHref, editOptions, visits }: Props) 
       ) : null}
       <p className="text-text-muted">
         {dealer.code ? `Mã ${dealer.code}` : 'Chưa có mã FAST'}
-        {dealer.legacyCode ? `, mã DMS cũ ${dealer.legacyCode}` : ''}
+        {dealer.legacyCode ? `, mã hệ thống cũ ${dealer.legacyCode}` : ''}
         {`, ${DEALER_LEVEL_LABEL[dealer.level]}, ${DEALER_STATUS_LABEL[dealer.status]}`}
       </p>
 
@@ -58,7 +58,9 @@ export function DealerProfile({ dealer, backHref, editOptions, visits }: Props) 
         <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Item label="Nhân viên phụ trách">
             {dealer.assignedUserName ??
-              (dealer.legacyAssigneeName ? `Chờ gán (DMS cũ: ${dealer.legacyAssigneeName})` : '')}
+              (dealer.legacyAssigneeName
+                ? `Chờ gán (hệ thống cũ: ${dealer.legacyAssigneeName})`
+                : '')}
           </Item>
           <Item label="Đơn vị phụ trách">{dealer.orgUnitName}</Item>
           <Item label="Đại lý cấp trên">

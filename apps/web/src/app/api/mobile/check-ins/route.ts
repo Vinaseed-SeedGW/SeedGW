@@ -1,11 +1,11 @@
 import { after, NextResponse } from 'next/server';
-import { auditChanges } from '@dms/contracts/audit';
+import { auditChanges } from '@seedgw/contracts/audit';
 import {
   CHECK_IN_PLACE_KIND_LABEL,
   createCheckInInput,
   mobileHistoryQuery,
-} from '@dms/contracts/check-ins';
-import { vietnamToday } from '@dms/contracts/format';
+} from '@seedgw/contracts/check-ins';
+import { vietnamToday } from '@seedgw/contracts/format';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { writeAudit } from '@/server/services/audit';

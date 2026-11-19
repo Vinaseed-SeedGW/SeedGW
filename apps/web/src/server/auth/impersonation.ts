@@ -1,9 +1,9 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { db } from '@dms/db/client';
+import { db } from '@seedgw/db/client';
 
-export const IMPERSONATION_COOKIE = 'dms-impersonation';
+export const IMPERSONATION_COOKIE = 'seedgw-impersonation';
 
 // Cookie chi tro toi ban ghi tren may chu va gan voi dung nguoi da mo phien nay,
 // nen lo cookie cung khong dung duoc neu khong co phien dang nhap cua nguoi do.

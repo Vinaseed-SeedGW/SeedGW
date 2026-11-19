@@ -5,7 +5,7 @@ import {
   ROAD_DISTANCE_QUEUE,
   roadDistanceJobId,
   type RoadDistanceJob,
-} from '@dms/contracts/road-distance';
+} from '@seedgw/contracts/road-distance';
 
 // Xếp lịch tính km theo đường đi (V1b). Worker tính, web chỉ đẩy việc vào hàng đợi.
 let queue: Queue | null = null;

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { auditUrlParams, type ListAuditLogsInput } from '@dms/contracts/audit';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+import { auditUrlParams, type ListAuditLogsInput } from '@seedgw/contracts/audit';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { AuditLogsTable } from '@/features/audit/components/audit-logs-table';
 import { requirePermission } from '@/server/auth/can';
 import { listAuditLogs } from '@/server/queries/audit-logs';

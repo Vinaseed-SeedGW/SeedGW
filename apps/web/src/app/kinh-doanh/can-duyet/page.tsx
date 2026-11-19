@@ -5,8 +5,8 @@ import {
   approvalsUrlParams,
   type ApprovalTab,
   type ListApprovalsInput,
-} from '@dms/contracts/approvals';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/approvals';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { ApprovalsTable } from '@/features/approvals/components/approvals-table';
 import { can, requirePermission } from '@/server/auth/can';
 import { listApprovalRequests } from '@/server/queries/approvals';

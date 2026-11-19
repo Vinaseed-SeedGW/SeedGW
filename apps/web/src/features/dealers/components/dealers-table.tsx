@@ -12,9 +12,9 @@ import {
   type DealerOption,
   type DealerSummary,
   type ListDealersResult,
-} from '@dms/contracts/dealers';
-import { formatDate, formatNumber } from '@dms/contracts/format';
-import { DataTable, selectionColumn, useDataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/dealers';
+import { formatDate, formatNumber } from '@seedgw/contracts/format';
+import { DataTable, selectionColumn, useDataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { exportDealersAction } from '@/server/actions/dealers';
 import { DealerBulkDialog, type BulkMode } from './dealer-bulk-dialog';
 
@@ -93,7 +93,9 @@ function columns(basePath: string): ColumnDef<DealerSummary>[] {
         row.original.assignedUserName ?? (
           <span className="text-text-muted">
             Chờ gán
-            {row.original.legacyAssigneeName ? ` (DMS cũ: ${row.original.legacyAssigneeName})` : ''}
+            {row.original.legacyAssigneeName
+              ? ` (hệ thống cũ: ${row.original.legacyAssigneeName})`
+              : ''}
           </span>
         ),
     },

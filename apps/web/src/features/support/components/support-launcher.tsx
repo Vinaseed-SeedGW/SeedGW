@@ -1,4 +1,4 @@
-import { supportButtonMode } from '@dms/contracts/access';
+import { supportButtonMode } from '@seedgw/contracts/access';
 import {
   SupportButtonRequester,
   SupportButtonSystem,

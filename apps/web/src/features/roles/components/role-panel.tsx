@@ -7,10 +7,10 @@ import {
   createRoleInput,
   type CreateRoleInput,
   type RoleMatrixRole,
-} from '@dms/contracts/roles';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { Form } from '@dms/ui/form';
-import { FormSheet } from '@dms/ui/form-sheet';
+} from '@seedgw/contracts/roles';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { Form } from '@seedgw/ui/form';
+import { FormSheet } from '@seedgw/ui/form-sheet';
 import { createRoleAction, deleteRoleAction } from '@/server/actions/roles';
 
 export type RolePanelState = { type: 'create' } | { type: 'delete'; role: RoleMatrixRole };

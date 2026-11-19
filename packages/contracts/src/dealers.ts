@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { MAX_PAGE_SIZE, pageResult } from './common';
 import { PROVINCES } from './provinces';
 
-// Danh mục đại lý (A7). Mã đại lý là mã khách hàng trên FAST, mã DMS cũ giữ để tìm và nhập lại.
+// Danh mục đại lý (A7). Mã đại lý là mã khách hàng trên FAST, mã hệ thống cũ giữ để tìm và nhập lại.
 
 export const dealerLevel = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 export type DealerLevel = z.infer<typeof dealerLevel>;
@@ -22,7 +22,7 @@ export const DEALER_STATUS_LABEL: Record<DealerStatus, string> = {
   INACTIVE: 'Ngừng hoạt động',
 };
 
-/** Mã DMS cũ dạng VR02.C2.0083418: tiền tố đơn vị, cấp đại lý, số thứ tự. */
+/** Mã hệ thống cũ dạng VR02.C2.0083418: tiền tố đơn vị, cấp đại lý, số thứ tự. */
 export function parseLegacyDealerCode(
   code: string,
 ): { unitPrefix: string; level: DealerLevel } | null {
@@ -198,13 +198,13 @@ export const dealerDetail = dealerSummary.extend({
 });
 export type DealerDetail = z.infer<typeof dealerDetail>;
 
-// Tên, mã FAST, mã số thuế thuộc FAST nên không sửa trên DMS (DESIGN_BRIEF §10, cách C).
+// Tên, mã FAST, mã số thuế thuộc FAST nên không sửa trên SeedGW (DESIGN_BRIEF §10, cách C).
 export const updateDealerInput = z
   .object({
     id: z.uuid(),
     level: z.coerce.number().pipe(dealerLevel),
     status: dealerStatus,
-    // Nhập mã FAST hoặc mã DMS cũ của đại lý cấp trên, để trống nếu không có.
+    // Nhập mã FAST hoặc mã hệ thống cũ của đại lý cấp trên, để trống nếu không có.
     parentCode: optionalText(50),
     phone: phoneField,
     ownerName: optionalText(120),
@@ -242,7 +242,7 @@ export const bulkMoveDealersInput = bulkTarget.extend({
 });
 export type BulkMoveDealersInput = z.infer<typeof bulkMoveDealersInput>;
 
-// ---------- Nhập Excel từ DMS cũ ----------
+// ---------- Nhập Excel từ hệ thống cũ ----------
 
 export const MAX_DEALER_IMPORT_BYTES = 12 * 1024 * 1024;
 export const MAX_DEALER_IMPORT_ROWS = 50_000;

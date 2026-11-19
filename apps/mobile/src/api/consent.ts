@@ -1,4 +1,4 @@
-import { LOCATION_CONSENT_VERSION, type MobileConsentStatus } from '@dms/contracts/consents';
+import { LOCATION_CONSENT_VERSION, type MobileConsentStatus } from '@seedgw/contracts/consents';
 import {
   clearConsent,
   getConsentAt,

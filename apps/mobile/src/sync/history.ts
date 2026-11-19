@@ -3,7 +3,7 @@ import {
   type CheckInFlag,
   type CheckInPlaceKind,
   type MobileHistoryResult,
-} from '@dms/contracts/check-ins';
+} from '@seedgw/contracts/check-ins';
 import { apiCall } from '../api/client';
 import { loadSession, serverEnabled } from '../api/session';
 import { legMetersOf } from './day-report-sheets';

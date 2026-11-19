@@ -4,7 +4,7 @@ import {
   mapsDirectionLinks,
   type MyRoutesResult,
   type RouteStopView,
-} from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/route-plans';
 import type { DealerChoice } from '../api/dealers';
 import { loadMyRoutes } from '../api/routes';
 import { startOfVnDay } from '../sync/geo';

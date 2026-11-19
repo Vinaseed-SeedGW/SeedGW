@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { PENDING_APPROVAL_STATUSES } from '@dms/contracts/approvals';
+import { PENDING_APPROVAL_STATUSES } from '@seedgw/contracts/approvals';
 import {
   upsertSalesTargetInput,
   type MyTargetMonth,
   type MyTargetsResult,
-} from '@dms/contracts/sales-targets';
+} from '@seedgw/contracts/sales-targets';
 import { loadMyTargets, submitMyTarget, withdrawMyApproval } from '../api/targets';
 import { COLORS, FONT, SPACE } from '../theme';
 import { BackBar } from './back-bar';

@@ -1,4 +1,4 @@
-import { FEATURES } from '@dms/contracts/features';
+import { FEATURES } from '@seedgw/contracts/features';
 import { NextResponse } from 'next/server';
 import { mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { countPendingForApprover } from '@/server/services/approvals';

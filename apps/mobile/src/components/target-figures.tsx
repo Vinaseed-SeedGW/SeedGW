@@ -1,11 +1,11 @@
 import { StyleSheet, View } from 'react-native';
-import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@dms/contracts/approvals';
+import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@seedgw/contracts/approvals';
 import {
   targetPercent,
   type ApprovedTargetValues,
   type SalesTargetSnapshot,
   type TargetProgress,
-} from '@dms/contracts/sales-targets';
+} from '@seedgw/contracts/sales-targets';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Text } from './text';
 

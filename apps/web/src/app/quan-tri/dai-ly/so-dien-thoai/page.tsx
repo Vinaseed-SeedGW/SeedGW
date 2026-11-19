@@ -6,9 +6,9 @@ import {
   PHONE_ISSUE_LABEL,
   phoneIssueKind,
   type ListBadPhonesInput,
-} from '@dms/contracts/dealer-cleanup';
-import { formatNumber } from '@dms/contracts/format';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/dealer-cleanup';
+import { formatNumber } from '@seedgw/contracts/format';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { BadPhonesTable } from '@/features/dealers/components/bad-phones-table';
 import { requirePermission } from '@/server/auth/can';
 import { getBadPhones } from '@/server/queries/dealer-cleanup';
@@ -24,9 +24,9 @@ export default async function BadPhonesPage({ searchParams }: PageProps) {
     <>
       <h1 className="text-2xl font-bold text-brand">Số điện thoại sai dạng</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
-        Số điện thoại đại lý nhập từ DMS cũ không đúng dạng 10 số. Sửa lại số đúng, hoặc bỏ số để
-        trống chờ người phụ trách cập nhật. Mọi lần sửa đều ghi nhật ký. Khi nối FAST, số đã sửa sẽ
-        đồng bộ sang FAST.
+        Số điện thoại đại lý nhập từ hệ thống cũ không đúng dạng 10 số. Sửa lại số đúng, hoặc bỏ số
+        để trống chờ người phụ trách cập nhật. Mọi lần sửa đều ghi nhật ký. Khi nối FAST, số đã sửa
+        sẽ đồng bộ sang FAST.
       </p>
       <Suspense key={JSON.stringify(input)} fallback={<DataTableSkeleton columns={4} rows={8} />}>
         <Results input={input} />

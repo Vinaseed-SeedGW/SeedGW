@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { db } from '@dms/db/client';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { IMPERSONATION_COOKIE } from '@/server/auth/impersonation';
 import { getScopedDb } from '@/server/auth/scoped-db';

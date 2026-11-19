@@ -1,6 +1,6 @@
 import 'server-only';
-import type { PermissionCode } from '@dms/contracts/access';
-import { db } from '@dms/db/client';
+import type { PermissionCode } from '@seedgw/contracts/access';
+import { db } from '@seedgw/db/client';
 import { DomainError } from '@/server/services/domain-error';
 import { assertCan } from './can';
 import type { CurrentUser } from './current-user';

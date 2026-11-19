@@ -1,7 +1,7 @@
 import { Briefcase, Settings, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import type { DepartmentSlug } from '@dms/contracts/departments';
+import type { DepartmentSlug } from '@seedgw/contracts/departments';
 import { Can } from '@/features/auth/components/can';
 import { HubLayout } from '@/features/shell/components/hub-layout';
 import { requireUser } from '@/server/auth/current-user';

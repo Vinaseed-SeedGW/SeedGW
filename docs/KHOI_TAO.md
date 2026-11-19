@@ -44,4 +44,4 @@ Chép `.env.example` thành `.env` trước khi chạy lần đầu. Docker Desk
 
 ## Thứ tự làm các task đầu
 
-F1, F2, F3, F4, F5, sau đó F6, F7 và các spike R1, R2, R3 theo `.design/dms-vinaseed/TASKS.md`.
+F1, F2, F3, F4, F5, sau đó F6, F7 và các spike R1, R2, R3 theo `.design/seedgw/TASKS.md`.

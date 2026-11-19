@@ -1,12 +1,12 @@
 import 'server-only';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { widestDataScope, type DataScope, type PermissionCode } from '@dms/contracts/access';
-import type { MobileAuthReason } from '@dms/contracts/check-ins';
-import type { ErrorCode } from '@dms/contracts/common';
-import { db } from '@dms/db/client';
-import { getOrgUnitTreeIds, getTeamUserIds } from '@dms/db/org-units';
-import { scopedDb } from '@dms/db/scoped-client';
+import { widestDataScope, type DataScope, type PermissionCode } from '@seedgw/contracts/access';
+import type { MobileAuthReason } from '@seedgw/contracts/check-ins';
+import type { ErrorCode } from '@seedgw/contracts/common';
+import { db } from '@seedgw/db/client';
+import { getOrgUnitTreeIds, getTeamUserIds } from '@seedgw/db/org-units';
+import { scopedDb } from '@seedgw/db/scoped-client';
 import { DomainError } from '@/server/services/domain-error';
 
 // Khoá truy cập ngắn hạn cho app (JWT ký HMAC-SHA256), tự viết để không thêm thư viện.
@@ -37,7 +37,7 @@ function signingKey(): Buffer {
   const secret = process.env.AUTH_SECRET;
   if (!secret) throw new Error('Thiếu AUTH_SECRET');
   // Tách khoá ký của app khỏi khoá phiên web dù dùng chung một bí mật gốc.
-  return createHmac('sha256', secret).update('dms-mobile-access-v1').digest();
+  return createHmac('sha256', secret).update('seedgw-mobile-access-v1').digest();
 }
 
 const base64url = (input: Buffer | string) => Buffer.from(input).toString('base64url');

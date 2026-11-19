@@ -4,9 +4,9 @@ import type {
   ApprovalDetail,
   ListApprovalsInput,
   ListApprovalsResult,
-} from '@dms/contracts/approvals';
-import type { RouteApprovalView } from '@dms/contracts/route-plans';
-import type { SalesTargetApprovalView } from '@dms/contracts/sales-targets';
+} from '@seedgw/contracts/approvals';
+import type { RouteApprovalView } from '@seedgw/contracts/route-plans';
+import type { SalesTargetApprovalView } from '@seedgw/contracts/sales-targets';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

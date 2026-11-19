@@ -5,7 +5,7 @@ import { login } from '../api/client';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { AppFooter } from './app-footer';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 // M1: cùng tài khoản web. Máy đầu tiên dùng được ngay, máy thứ hai chờ quản trị duyệt.
 export function LoginScreen() {

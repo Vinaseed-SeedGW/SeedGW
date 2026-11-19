@@ -4,8 +4,8 @@ import {
   LOCATION_CONSENT_VERSION,
   type ConsentChannel,
   type MobileConsentStatus,
-} from '@dms/contracts/consents';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/consents';
+import { db } from '@seedgw/db/client';
 
 // Lời đồng ý chỉ của chính người dùng, nên đọc ghi theo id người đang đăng nhập, không qua phạm vi dữ liệu.
 const CURRENT = { kind: LOCATION_CONSENT_KIND, version: LOCATION_CONSENT_VERSION };

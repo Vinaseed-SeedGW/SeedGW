@@ -65,7 +65,7 @@ Vết có thể đứt khi nhân viên tắt định vị, máy hết pin, hoặ
 
 - **Bắt đầu**: tự động ở lượt check-in đầu tiên trong ngày. Lượt đầu ngày có km bằng 0, giống mẫu Excel hiện tại.
 - **Dừng**: nhân viên bấm "Kết thúc ngày" trên app, hoặc tự dừng ở giờ cấu hình trong Tham số (mặc định 20:00). Vết sau lượt check-in cuối ngày không dùng để tính km.
-- Trong lúc ghi, Android hiện thông báo cố định "DMS đang ghi hành trình" (Android bắt buộc). Lần đầu dùng, app hiện màn đồng ý cho ghi vị trí trong giờ làm việc, vì vị trí là dữ liệu cá nhân (Nghị định 13/2023).
+- Trong lúc ghi, Android hiện thông báo cố định "SeedGW đang ghi hành trình" (Android bắt buộc). Lần đầu dùng, app hiện màn đồng ý cho ghi vị trí trong giờ làm việc, vì vị trí là dữ liệu cá nhân (Nghị định 13/2023).
 
 ### 3.6 Địa chỉ của điểm check-in
 

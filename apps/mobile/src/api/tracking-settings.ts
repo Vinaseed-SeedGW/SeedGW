@@ -1,4 +1,4 @@
-import { mobileTrackingSettings } from '@dms/contracts/tracking-settings';
+import { mobileTrackingSettings } from '@seedgw/contracts/tracking-settings';
 import { saveTrackingSettings } from '../sync/track-db';
 import { apiCall } from './client';
 

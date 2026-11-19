@@ -2,15 +2,15 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { AuditAction } from '@dms/contracts/audit';
-import type { ActionResult } from '@dms/contracts/common';
+import type { AuditAction } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
 import {
   clearDealerPhonesInput,
   clearSharedPhoneInput,
   dismissDuplicateInput,
   fixDealerPhoneInput,
   mergeDealersInput,
-} from '@dms/contracts/dealer-cleanup';
+} from '@seedgw/contracts/dealer-cleanup';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';

@@ -1,14 +1,14 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   isSameStreet,
   type DealerLocationProposalRow,
   type ListDealerLocationProposalsInput,
   type ListDealerLocationProposalsResult,
   type ReviewDealerLocationInput,
-} from '@dms/contracts/dealer-locations';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/dealer-locations';
+import { db } from '@seedgw/db/client';
 import { getScopedDb } from '@/server/auth/scoped-db';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
 import { DomainError } from './domain-error';

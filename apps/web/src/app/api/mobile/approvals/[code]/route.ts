@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { mobileApprovalDecisionInput } from '@dms/contracts/approvals';
+import { mobileApprovalDecisionInput } from '@seedgw/contracts/approvals';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { approveRequest, readApproval, returnRequest } from '@/server/services/approvals';

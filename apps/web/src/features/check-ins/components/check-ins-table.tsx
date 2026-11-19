@@ -11,14 +11,14 @@ import {
   type CheckInRow,
   type ListCheckInsInput,
   type ListCheckInsResult,
-} from '@dms/contracts/check-ins';
+} from '@seedgw/contracts/check-ins';
 import {
   formatDateTime,
   formatNumber,
   isoDateToDisplay,
   vietnamToday,
-} from '@dms/contracts/format';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/format';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { exportCheckInsAction } from '@/server/actions/check-ins';
 import { CheckInPhotoDialog } from './check-in-photo-dialog';
 

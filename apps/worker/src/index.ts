@@ -1,12 +1,12 @@
 import { Queue, Worker, type Job } from 'bullmq';
-import { FAST_SYNC_QUEUE } from '@dms/contracts/fast';
+import { FAST_SYNC_QUEUE } from '@seedgw/contracts/fast';
 import {
   PUSH_QUEUE,
   PUSH_RECEIPT_DELAY_MS,
   type PushReceiptJob,
   type PushSendJob,
-} from '@dms/contracts/push';
-import { ROAD_DISTANCE_QUEUE, type RoadDistanceJob } from '@dms/contracts/road-distance';
+} from '@seedgw/contracts/push';
+import { ROAD_DISTANCE_QUEUE, type RoadDistanceJob } from '@seedgw/contracts/road-distance';
 import { runFastCustomerSync } from './fast-sync';
 import { checkPushReceipts, createCheckInReminders, sendPushMessages } from './push';
 import { roadDistanceProvider } from './osrm';

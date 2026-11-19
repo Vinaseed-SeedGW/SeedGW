@@ -1,4 +1,4 @@
-import type { MobileDealerOption, MobileDealersResult } from '@dms/contracts/dealers';
+import type { MobileDealerOption, MobileDealersResult } from '@seedgw/contracts/dealers';
 import { apiCall } from './client';
 
 export type DealerSearch =

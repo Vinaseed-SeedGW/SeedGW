@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import type { MobileProfile } from '@dms/contracts/check-ins';
-import { FILTER } from '@dms/contracts/track-distance';
+import type { MobileProfile } from '@seedgw/contracts/check-ins';
+import { FILTER } from '@seedgw/contracts/track-distance';
 import { logout } from '../api/client';
 import { TRACKING_CONFIG } from '../sync/background-tracking';
 import { formatKm, formatVnTime, startOfVnDay } from '../sync/geo';

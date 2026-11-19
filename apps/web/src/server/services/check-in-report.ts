@@ -6,9 +6,9 @@ import {
   checkInFlag,
   type CheckInRow,
   type ExportCheckInsInput,
-} from '@dms/contracts/check-ins';
-import { vietnamDayStart, vietnamNextDayStart } from '@dms/contracts/format';
-import { escapeLikePattern, normalizeSearchText } from '@dms/contracts/text';
+} from '@seedgw/contracts/check-ins';
+import { vietnamDayStart, vietnamNextDayStart } from '@seedgw/contracts/format';
+import { escapeLikePattern, normalizeSearchText } from '@seedgw/contracts/text';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
 
 export function checkInWhere(input: ExportCheckInsInput): Prisma.CheckInWhereInput {

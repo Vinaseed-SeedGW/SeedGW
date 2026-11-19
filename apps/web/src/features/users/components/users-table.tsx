@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { formatDate } from '@dms/contracts/format';
-import type { ListUsersResult, UserStatus, UserSummary } from '@dms/contracts/users';
-import { DataTable, selectionColumn, type ColumnDef } from '@dms/ui/data-table';
+import { formatDate } from '@seedgw/contracts/format';
+import type { ListUsersResult, UserStatus, UserSummary } from '@seedgw/contracts/users';
+import { DataTable, selectionColumn, type ColumnDef } from '@seedgw/ui/data-table';
 import { USER_STATUS_LABEL, UserStatusBadge } from '@/features/users/components/user-status-badge';
 
 const STATUS_OPTIONS = (Object.keys(USER_STATUS_LABEL) as UserStatus[]).map((value) => ({

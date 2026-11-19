@@ -3,13 +3,13 @@ import type {
   ApprovalTab,
   ListApprovalsResult,
   MobileApprovalDecisionInput,
-} from '@dms/contracts/approvals';
-import type { RouteApprovalView } from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/approvals';
+import type { RouteApprovalView } from '@seedgw/contracts/route-plans';
 import type {
   MyTargetsResult,
   SalesTargetApprovalView,
   UpsertSalesTargetInput,
-} from '@dms/contracts/sales-targets';
+} from '@seedgw/contracts/sales-targets';
 import { apiCall, type ApiResult } from './client';
 
 export type Loaded<T> = { ok: true; data: T } | { ok: false; message: string };

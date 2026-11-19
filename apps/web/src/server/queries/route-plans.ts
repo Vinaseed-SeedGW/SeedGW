@@ -4,8 +4,8 @@ import type {
   ListRoutePlansResult,
   MyRoutesResult,
   RoutePlanDetail,
-} from '@dms/contracts/route-plans';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/route-plans';
+import { db } from '@seedgw/db/client';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

@@ -1,17 +1,17 @@
 import 'server-only';
 import { Prisma } from '@prisma/client';
 import { verify } from 'argon2';
-import { roleExceedsActor } from '@dms/contracts/access';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import type { ChangePasswordInput } from '@dms/contracts/auth';
-import { formatDateOnly } from '@dms/contracts/format';
+import { roleExceedsActor } from '@seedgw/contracts/access';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import type { ChangePasswordInput } from '@seedgw/contracts/auth';
+import { formatDateOnly } from '@seedgw/contracts/format';
 import type {
   CreatedUser,
   CreateUserInput,
   UpdateUserInput,
   UserAllowedActions,
-} from '@dms/contracts/users';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/users';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import {

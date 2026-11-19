@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { formatDateTime, formatNumber } from '@dms/contracts/format';
+import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
 import {
   SUPPORT_STATS_PERIOD_LABEL,
   supportStatsPeriod,
   supportStatsUrlParams,
   type SupportStatsGroup,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { SupportInboxTabs } from '@/features/support/components/support-inbox-tabs';
 import { requirePermission } from '@/server/auth/can';
 import { getSupportStats } from '@/server/queries/support';

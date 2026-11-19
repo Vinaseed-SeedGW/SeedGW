@@ -1,8 +1,8 @@
 'use client';
 
-import { CHECK_IN_PLACE_KIND_LABEL, type CheckInRow } from '@dms/contracts/check-ins';
-import { formatDateTime } from '@dms/contracts/format';
-import { useModalDialog } from '@dms/ui/use-modal-dialog';
+import { CHECK_IN_PLACE_KIND_LABEL, type CheckInRow } from '@seedgw/contracts/check-ins';
+import { formatDateTime } from '@seedgw/contracts/format';
+import { useModalDialog } from '@seedgw/ui/use-modal-dialog';
 
 export function CheckInPhotoDialog({ row, onClose }: { row: CheckInRow; onClose: () => void }) {
   const { dialogRef, attachDialog } = useModalDialog();

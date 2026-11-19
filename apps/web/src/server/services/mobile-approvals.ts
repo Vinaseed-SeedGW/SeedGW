@@ -1,5 +1,5 @@
 import 'server-only';
-import type { AuditAction } from '@dms/contracts/audit';
+import type { AuditAction } from '@seedgw/contracts/audit';
 import { mobileScopedDb, type MobileUser } from '@/server/auth/mobile';
 import type { ApprovalOutcome, ApprovalViewer } from './approvals';
 import { writeAuditMany } from './audit';

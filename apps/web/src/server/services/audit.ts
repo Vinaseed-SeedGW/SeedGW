@@ -1,7 +1,7 @@
 import 'server-only';
 import { headers } from 'next/headers';
-import type { AuditAction, AuditChanges, AuditEntityType } from '@dms/contracts/audit';
-import { db } from '@dms/db/client';
+import type { AuditAction, AuditChanges, AuditEntityType } from '@seedgw/contracts/audit';
+import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 
 type AuditEntry = {

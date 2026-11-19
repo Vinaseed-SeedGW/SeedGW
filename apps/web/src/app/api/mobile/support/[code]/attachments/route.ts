@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { isSupportCode } from '@dms/contracts/support';
-import { SUPPORT_MAX_FILE_BYTES } from '@dms/contracts/support-files';
+import { isSupportCode } from '@seedgw/contracts/support';
+import { SUPPORT_MAX_FILE_BYTES } from '@seedgw/contracts/support-files';
 import { mobileError, mobileRoute, mobileScopedDb, requireMobileUser } from '@/server/auth/mobile';
 import { addSupportAttachment } from '@/server/services/support';
 

@@ -12,7 +12,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import { activeNavHref } from '@dms/contracts/access';
+import { activeNavHref } from '@seedgw/contracts/access';
 import { SIDEBAR_STORAGE_KEY } from './sidebar-storage';
 import { SkipLink } from './skip-link';
 import { useDismissable } from './use-dismissable';

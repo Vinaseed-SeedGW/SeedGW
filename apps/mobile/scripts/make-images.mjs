@@ -13,7 +13,7 @@ const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 const lucide = require('lucide-react');
 
-const brand = path.join(root, '.design/dms-vinaseed/brand/logo');
+const brand = path.join(root, '.design/seedgw/brand/logo');
 const out = path.join(root, 'apps/mobile/assets/images');
 mkdirSync(out, { recursive: true });
 

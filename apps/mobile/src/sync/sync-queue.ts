@@ -1,4 +1,4 @@
-import { MAX_TRACK_POINTS_PER_BATCH, type CheckInReceipt } from '@dms/contracts/check-ins';
+import { MAX_TRACK_POINTS_PER_BATCH, type CheckInReceipt } from '@seedgw/contracts/check-ins';
 import { apiCall, type ApiFailure } from '../api/client';
 import { syncPendingConsent } from '../api/consent';
 import { loadSession, serverEnabled } from '../api/session';

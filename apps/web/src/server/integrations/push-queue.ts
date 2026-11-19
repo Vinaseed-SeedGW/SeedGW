@@ -1,8 +1,13 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { Queue } from 'bullmq';
-import { PUSH_QUEUE, type PushKind, type PushSendJob, type PushTarget } from '@dms/contracts/push';
-import { db } from '@dms/db/client';
+import {
+  PUSH_QUEUE,
+  type PushKind,
+  type PushSendJob,
+  type PushTarget,
+} from '@seedgw/contracts/push';
+import { db } from '@seedgw/db/client';
 
 // Thông báo đẩy (M7): ghi nhật ký rồi đẩy vào hàng đợi, worker gửi qua Expo. Lỗi chỉ ghi log,
 // không bao giờ làm hỏng thao tác chính (duyệt tuyến, trả lời hỗ trợ).

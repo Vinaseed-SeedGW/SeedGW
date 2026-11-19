@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, type ComponentType, type ReactNode } from 'react';
-import { buildOrgTree, orgLevelLabel, type OrgTreeNode } from '@dms/contracts/org-tree';
-import type { OrgUnitRow } from '@dms/contracts/org-units';
-import { TreeView } from '@dms/ui/tree-view';
+import { buildOrgTree, orgLevelLabel, type OrgTreeNode } from '@seedgw/contracts/org-tree';
+import type { OrgUnitRow } from '@seedgw/contracts/org-units';
+import { TreeView } from '@seedgw/ui/tree-view';
 
 export type OrgNode = OrgTreeNode<OrgUnitRow>;
 

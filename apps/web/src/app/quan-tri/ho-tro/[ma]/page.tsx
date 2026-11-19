@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { formatDateTime } from '@dms/contracts/format';
+import { formatDateTime } from '@seedgw/contracts/format';
 import {
   isSupportCode,
   SUPPORT_LEVEL_LABEL,
   supportInboxUrlParams,
   type SupportDetail,
   type SupportListResult,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { notFound } from 'next/navigation';
 import {
   SupportDueBadge,

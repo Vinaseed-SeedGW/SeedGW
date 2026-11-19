@@ -2,15 +2,15 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import type { ActionResult } from '@dms/contracts/common';
+import type { ActionResult } from '@seedgw/contracts/common';
 import {
   SUPPORT_STATUS_LABEL,
   supportManualStatus,
   type SupportDetail,
   type SupportManualStatus,
-} from '@dms/contracts/support';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { useToast } from '@dms/ui/toast';
+} from '@seedgw/contracts/support';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { useToast } from '@seedgw/ui/toast';
 import {
   changeSupportStatusAction,
   claimSupportAction,

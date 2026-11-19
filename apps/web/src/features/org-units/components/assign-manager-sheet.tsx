@@ -8,10 +8,10 @@ import {
   type AssignOrgUnitManagerInput,
   type ManagerOption,
   type OrgUnitRow,
-} from '@dms/contracts/org-units';
-import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@dms/contracts/route-plans';
-import { Form } from '@dms/ui/form';
-import { FormSheet } from '@dms/ui/form-sheet';
+} from '@seedgw/contracts/org-units';
+import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@seedgw/contracts/route-plans';
+import { Form } from '@seedgw/ui/form';
+import { FormSheet } from '@seedgw/ui/form-sheet';
 import { assignOrgUnitManagerAction } from '@/server/actions/org-units';
 
 type AssignManagerSheetProps = {

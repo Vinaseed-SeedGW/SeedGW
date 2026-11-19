@@ -14,12 +14,12 @@ import {
   type ApprovalStatus,
   type ListApprovalsInput,
   type ListApprovalsResult,
-} from '@dms/contracts/approvals';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import { formatSequenceCode } from '@dms/contracts/settings';
-import { db } from '@dms/db/client';
-import { getOrgUnitTreeIds } from '@dms/db/org-units';
-import type { ScopedDb } from '@dms/db/scoped-client';
+} from '@seedgw/contracts/approvals';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import { formatSequenceCode } from '@seedgw/contracts/settings';
+import { db } from '@seedgw/db/client';
+import { getOrgUnitTreeIds } from '@seedgw/db/org-units';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { DomainError } from './domain-error';
 import { notifyApprovalChange } from './push-events';
 

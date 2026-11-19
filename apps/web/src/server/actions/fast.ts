@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { ActionResult } from '@dms/contracts/common';
-import { saveFastConnectionInput } from '@dms/contracts/fast';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { saveFastConnectionInput } from '@seedgw/contracts/fast';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

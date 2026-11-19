@@ -8,7 +8,12 @@ import {
   parseFastDateTime,
 } from './fast';
 
-const config = { baseUrl: 'https://fast.test/api/', username: 'dms', password: 'x', enabled: true };
+const config = {
+  baseUrl: 'https://fast.test/api/',
+  username: 'seedgw',
+  password: 'x',
+  enabled: true,
+};
 
 function fakeFetch(handler: (url: string, init: RequestInit) => { status: number; body: unknown }) {
   return (async (url: string | URL | Request, init?: RequestInit) => {

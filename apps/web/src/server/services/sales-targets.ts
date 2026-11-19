@@ -1,8 +1,8 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import type { ApprovalStatus } from '@dms/contracts/approvals';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
-import { formatNumber } from '@dms/contracts/format';
+import type { ApprovalStatus } from '@seedgw/contracts/approvals';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
+import { formatNumber } from '@seedgw/contracts/format';
 import {
   currentVnMonth,
   formatMonthLabel,
@@ -17,9 +17,9 @@ import {
   type SalesTargetSnapshot,
   type TargetProgress,
   type UpsertSalesTargetInput,
-} from '@dms/contracts/sales-targets';
-import { db } from '@dms/db/client';
-import type { ScopedDb } from '@dms/db/scoped-client';
+} from '@seedgw/contracts/sales-targets';
+import { db } from '@seedgw/db/client';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { applyApproved, isUniqueViolation, isWithdrawable, submitApproval } from './approvals';
 import { DomainError } from './domain-error';
 

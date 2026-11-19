@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { FormPage } from '@dms/ui/form-page';
+import { FormPage } from '@seedgw/ui/form-page';
 import { UserCreateForm } from '@/features/users/components/user-create-form';
 import { requirePermission } from '@/server/auth/can';
 import { getUserFormOptions } from '@/server/queries/users';

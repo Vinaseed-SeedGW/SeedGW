@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { ActionResult } from '@dms/contracts/common';
-import { reviewDealerLocationInput } from '@dms/contracts/dealer-locations';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { reviewDealerLocationInput } from '@seedgw/contracts/dealer-locations';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';

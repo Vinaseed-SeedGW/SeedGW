@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { ActionResult } from '@dms/contracts/common';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import {
   approveApprovalAction,
   returnApprovalAction,

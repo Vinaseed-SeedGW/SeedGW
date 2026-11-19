@@ -1,5 +1,5 @@
-import type { UserStatus } from '@dms/contracts/users';
-import { cn } from '@dms/ui/cn';
+import type { UserStatus } from '@seedgw/contracts/users';
+import { cn } from '@seedgw/ui/cn';
 
 export const USER_STATUS_LABEL: Record<UserStatus, string> = {
   ACTIVE: 'Hoạt động',

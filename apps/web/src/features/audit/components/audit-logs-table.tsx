@@ -4,9 +4,9 @@ import {
   AUDIT_ENTITY_OPTIONS,
   type AuditLogSummary,
   type ListAuditLogsResult,
-} from '@dms/contracts/audit';
-import { formatDateTime } from '@dms/contracts/format';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/audit';
+import { formatDateTime } from '@seedgw/contracts/format';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 
 const SECONDARY_COLUMN = 'max-md:hidden';
 

@@ -6,7 +6,7 @@ import type {
   SupportListResult,
   SupportStats,
   SupportStatsPeriod,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

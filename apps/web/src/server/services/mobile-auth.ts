@@ -1,7 +1,7 @@
 import 'server-only';
-import { auditChanges } from '@dms/contracts/audit';
-import type { MobileLoginInput, MobileProfile, MobileSession } from '@dms/contracts/check-ins';
-import { db } from '@dms/db/client';
+import { auditChanges } from '@seedgw/contracts/audit';
+import type { MobileLoginInput, MobileProfile, MobileSession } from '@seedgw/contracts/check-ins';
+import { db } from '@seedgw/db/client';
 import {
   hashRefreshToken,
   MobileAuthError,

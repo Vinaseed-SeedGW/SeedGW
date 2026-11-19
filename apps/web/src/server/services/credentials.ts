@@ -6,8 +6,8 @@ import {
   LOGIN_LOCK_MINUTES,
   LOGIN_MAX_FAILURES,
   passwordPolicy,
-} from '@dms/contracts/auth';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/auth';
+import { db } from '@seedgw/db/client';
 
 // Bo cac ky tu de nham khi doc qua dien thoai: 0, O, 1, l, I.
 const TEMPORARY_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';

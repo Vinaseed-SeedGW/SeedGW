@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { formatDateTime } from '@dms/contracts/format';
+import { formatDateTime } from '@seedgw/contracts/format';
 import {
   ROUTE_KIND_LABEL,
   type MyRoutePeriod,
   type MyRoutesResult,
-} from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/route-plans';
 import { ApprovalWithdrawButton } from '@/features/approvals/components/approval-decision';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { CompletionText, RouteDays } from './route-days';

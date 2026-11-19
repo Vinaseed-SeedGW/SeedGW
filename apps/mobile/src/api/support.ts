@@ -1,4 +1,4 @@
-import type { SupportDetail, SupportListResult } from '@dms/contracts/support';
+import type { SupportDetail, SupportListResult } from '@seedgw/contracts/support';
 import { apiCall, type ApiResult } from './client';
 
 // Hỗ trợ trên app (T3). Tạo yêu cầu và trả lời đi qua hàng đợi ../sync/support-outbox.

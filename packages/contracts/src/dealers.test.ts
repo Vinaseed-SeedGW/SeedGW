@@ -7,7 +7,7 @@ import {
 } from './dealers';
 import { PROVINCES, toNewProvince } from './provinces';
 
-// 63 tỉnh cũ đúng cách viết trong file xuất từ DMS cũ ngày 13/11/2026.
+// 63 tỉnh cũ đúng cách viết trong file xuất từ hệ thống cũ ngày 13/11/2026.
 const OLD_PROVINCES = [
   'Thành phố Cần Thơ',
   'Thành phố Hà Nội',

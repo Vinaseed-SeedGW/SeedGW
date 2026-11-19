@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTE_RULES, isActionPath, permissionForPath } from '@dms/contracts/access';
-import { isHiddenPath } from '@dms/contracts/features';
+import { ROUTE_RULES, isActionPath, permissionForPath } from '@seedgw/contracts/access';
+import { isHiddenPath } from '@seedgw/contracts/features';
 import { DEPARTMENT_NAV } from './navigation';
 
 const NAV_HREFS = Object.values(DEPARTMENT_NAV).flatMap((groups) =>

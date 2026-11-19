@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
-import { useDataTable } from '@dms/ui/data-table';
-import { useToast } from '@dms/ui/toast';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
+import { useDataTable } from '@seedgw/ui/data-table';
+import { useToast } from '@seedgw/ui/toast';
 import { setUsersActiveAction } from '@/server/actions/users';
 
 type BulkMode = 'LOCK' | 'UNLOCK';

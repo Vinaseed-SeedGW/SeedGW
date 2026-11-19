@@ -1,9 +1,9 @@
-import { formatNumber } from '@dms/contracts/format';
+import { formatNumber } from '@seedgw/contracts/format';
 import {
   formatSequenceCode,
   issuedCodeCount,
   type CodeSequenceView,
-} from '@dms/contracts/settings';
+} from '@seedgw/contracts/settings';
 
 export function CodeSequenceStatus({ sequence }: { sequence: CodeSequenceView }) {
   const remaining = sequence.rangeEnd - sequence.nextValue + 1;

@@ -2,15 +2,15 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
-import type { DayMapFilterOptions } from '@dms/contracts/check-ins';
+import type { DayMapFilterOptions } from '@seedgw/contracts/check-ins';
 import {
   DASHBOARD_PERIOD_LABEL,
   DASHBOARD_PERIODS,
   type DashboardInput,
-} from '@dms/contracts/dashboard';
-import { DEALER_LEVEL_LABEL } from '@dms/contracts/dealers';
-import { isoDateToDisplay } from '@dms/contracts/format';
-import { DateInput } from '@dms/ui/date-input';
+} from '@seedgw/contracts/dashboard';
+import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
+import { isoDateToDisplay } from '@seedgw/contracts/format';
+import { DateInput } from '@seedgw/ui/date-input';
 
 const CONTROL = 'h-9.5 rounded-md border border-border bg-surface px-2.5';
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;

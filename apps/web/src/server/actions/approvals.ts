@@ -7,9 +7,9 @@ import {
   bulkApproveInput,
   returnDecisionInput,
   withdrawApprovalInput,
-} from '@dms/contracts/approvals';
-import type { AuditAction } from '@dms/contracts/audit';
-import type { ActionResult } from '@dms/contracts/common';
+} from '@seedgw/contracts/approvals';
+import type { AuditAction } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';

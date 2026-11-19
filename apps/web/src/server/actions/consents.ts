@@ -3,8 +3,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
-import { auditChanges } from '@dms/contracts/audit';
-import { CONSENT_LATER_COOKIE, LOCATION_CONSENT_VERSION } from '@dms/contracts/consents';
+import { auditChanges } from '@seedgw/contracts/audit';
+import { CONSENT_LATER_COOKIE, LOCATION_CONSENT_VERSION } from '@seedgw/contracts/consents';
 import { getCurrentUser } from '@/server/auth/current-user';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import { acceptLocationConsent } from '@/server/services/consents';

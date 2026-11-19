@@ -1,3 +1,3 @@
-import base from '@dms/config/eslint';
+import base from '@seedgw/config/eslint';
 
 export default base;

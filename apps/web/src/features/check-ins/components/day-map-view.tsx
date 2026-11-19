@@ -12,10 +12,10 @@ import {
   type DayMapFilterOptions,
   type DayMapInput,
   type DayMapResult,
-} from '@dms/contracts/check-ins';
-import { formatDateTime, isoDateToDisplay } from '@dms/contracts/format';
-import { DateInput } from '@dms/ui/date-input';
-import { useModalDialog } from '@dms/ui/use-modal-dialog';
+} from '@seedgw/contracts/check-ins';
+import { formatDateTime, isoDateToDisplay } from '@seedgw/contracts/format';
+import { DateInput } from '@seedgw/ui/date-input';
+import { useModalDialog } from '@seedgw/ui/use-modal-dialog';
 import type { MapTiles } from './day-map-canvas';
 
 // Bản đồ chỉ tải khi mở tab Bản đồ (AGENTS.md §9), không làm nặng tab Danh sách.

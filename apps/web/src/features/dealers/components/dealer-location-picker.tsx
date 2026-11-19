@@ -3,8 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import type { DealerDetail, DealerFormOptions } from '@dms/contracts/dealers';
-import { PROVINCE_MAP_CENTER, type ProvinceName } from '@dms/contracts/provinces';
+import type { DealerDetail, DealerFormOptions } from '@seedgw/contracts/dealers';
+import { PROVINCE_MAP_CENTER, type ProvinceName } from '@seedgw/contracts/provinces';
 import type { LatLng } from './dealer-location-map';
 
 const DealerLocationMap = dynamic(

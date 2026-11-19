@@ -4,7 +4,7 @@ import type {
   SupportContext,
   SupportType,
   SupportSeverity,
-} from '@dms/contracts/support';
+} from '@seedgw/contracts/support';
 import { apiCall } from '../api/client';
 import { newId } from '../api/session';
 import { base64ToBytes } from './xlsx';
@@ -12,7 +12,7 @@ import { base64ToBytes } from './xlsx';
 // Hàng đợi Hỗ trợ trên máy (T3): soạn lúc mất mạng thì lưu ở đây, có mạng gửi theo đúng thứ tự.
 // Mỗi yêu cầu, tin, tệp có clientId riêng nên gửi lại bao nhiêu lần máy chủ cũng không tạo trùng.
 
-const DB_NAME = 'dms-support.db';
+const DB_NAME = 'seedgw-support.db';
 
 export type OutboxFile = { clientId: string; fileName: string; base64: string };
 

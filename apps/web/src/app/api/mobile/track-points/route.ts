@@ -1,5 +1,5 @@
 import { after, NextResponse } from 'next/server';
-import { trackPointsBatchInput } from '@dms/contracts/check-ins';
+import { trackPointsBatchInput } from '@seedgw/contracts/check-ins';
 import { assertMobileCan, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
 import { readJson } from '@/server/auth/mobile-request';
 import { recomputeDayDistances, saveTrackPoints } from '@/server/services/check-ins';

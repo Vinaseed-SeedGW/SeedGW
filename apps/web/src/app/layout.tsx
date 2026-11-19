@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { SIDEBAR_INIT_SCRIPT } from '@dms/ui/sidebar-storage';
-import { ToastProvider } from '@dms/ui/toast';
+import { SIDEBAR_INIT_SCRIPT } from '@seedgw/ui/sidebar-storage';
+import { ToastProvider } from '@seedgw/ui/toast';
 import { brandFont } from './fonts';
 import './globals.css';
-import { APP_NAME } from '@dms/config/brand';
+import { APP_NAME } from '@seedgw/config/brand';
 
 export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s - ${APP_NAME}` },

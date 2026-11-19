@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import * as Location from 'expo-location';
-import { PENDING_APPROVAL_STATUSES } from '@dms/contracts/approvals';
-import type { MobileDealerOption } from '@dms/contracts/dealers';
+import { PENDING_APPROVAL_STATUSES } from '@seedgw/contracts/approvals';
+import type { MobileDealerOption } from '@seedgw/contracts/dealers';
 import {
   formatRouteDay,
   formatRouteDayShort,
@@ -12,7 +12,7 @@ import {
   submitRoutePlanInput,
   type MyRoutePeriod,
   type MyRoutesResult,
-} from '@dms/contracts/route-plans';
+} from '@seedgw/contracts/route-plans';
 import { loadMyRoutes, submitMyRoute, withdrawRoute } from '../api/routes';
 import { formatVnDate, formatVnTime } from '../sync/geo';
 import { clearRouteDraft, getRouteDraft, saveRouteDraft } from '../sync/track-db';

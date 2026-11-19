@@ -1,7 +1,7 @@
 import 'server-only';
-import { FEATURES } from '@dms/contracts/features';
-import { SUPPORT_STATUS_LABEL, type SupportStatus } from '@dms/contracts/support';
-import { db } from '@dms/db/client';
+import { FEATURES } from '@seedgw/contracts/features';
+import { SUPPORT_STATUS_LABEL, type SupportStatus } from '@seedgw/contracts/support';
+import { db } from '@seedgw/db/client';
 import { notifyUsers } from '@/server/integrations/push-queue';
 
 // Thông báo đẩy theo việc nghiệp vụ (M7). Gọi sau khi giao dịch đã ghi xong; không chờ, lỗi chỉ ghi log.

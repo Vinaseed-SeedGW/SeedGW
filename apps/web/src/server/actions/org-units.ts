@@ -2,15 +2,15 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import type { AuditAction } from '@dms/contracts/audit';
-import type { ActionResult } from '@dms/contracts/common';
+import type { AuditAction } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
 import {
   assignOrgUnitManagerInput,
   createOrgUnitInput,
   deleteOrgUnitInput,
   moveOrgUnitInput,
   updateOrgUnitInput,
-} from '@dms/contracts/org-units';
+} from '@seedgw/contracts/org-units';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan } from '@/server/auth/can';
 import { requireUser, type CurrentUser } from '@/server/auth/current-user';

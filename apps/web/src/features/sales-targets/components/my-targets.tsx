@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { PENDING_APPROVAL_STATUSES } from '@dms/contracts/approvals';
-import type { MyTargetMonth, MyTargetsResult } from '@dms/contracts/sales-targets';
+import { PENDING_APPROVAL_STATUSES } from '@seedgw/contracts/approvals';
+import type { MyTargetMonth, MyTargetsResult } from '@seedgw/contracts/sales-targets';
 import { ApprovalWithdrawButton } from '@/features/approvals/components/approval-decision';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { TargetCompare } from './target-compare';

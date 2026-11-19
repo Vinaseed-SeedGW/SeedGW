@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { z } from 'zod';
-import { PENDING_APPROVAL_STATUSES } from '@dms/contracts/approvals';
-import { formatDateTime } from '@dms/contracts/format';
-import { isoDay, ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
+import { PENDING_APPROVAL_STATUSES } from '@seedgw/contracts/approvals';
+import { formatDateTime } from '@seedgw/contracts/format';
+import { isoDay, ROUTE_KIND_LABEL } from '@seedgw/contracts/route-plans';
 import { RouteEditor } from '@/features/route-plans/components/route-editor';
 import { can, requirePermission } from '@/server/auth/can';
 import { getPeopleFilterOptions } from '@/server/queries/people-filters';

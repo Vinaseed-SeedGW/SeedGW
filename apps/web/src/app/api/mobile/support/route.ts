@@ -1,5 +1,5 @@
 import { after, NextResponse } from 'next/server';
-import { createSupportRequestInput, listMySupportInput } from '@dms/contracts/support';
+import { createSupportRequestInput, listMySupportInput } from '@seedgw/contracts/support';
 import {
   assertMobileCan,
   mobileError,

@@ -1,6 +1,6 @@
 import 'server-only';
-import type { ManagerOption, OrgUnitAssignScope, OrgUnitRow } from '@dms/contracts/org-units';
-import { db } from '@dms/db/client';
+import type { ManagerOption, OrgUnitAssignScope, OrgUnitRow } from '@seedgw/contracts/org-units';
+import { db } from '@seedgw/db/client';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';

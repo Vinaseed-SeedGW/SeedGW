@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { CHECK_IN_FLAG_LABEL, CHECK_IN_PLACE_KIND_LABEL } from '@dms/contracts/check-ins';
+import { CHECK_IN_FLAG_LABEL, CHECK_IN_PLACE_KIND_LABEL } from '@seedgw/contracts/check-ins';
 import { shareDayReport } from '../sync/day-report';
 import { formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import {

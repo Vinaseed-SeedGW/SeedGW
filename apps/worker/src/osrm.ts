@@ -4,8 +4,8 @@ import {
   matchRadius,
   type RoadLeg,
   type RoadPoint,
-} from '@dms/contracts/road-distance';
-import { distanceMeters } from '@dms/contracts/track-distance';
+} from '@seedgw/contracts/road-distance';
+import { distanceMeters } from '@seedgw/contracts/track-distance';
 
 /**
  * Lớp tính km theo đường đi thật (R4, kế hoạch check-in): đổi nhà cung cấp (OSRM tự dựng, Vietmap) không

@@ -1,5 +1,5 @@
 import 'server-only';
-import type { SettingsOverview } from '@dms/contracts/settings';
+import type { SettingsOverview } from '@seedgw/contracts/settings';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { readDealerCodeSequence, readSystemSettings } from '@/server/services/settings';

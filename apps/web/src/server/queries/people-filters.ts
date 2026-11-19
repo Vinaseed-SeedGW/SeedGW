@@ -1,8 +1,8 @@
 import 'server-only';
-import type { PermissionCode } from '@dms/contracts/access';
-import type { DayMapFilterOptions } from '@dms/contracts/check-ins';
-import { db } from '@dms/db/client';
-import { getOrgUnitTreeIds } from '@dms/db/org-units';
+import type { PermissionCode } from '@seedgw/contracts/access';
+import type { DayMapFilterOptions } from '@seedgw/contracts/check-ins';
+import { db } from '@seedgw/db/client';
+import { getOrgUnitTreeIds } from '@seedgw/db/org-units';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';

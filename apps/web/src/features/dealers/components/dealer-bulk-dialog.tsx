@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { DealerFilter, DealerFormOptions } from '@dms/contracts/dealers';
-import { ConfirmDialog } from '@dms/ui/confirm-dialog';
+import type { DealerFilter, DealerFormOptions } from '@seedgw/contracts/dealers';
+import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import { bulkAssignDealersAction, bulkMoveDealersAction } from '@/server/actions/dealers';
 
 export type BulkMode = 'ASSIGN' | 'MOVE';

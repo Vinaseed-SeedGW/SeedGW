@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { formatDateTime } from '@dms/contracts/format';
+import { formatDateTime } from '@seedgw/contracts/format';
 import {
   SUPPORT_LEVEL_LABEL,
   SUPPORT_SEVERITY_LABEL,
@@ -14,8 +14,8 @@ import {
   supportType,
   type SupportListResult,
   type SupportSummary,
-} from '@dms/contracts/support';
-import { DataTable, type ColumnDef } from '@dms/ui/data-table';
+} from '@seedgw/contracts/support';
+import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import {
   SupportDueBadge,
   SupportSeverityBadge,

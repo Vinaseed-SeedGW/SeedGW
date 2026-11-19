@@ -75,4 +75,4 @@ export type MobileConsentInput = z.infer<typeof mobileConsentInput>;
 
 // Trang web hỏi đồng ý sau khi đăng nhập; bấm Không đồng ý thì không hỏi lại trong phiên này.
 export const LOCATION_CONSENT_PATH = '/dong-y-vi-tri';
-export const CONSENT_LATER_COOKIE = 'dms-dong-y-vi-tri-sau';
+export const CONSENT_LATER_COOKIE = 'seedgw-dong-y-vi-tri-sau';

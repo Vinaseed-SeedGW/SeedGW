@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useTransition, type ChangeEvent } from 'react';
-import type { ExportedFile } from '@dms/contracts/common';
+import type { ExportedFile } from '@seedgw/contracts/common';
 import {
   MAX_IMPORT_FILE_BYTES,
   MAX_IMPORT_ROWS,
   type UserImportPreview,
   type UserImportPreviewRow,
-} from '@dms/contracts/user-import';
-import { downloadFile } from '@dms/ui/download-file';
+} from '@seedgw/contracts/user-import';
+import { downloadFile } from '@seedgw/ui/download-file';
 import {
   commitUserImportAction,
   downloadUserImportTemplateAction,

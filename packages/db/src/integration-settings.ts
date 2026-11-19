@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
-import { FAST_SETTING_KEY, fastConfig, type FastConfig } from '@dms/contracts/fast';
+import { FAST_SETTING_KEY, fastConfig, type FastConfig } from '@seedgw/contracts/fast';
 import { db } from './client';
 
 // Cấu hình kết nối ra ngoài (A8): mã hoá AES-256-GCM trước khi lưu, khoá lấy từ INTEGRATION_SECRET_KEY.

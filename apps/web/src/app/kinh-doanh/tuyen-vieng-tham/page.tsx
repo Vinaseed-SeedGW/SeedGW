@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { vietnamToday } from '@dms/contracts/format';
+import { vietnamToday } from '@seedgw/contracts/format';
 import {
   addDays,
   formatRoutePeriod,
@@ -9,8 +9,8 @@ import {
   routesUrlParams,
   type ListRoutePlansInput,
   type RouteTab,
-} from '@dms/contracts/route-plans';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/route-plans';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { MyRoutes } from '@/features/route-plans/components/my-routes';
 import { ScopeRoutesTable } from '@/features/route-plans/components/scope-routes-table';
 import { can, requirePermission } from '@/server/auth/can';

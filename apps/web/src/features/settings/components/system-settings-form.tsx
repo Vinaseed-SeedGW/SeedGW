@@ -7,8 +7,8 @@ import {
   saveSystemSettingsInput,
   type SaveSystemSettingsInput,
   type SystemSettingsView,
-} from '@dms/contracts/settings';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/settings';
+import { Form } from '@seedgw/ui/form';
 import { SettingsSection } from '@/features/settings/components/settings-section';
 import { saveSystemSettingsAction } from '@/server/actions/settings';
 

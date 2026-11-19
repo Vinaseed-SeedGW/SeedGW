@@ -8,8 +8,8 @@ import {
   type UpdateUserInput,
   type UserDetail,
   type UserFormOptions,
-} from '@dms/contracts/users';
-import { Form } from '@dms/ui/form';
+} from '@seedgw/contracts/users';
+import { Form } from '@seedgw/ui/form';
 import { UserProfileFields } from '@/features/users/components/user-profile-fields';
 import { updateUserAction } from '@/server/actions/users';
 

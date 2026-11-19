@@ -1,5 +1,5 @@
 import 'server-only';
-import type { ListCheckInsInput, ListCheckInsResult } from '@dms/contracts/check-ins';
+import type { ListCheckInsInput, ListCheckInsResult } from '@seedgw/contracts/check-ins';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

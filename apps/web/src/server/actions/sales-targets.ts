@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@dms/contracts/approvals';
-import type { ActionResult } from '@dms/contracts/common';
-import { upsertSalesTargetInput } from '@dms/contracts/sales-targets';
+import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@seedgw/contracts/approvals';
+import type { ActionResult } from '@seedgw/contracts/common';
+import { upsertSalesTargetInput } from '@seedgw/contracts/sales-targets';
 import { z } from 'zod';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { requireUser } from '@/server/auth/current-user';

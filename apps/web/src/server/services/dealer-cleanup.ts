@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { auditChanges, type AuditChanges } from '@dms/contracts/audit';
+import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import {
   classifyPhoneRaw,
   DUPLICATE_TABS,
@@ -21,10 +21,10 @@ import {
   type ListDuplicatesResult,
   type MergeDealersInput,
   type PhoneIssueKind,
-} from '@dms/contracts/dealer-cleanup';
-import { normalizeSearchText } from '@dms/contracts/text';
-import { db } from '@dms/db/client';
-import type { ScopedDb } from '@dms/db/scoped-client';
+} from '@seedgw/contracts/dealer-cleanup';
+import { normalizeSearchText } from '@seedgw/contracts/text';
+import { db } from '@seedgw/db/client';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { DomainError } from './domain-error';
 
 export type DealerAuditOutcome = { id: string; label: string; changes: AuditChanges };

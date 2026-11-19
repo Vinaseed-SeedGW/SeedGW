@@ -8,8 +8,8 @@ import {
   type CheckInTab,
   type DayMapInput,
   type ListCheckInsInput,
-} from '@dms/contracts/check-ins';
-import { DataTableSkeleton } from '@dms/ui/data-table-skeleton';
+} from '@seedgw/contracts/check-ins';
+import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { CheckInsTable } from '@/features/check-ins/components/check-ins-table';
 import { DayMapView } from '@/features/check-ins/components/day-map-view';
 import { requirePermission } from '@/server/auth/can';

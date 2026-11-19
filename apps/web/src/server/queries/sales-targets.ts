@@ -3,8 +3,8 @@ import type {
   ListSalesTargetsInput,
   ListSalesTargetsResult,
   MyTargetsResult,
-} from '@dms/contracts/sales-targets';
-import { db } from '@dms/db/client';
+} from '@seedgw/contracts/sales-targets';
+import { db } from '@seedgw/db/client';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getScopedDb } from '@/server/auth/scoped-db';

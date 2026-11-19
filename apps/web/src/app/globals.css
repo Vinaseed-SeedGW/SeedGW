@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import '@dms/ui/styles/tokens.css';
-@import '@dms/ui/styles/shell.css';
+@import '@seedgw/ui/styles/tokens.css';
+@import '@seedgw/ui/styles/shell.css';
 
 @source '../../../../packages/ui/src';
 

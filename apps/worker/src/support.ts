@@ -1,5 +1,5 @@
-import { SUPPORT_REOPEN_DAYS, SUPPORT_RETENTION_MONTHS } from '@dms/contracts/support';
-import { db } from '@dms/db/client';
+import { SUPPORT_REOPEN_DAYS, SUPPORT_RETENTION_MONTHS } from '@seedgw/contracts/support';
+import { db } from '@seedgw/db/client';
 
 // Việc định kỳ của Hỗ trợ (T5): tự đóng yêu cầu đã xong quá 7 ngày, xoá nội dung sau 18 tháng.
 // Không báo Mattermost (bỏ ngày 19/11/2026); yêu cầu quá hạn hiện ở Hub và trang Hỗ trợ.

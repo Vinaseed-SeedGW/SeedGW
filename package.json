@@ -1,5 +1,5 @@
 {
-  "name": "dms-vinaseed",
+  "name": "seedgw",
   "private": true,
   "packageManager": "pnpm@12.18.0",
   "engines": {
@@ -17,12 +17,12 @@
     "check:native": "node scripts/check-native-imports.mjs",
     "map:thu": "node --env-file-if-exists=.env scripts/try-map-key.mjs",
     "check": "pnpm format:check && pnpm check:glyphs && pnpm check:native && pnpm lint && pnpm typecheck && pnpm test",
-    "db:migrate": "pnpm --filter @dms/db migrate",
-    "db:deploy": "pnpm --filter @dms/db deploy:migrations",
-    "db:seed": "pnpm --filter @dms/db seed"
+    "db:migrate": "pnpm --filter @seedgw/db migrate",
+    "db:deploy": "pnpm --filter @seedgw/db deploy:migrations",
+    "db:seed": "pnpm --filter @seedgw/db seed"
   },
   "devDependencies": {
-    "@dms/config": "workspace:*",
+    "@seedgw/config": "workspace:*",
     "eslint": "^9.39.5",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",

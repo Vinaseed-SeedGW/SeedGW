@@ -2,13 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import { createContext, use, useMemo, useState, useTransition } from 'react';
-import type { DataScope } from '@dms/contracts/access';
+import type { DataScope } from '@seedgw/contracts/access';
 import {
   diffPermissionCodes,
   isPermissionReserved,
   type RoleMatrixRole,
-} from '@dms/contracts/roles';
-import { useToast } from '@dms/ui/toast';
+} from '@seedgw/contracts/roles';
+import { useToast } from '@seedgw/ui/toast';
 import type { RolePanelState } from '@/features/roles/components/role-panel';
 import {
   RoleMatrix,

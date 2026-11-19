@@ -11,7 +11,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { FEATURES } from '@dms/contracts/features';
+import { FEATURES } from '@seedgw/contracts/features';
 import { logout } from './src/api/client';
 import { loadConsentState, recordConsent, type ConsentState } from './src/api/consent';
 import { loadCapabilities, type Capabilities } from './src/api/targets';

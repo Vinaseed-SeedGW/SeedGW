@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { AppFooter } from '@dms/ui/app-footer';
-import { Logo } from '@dms/ui/logo';
-import { MAIN_CONTENT_ID, SkipLink } from '@dms/ui/skip-link';
+import { AppFooter } from '@seedgw/ui/app-footer';
+import { Logo } from '@seedgw/ui/logo';
+import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
 import { SupportLauncher } from '@/features/support/components/support-launcher';

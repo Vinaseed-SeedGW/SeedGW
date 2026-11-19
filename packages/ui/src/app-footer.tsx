@@ -1,4 +1,4 @@
-import { FOOTER } from '@dms/config/footer';
+import { FOOTER } from '@seedgw/config/footer';
 import { cn } from './cn';
 import { Logo } from './logo';
 

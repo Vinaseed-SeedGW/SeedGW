@@ -2,7 +2,7 @@
 
 import { CalendarDays } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { isoDateToDisplay, maskDateText, parseDisplayDate } from '@dms/contracts/format';
+import { isoDateToDisplay, maskDateText, parseDisplayDate } from '@seedgw/contracts/format';
 import { cn } from './cn';
 
 type DateInputProps = {

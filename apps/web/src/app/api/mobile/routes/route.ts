@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
-import { APPROVAL_STATUS_LABEL } from '@dms/contracts/approvals';
-import { submitRoutePlanInput } from '@dms/contracts/route-plans';
+import { APPROVAL_STATUS_LABEL } from '@seedgw/contracts/approvals';
+import { submitRoutePlanInput } from '@seedgw/contracts/route-plans';
 import {
   assertMobileCan,
   mobileRoute,

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
-import { editableRoutePeriods, ROUTE_KIND_LABEL } from '@dms/contracts/route-plans';
+import { editableRoutePeriods, ROUTE_KIND_LABEL } from '@seedgw/contracts/route-plans';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { CompletionText, RouteDays } from '@/features/route-plans/components/route-days';
 import { can, requirePermission } from '@/server/auth/can';

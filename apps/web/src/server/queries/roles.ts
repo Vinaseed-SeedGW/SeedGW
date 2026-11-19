@@ -1,6 +1,6 @@
 import 'server-only';
-import { isPresetRole, roleLockReason, type RoleMatrixRole } from '@dms/contracts/roles';
-import { db } from '@dms/db/client';
+import { isPresetRole, roleLockReason, type RoleMatrixRole } from '@seedgw/contracts/roles';
+import { db } from '@seedgw/db/client';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { ROLE_MATRIX_SELECT } from '@/server/services/roles';

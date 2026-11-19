@@ -1,5 +1,5 @@
 {
-  "name": "@dms/ui",
+  "name": "@seedgw/ui",
   "private": true,
   "type": "module",
   "exports": {
@@ -26,8 +26,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dms/config": "workspace:*",
-    "@dms/contracts": "workspace:*",
+    "@seedgw/config": "workspace:*",
+    "@seedgw/contracts": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "lucide-react": "^1.70.0",
     "react-hook-form": "^7.91.0"
