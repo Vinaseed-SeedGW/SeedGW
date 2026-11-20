@@ -75,6 +75,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ hệ thống cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
     - Đại lý trùng `/quan-tri/dai-ly/trung` (tab: Nghi trùng số điện thoại, Số dùng chung, Trùng mã số thuế; A7b)
     - Số điện thoại sai `/quan-tri/dai-ly/so-dien-thoai` (lọc theo nhóm: số rác, thiếu số, dư số, khác; A7b)
+    - Đại lý mới `/quan-tri/dai-ly/dai-ly-moi` (M10, 20/11/2026; tab: Chờ duyệt · Đã xử lý; đề xuất từ app kèm ảnh, vị trí lúc chụp, đại lý có thể trùng theo số điện thoại, mã số thuế, trong 100 m; Duyệt tạo đại lý, Trùng gắn lượt check-in vào đại lý có sẵn, Từ chối kèm lý do; số chờ duyệt trên menu)
     - Duyệt toạ độ `/quan-tri/dai-ly/duyet-toa-do` (tab: Chờ duyệt · Đã xử lý; đề xuất toạ độ từ lần check-in đầu tại đại lý chưa có toạ độ, kèm ảnh, địa chỉ lúc chụp, cùng phố hay khác phố)
   - Quy định
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
@@ -209,13 +210,18 @@ Quy tắc tính:
 3. Bấm ô → tới trang đích theo vai trò.
    - Từ link thông báo → bỏ qua Hub, tới thẳng đối tượng.
 
-### Đề xuất đại lý mới
-1. Nhân viên đề xuất đại lý mới trên app tại chỗ: tên, số điện thoại, địa chỉ, toạ độ, ảnh.
-   - App mất mạng → lưu trên máy, có mạng mới gửi.
-2. Hệ thống kiểm tra trùng số điện thoại, mã số thuế với danh mục.
-3. Quản trị đơn vị duyệt đề xuất → hệ thống cấp mã theo dải `DL` và tạo khách hàng trên FAST đúng mã đó (đồng bộ 2 chiều).
+### Đề xuất đại lý mới (M10, làm 20/11/2026)
+1. Nhân viên mở tab Tuyến → Thêm đại lý → chụp ảnh tại cửa hàng như check-in → điền tên, số điện thoại, địa chỉ (điền sẵn địa chỉ lúc chụp), chủ cửa hàng, mã số thuế, cấp gợi ý (mặc định Cấp 3), ghi chú → Gửi đề xuất.
+   - Đề xuất đi cùng một lượt check-in loại Điểm khác, nên có ảnh, toạ độ, giờ máy chủ và được tính vào km trong ngày.
+   - App mất mạng → lưu trên máy, có mạng mới gửi; gửi lại không tạo trùng. Phần đề xuất sai thì máy chủ bỏ, check-in vẫn lưu.
+2. Trang Quản trị › Đại lý mới hiện đại lý có thể trùng (cùng số điện thoại của đại lý hoặc chủ đại lý, cùng mã số thuế, trong 100 m) để người duyệt xem, không chặn.
+3. Quản trị đơn vị (đơn vị và đơn vị con) hoặc Quản trị hệ thống xử lý:
+   - **Duyệt**: chỉnh tên, số điện thoại, địa chỉ, cấp, đơn vị, nhân viên phụ trách (mặc định người đề xuất) → tạo đại lý với toạ độ lúc chụp; lượt check-in thành lượt ghé thăm đại lý mới.
+   - **Trùng**: chọn đại lý có sẵn → lượt check-in gắn vào đại lý đó, không tạo đại lý mới.
+   - **Từ chối**: lý do 5 tới 500 ký tự.
+   - Nhân viên nhận thông báo đẩy, xem kết quả ở mục Đại lý tôi đề xuất (tab Tuyến).
+4. Đại lý mới chưa có mã FAST. Khi nối FAST hai chiều (S10): cấp mã theo dải `DL` và tạo khách hàng trên FAST đúng mã đó.
    - FAST không cho ghi qua API → kế toán tạo tay trên FAST, lần đồng bộ sau tự ghép theo mã.
-4. Đại lý mới hiện trong danh mục với toạ độ và ảnh từ đề xuất.
 
 ### Check-in và báo cáo ghé thăm
 1. App: bấm Check-in → máy ảnh trong app mở, khung ngắm hiện giờ và vị trí → chụp → chọn Đại lý, Khách hàng (gợi ý điểm gần nhất) hoặc Điểm khác (tự đặt tên).
