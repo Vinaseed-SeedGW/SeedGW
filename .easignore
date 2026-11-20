@@ -26,6 +26,16 @@ Thumbs.db
 # Du lieu cuc bo cua Docker
 .docker-data/
 
+# File bien moi truong that cua may chu thu
+deploy/staging/*.env
+
+# R4: ban do va du lieu OSRM tai ve (vai GB), khong gui len may chu build
+deploy/osrm/data/
+
+# M7: tep Firebase nam o bien moi truong EAS GOOGLE_SERVICES_JSON
+google-services.json
+GoogleService-Info.plist
+
 # Ghi chu rieng va tai lieu thiet ke, khong can de build app
 docs/VIEC_CAN_LAM.md
 .design/
