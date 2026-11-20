@@ -12,6 +12,8 @@ export const pushKind = z.enum([
   'LOCATION_APPROVED',
   'LOCATION_REJECTED',
   'CHECK_IN_REMINDER',
+  // M10: đề xuất đại lý mới được duyệt, từ chối hoặc đánh dấu trùng.
+  'DEALER_PROPOSAL_REVIEWED',
 ]);
 export type PushKind = z.infer<typeof pushKind>;
 
@@ -22,6 +24,8 @@ export const pushTarget = z.discriminatedUnion('screen', [
   z.object({ screen: z.literal('routes') }),
   z.object({ screen: z.literal('nearby') }),
   z.object({ screen: z.literal('today') }),
+  // M10: tab Tuyến, mục Đại lý tôi đề xuất. App cũ không biết màn này thì bỏ qua.
+  z.object({ screen: z.literal('dealer-proposals') }),
 ]);
 export type PushTarget = z.infer<typeof pushTarget>;
 

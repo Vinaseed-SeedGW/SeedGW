@@ -133,3 +133,30 @@ export function notifyLocationReview(
     ]),
   );
 }
+
+const PROPOSAL_RESULT_TEXT = {
+  APPROVED: 'đã được duyệt',
+  REJECTED: 'bị từ chối',
+  DUPLICATE: 'trùng một đại lý có sẵn',
+} as const;
+
+/** M10: báo người đề xuất kết quả duyệt đại lý mới. Bấm thông báo mở mục Đại lý tôi đề xuất. */
+export function notifyDealerProposalReview(
+  proposerId: string,
+  proposalId: string,
+  dealerName: string,
+  result: keyof typeof PROPOSAL_RESULT_TEXT,
+): void {
+  fireAndForget(
+    notifyUsers([
+      {
+        userId: proposerId,
+        kind: 'DEALER_PROPOSAL_REVIEWED',
+        title: 'Đề xuất đại lý mới',
+        body: `Đề xuất ${dealerName} ${PROPOSAL_RESULT_TEXT[result]}`,
+        target: { screen: 'dealer-proposals' },
+        key: `dealer-proposal-review:${proposalId}`,
+      },
+    ]),
+  );
+}

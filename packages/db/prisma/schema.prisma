@@ -35,6 +35,7 @@ model OrgUnit {
   checkIns                CheckIn[]
   dealers                 Dealer[]
   dealerLocationProposals DealerLocationProposal[]
+  dealerProposals         DealerProposal[]
   approvalRequests        ApprovalRequest[]
   monthlySalesTargets     MonthlySalesTarget[]
   supportRequests         SupportRequest[]
@@ -89,6 +90,8 @@ model User {
   assignedDealers        Dealer[]                 @relation("dealer_assignee")
   locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
   locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
+  dealerProposals        DealerProposal[]         @relation("dealer_proposer")
+  dealerProposalReviews  DealerProposal[]         @relation("dealer_proposal_reviewer")
   consents               UserConsent[]
   submittedApprovals     ApprovalRequest[]        @relation("approval_submitter")
   pendingApprovals       ApprovalRequest[]        @relation("approval_current_approver")
@@ -291,6 +294,7 @@ model CheckIn {
   // Ly do nhan vien nhap khi check-in xa dai ly qua ban kinh trong Tham so.
   farReason           String?                 @map("far_reason")
   locationProposal    DealerLocationProposal?
+  dealerProposal      DealerProposal?
   createdAt           DateTime                @default(now()) @map("created_at")
   updatedAt           DateTime                @updatedAt @map("updated_at")
 
@@ -394,6 +398,8 @@ model Dealer {
   // A8: bản ghi khách hàng FAST đã ghép với đại lý này.
   fastCustomer       FastCustomer?
   locationProposals  DealerLocationProposal[]
+  // M10: đề xuất đã tạo ra đại lý này, hoặc đề xuất bị đánh dấu trùng với đại lý này.
+  proposals          DealerProposal[]
   createdAt          DateTime                 @default(now()) @map("created_at")
   updatedAt          DateTime                 @updatedAt @map("updated_at")
 
@@ -440,6 +446,49 @@ model DealerLocationProposal {
   @@index([status, orgUnitId, createdAt(sort: Desc)])
   @@index([dealerId])
   @@map("dealer_location_proposals")
+}
+
+// M10 (20/11/2026): đề xuất đại lý mới từ app, đi kèm một lượt check-in tại cửa hàng.
+enum DealerProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DUPLICATE
+
+  @@map("dealer_proposal_status")
+}
+
+model DealerProposal {
+  id           String               @id @default(uuid()) @db.Uuid
+  // Lượt check-in mang ảnh, toạ độ, giờ và địa chỉ lúc chụp. Một check-in chỉ có một đề xuất.
+  checkInId    String               @unique @map("check_in_id") @db.Uuid
+  checkIn      CheckIn              @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  // Đơn vị của nhân viên lúc đề xuất, để Quản trị đơn vị thấy đề xuất trong phạm vi của mình.
+  orgUnitId    String?              @map("org_unit_id") @db.Uuid
+  orgUnit      OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  proposedById String               @map("proposed_by_id") @db.Uuid
+  proposedBy   User                 @relation("dealer_proposer", fields: [proposedById], references: [id], onDelete: Cascade)
+  name         String
+  phone        String
+  address      String
+  ownerName    String?              @map("owner_name")
+  taxCode      String?              @map("tax_code")
+  level        Int
+  status       DealerProposalStatus @default(PENDING)
+  // Đại lý tạo khi duyệt, hoặc đại lý có sẵn khi đánh dấu trùng.
+  dealerId     String?              @map("dealer_id") @db.Uuid
+  dealer       Dealer?              @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  reviewedById String?              @map("reviewed_by_id") @db.Uuid
+  reviewedBy   User?                @relation("dealer_proposal_reviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?            @map("reviewed_at")
+  reviewNote   String               @default("") @map("review_note")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  @@index([status, orgUnitId, createdAt(sort: Desc)])
+  @@index([proposedById, createdAt(sort: Desc)])
+  @@index([phone])
+  @@map("dealer_proposals")
 }
 
 enum ConsentChannel {

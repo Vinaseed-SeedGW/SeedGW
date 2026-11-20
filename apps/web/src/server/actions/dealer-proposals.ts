@@ -1,0 +1,101 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import type { z } from 'zod';
+import { after } from 'next/server';
+import type { AuditAction } from '@seedgw/contracts/audit';
+import type { ActionResult } from '@seedgw/contracts/common';
+import {
+  approveDealerProposalInput,
+  markDuplicateDealerProposalInput,
+  rejectDealerProposalInput,
+} from '@seedgw/contracts/dealer-proposals';
+import { toActionError, validationError } from '@/server/auth/action-error';
+import { assertCan } from '@/server/auth/can';
+import { requireUser } from '@/server/auth/current-user';
+import { getClientIp, writeAudit } from '@/server/services/audit';
+import {
+  approveProposal,
+  markProposalDuplicate,
+  rejectProposal,
+  type ProposalOutcome,
+} from '@/server/services/dealer-proposals';
+
+type Reviewer = Awaited<ReturnType<typeof requireUser>>;
+
+/** Hộp thoại xác nhận chỉ hiện message, không hiện lỗi từng trường: đưa lỗi đầu tiên lên message. */
+function dialogValidationError(error: z.ZodError): ActionResult<never> {
+  const result = validationError(error);
+  const first = error.issues[0]?.message;
+  return result.ok || !first ? result : { ...result, message: first };
+}
+
+function finish(
+  user: Reviewer,
+  action: AuditAction,
+  outcome: ProposalOutcome,
+  ip: string | null,
+): ActionResult<{ dealerId: string | null }> {
+  after(() =>
+    writeAudit({
+      actor: user,
+      action,
+      entityType: outcome.dealerId ? 'Dealer' : 'DealerProposal',
+      entityId: outcome.dealerId ?? outcome.proposalId,
+      entityLabel: outcome.dealerName,
+      changes: outcome.changes,
+      ip,
+    }),
+  );
+  revalidatePath('/quan-tri/dai-ly', 'layout');
+  revalidatePath('/kinh-doanh/dai-ly', 'layout');
+  return { ok: true, data: { dealerId: outcome.dealerId } };
+}
+
+export async function approveDealerProposalAction(
+  raw: unknown,
+): Promise<ActionResult<{ dealerId: string | null }>> {
+  try {
+    const user = await requireUser();
+    assertCan(user, 'admin.dealer-proposal.approve');
+    const parsed = approveDealerProposalInput.safeParse(raw);
+    if (!parsed.success) return validationError(parsed.error);
+    const [outcome, ip] = await Promise.all([approveProposal(user.id, parsed.data), getClientIp()]);
+    return finish(user, 'dealer.proposal.approve', outcome, ip);
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+export async function rejectDealerProposalAction(
+  raw: unknown,
+): Promise<ActionResult<{ dealerId: string | null }>> {
+  try {
+    const user = await requireUser();
+    assertCan(user, 'admin.dealer-proposal.approve');
+    const parsed = rejectDealerProposalInput.safeParse(raw);
+    if (!parsed.success) return dialogValidationError(parsed.error);
+    const [outcome, ip] = await Promise.all([rejectProposal(user.id, parsed.data), getClientIp()]);
+    return finish(user, 'dealer.proposal.reject', outcome, ip);
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+export async function markDuplicateDealerProposalAction(
+  raw: unknown,
+): Promise<ActionResult<{ dealerId: string | null }>> {
+  try {
+    const user = await requireUser();
+    assertCan(user, 'admin.dealer-proposal.approve');
+    const parsed = markDuplicateDealerProposalInput.safeParse(raw);
+    if (!parsed.success) return dialogValidationError(parsed.error);
+    const [outcome, ip] = await Promise.all([
+      markProposalDuplicate(user.id, parsed.data),
+      getClientIp(),
+    ]);
+    return finish(user, 'dealer.proposal.duplicate', outcome, ip);
+  } catch (error) {
+    return toActionError(error);
+  }
+}

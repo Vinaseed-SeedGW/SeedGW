@@ -21,6 +21,8 @@ export const GET = mobileRoute(async (request: Request) => {
     canRegisterRoute: user.permissions.has('sales.route.register'),
     canReviewApprovals: canReview,
     pendingApprovalCount,
+    // M10 (20/11/2026): nút Thêm đại lý ở tab Tuyến.
+    canProposeDealer: user.permissions.has('sales.dealer.propose'),
     serverTime: new Date().toISOString(),
   });
 });

@@ -23,6 +23,8 @@ export type Capabilities = {
   canRegisterTarget: boolean;
   canReviewApprovals: boolean;
   pendingApprovalCount: number;
+  /** M10: nút Thêm đại lý ở tab Tuyến. */
+  canProposeDealer: boolean;
 };
 
 export async function loadCapabilities(): Promise<Capabilities | null> {
@@ -32,6 +34,7 @@ export async function loadCapabilities(): Promise<Capabilities | null> {
     canRegisterTarget: result.data.canRegisterTarget === true,
     canReviewApprovals: result.data.canReviewApprovals === true,
     pendingApprovalCount: result.data.pendingApprovalCount ?? 0,
+    canProposeDealer: result.data.canProposeDealer === true,
   };
 }
 

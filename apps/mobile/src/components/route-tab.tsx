@@ -10,6 +10,7 @@ import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
 import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
+import { MyDealerProposals } from './my-dealer-proposals';
 import { APP_NAME } from '@seedgw/config/brand';
 
 const VISIBLE_RESULTS = 30;
@@ -65,6 +66,8 @@ function useCurrentPoint() {
 type Props = {
   onPick: (dealer: DealerChoice) => void;
   onOpenRoutes: () => void;
+  /** M10: mở máy ảnh để đề xuất đại lý mới. null khi tài khoản không có quyền đề xuất. */
+  onAddDealer: (() => void) | null;
   refreshKey: number;
 };
 
@@ -73,7 +76,7 @@ type Props = {
  * thì mở máy ảnh với đại lý đó đã chọn sẵn (cách check-in thứ hai, M4). Đại lý chưa có toạ độ nằm cuối,
  * xếp theo tên. Phần trên là tuyến đã duyệt hôm nay và nút Chỉ đường Google Maps (S8).
  */
-export function RouteTab({ onPick, onOpenRoutes, refreshKey }: Props) {
+export function RouteTab({ onPick, onOpenRoutes, onAddDealer, refreshKey }: Props) {
   const routes = useMyRoutes(refreshKey, true);
   const localVisited = useLocalVisited(refreshKey);
   const { point, denied, refresh } = useCurrentPoint();
@@ -101,6 +104,7 @@ export function RouteTab({ onPick, onOpenRoutes, refreshKey }: Props) {
           onPick={onPick}
           onOpenRoutes={onOpenRoutes}
         />
+        {onAddDealer ? <MyDealerProposals onAdd={onAddDealer} refreshKey={refreshKey} /> : null}
         <Text style={styles.title}>Đại lý tôi phụ trách</Text>
         <Text style={styles.muted}>
           Gần nhất lên đầu. Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn.

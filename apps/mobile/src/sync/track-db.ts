@@ -55,6 +55,7 @@ type PhotoRow = {
   note: string | null;
   dealer_id: string | null;
   far_reason: string | null;
+  new_dealer: string | null;
 };
 
 export type PhotoSummary = {
@@ -81,6 +82,8 @@ export type PhotoRecord = {
   dealerId: string | null;
   /** Lý do khi chụp xa đại lý quá bán kính (M4). */
   farReason: string | null;
+  /** Đề xuất đại lý mới đi kèm check-in (M10), JSON theo newDealerInput. */
+  newDealer: string | null;
 };
 
 export type TrackPoint = {
@@ -162,6 +165,7 @@ function getDb(): SQLiteDatabase {
     'sync_error',
     'dealer_id',
     'far_reason',
+    'new_dealer',
   ]) {
     if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
   }
@@ -376,10 +380,11 @@ export function updatePhotoPlace(
     note: string;
     dealerId: string | null;
     farReason: string | null;
+    newDealer?: string | null;
   },
 ): void {
   getDb().runSync(
-    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?, far_reason = ?,
+    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?, far_reason = ?, new_dealer = ?,
        sync_status = CASE WHEN sync_status = 'draft' THEN 'pending' ELSE sync_status END
      WHERE id = ?`,
     place.kind,
@@ -387,6 +392,7 @@ export function updatePhotoPlace(
     place.note.trim() || null,
     place.kind === 'DEALER' ? place.dealerId : null,
     place.kind === 'DEALER' ? place.farReason?.trim() || null : null,
+    place.kind === 'OTHER' ? (place.newDealer ?? null) : null,
     id,
   );
 }
@@ -440,6 +446,7 @@ export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
       note: row.note,
       dealerId: row.dealer_id,
       farReason: row.far_reason,
+      newDealer: row.new_dealer,
     }));
 }
 
@@ -576,6 +583,7 @@ export function readLocalHistory(from: number, to: number): LocalHistoryRow[] {
       note: row.note,
       dealerId: row.dealer_id,
       farReason: row.far_reason,
+      newDealer: row.new_dealer,
       clientId: row.client_id,
       status: row.sync_status,
     }));
@@ -601,6 +609,7 @@ export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
       note: row.note,
       dealerId: row.dealer_id,
       farReason: row.far_reason,
+      newDealer: row.new_dealer,
       clientId: row.client_id,
       status: row.sync_status,
     }));

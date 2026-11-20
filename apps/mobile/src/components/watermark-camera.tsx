@@ -38,6 +38,12 @@ import { checkInRadiusM, type DealerChoice } from '../api/dealers';
 import { serverNow } from '../api/server-clock';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
+import {
+  emptyNewDealerDraft,
+  NewDealerForm,
+  validateNewDealer,
+  type NewDealerDraft,
+} from './new-dealer-form';
 import { APP_NAME } from '@seedgw/config/brand';
 
 const LONG_EDGE_PX = 1600;
@@ -94,7 +100,11 @@ function useLiveAddress(point: GeoPoint | null, precise: boolean): string {
   return line;
 }
 
+/** Chụp để check-in như thường, hoặc để đề xuất đại lý mới tại cửa hàng (M10). */
+export type CameraIntent = 'check-in' | 'new-dealer';
+
 type Props = {
+  intent?: CameraIntent;
   /** Đại lý chọn sẵn từ màn Đại lý gần tôi (M4). Không có thì chọn sau khi chụp như cũ. */
   presetDealer?: DealerChoice | null;
   onClose: () => void;
@@ -102,7 +112,12 @@ type Props = {
   onSaved: (sizeBytes: number) => void;
 };
 
-export function WatermarkCamera({ presetDealer = null, onClose, onSaved }: Props) {
+export function WatermarkCamera({
+  intent = 'check-in',
+  presetDealer = null,
+  onClose,
+  onSaved,
+}: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [shot, setShot] = useState<Shot | null>(null);
 
@@ -122,6 +137,7 @@ export function WatermarkCamera({ presetDealer = null, onClose, onSaved }: Props
     return (
       <Review
         shot={shot}
+        intent={intent}
         presetDealer={presetDealer}
         onRetake={() => setShot(null)}
         onClose={onClose}
@@ -274,12 +290,14 @@ function Viewfinder({ onShot, onClose }: { onShot: (shot: Shot) => void; onClose
 
 function Review({
   shot,
+  intent,
   presetDealer,
   onRetake,
   onClose,
   onSaved,
 }: {
   shot: Shot;
+  intent: CameraIntent;
   presetDealer: DealerChoice | null;
   onRetake: () => void;
   onClose: () => void;
@@ -298,6 +316,9 @@ function Review({
     dealer: presetDealer,
     farReason: '',
   });
+  const [newDealer, setNewDealer] = useState<NewDealerDraft>(() =>
+    emptyNewDealerDraft(shot.address),
+  );
   const dealerPoint =
     place.kind === 'DEALER' && place.dealer?.lat != null && place.dealer.lng != null
       ? { lat: place.dealer.lat, lng: place.dealer.lng }
@@ -338,6 +359,27 @@ function Review({
   }
 
   const [formError, setFormError] = useState<string | null>(null);
+
+  // M10: lượt check-in loại Điểm khác mang theo đề xuất, gửi qua cùng hàng đợi nên mất mạng vẫn lưu được.
+  function saveNewDealer() {
+    if (photoId === null) return;
+    const checked = validateNewDealer(newDealer);
+    if (!checked.ok) {
+      setFormError(checked.message);
+      return;
+    }
+    const extra = newDealer.note.trim();
+    updatePhotoPlace(photoId, {
+      kind: 'OTHER',
+      name: checked.data.name,
+      note: extra ? `Đề xuất đại lý mới. ${extra}` : 'Đề xuất đại lý mới',
+      dealerId: null,
+      farReason: null,
+      newDealer: JSON.stringify(checked.data),
+    });
+    void syncNow();
+    onClose();
+  }
 
   // Theo M2: phải có tên nơi check-in, ghi chú bắt buộc khi không ở đại lý.
   function saveCheckIn() {
@@ -410,7 +452,10 @@ function Review({
         {shot.mocked ? (
           <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
         ) : null}
-        {state === 'saved' ? (
+        {state === 'saved' && intent === 'new-dealer' ? (
+          <NewDealerForm value={newDealer} onChange={setNewDealer} />
+        ) : null}
+        {state === 'saved' && intent === 'check-in' ? (
           <PlaceForm
             value={place}
             onChange={setPlace}
@@ -422,7 +467,11 @@ function Review({
       </ScrollView>
       <View style={styles.controls}>
         <Button label="Bỏ ảnh" onPress={discard} variant="ghost" />
-        <Button label="Lưu check-in" onPress={saveCheckIn} />
+        {intent === 'new-dealer' ? (
+          <Button label="Gửi đề xuất" onPress={saveNewDealer} />
+        ) : (
+          <Button label="Lưu check-in" onPress={saveCheckIn} />
+        )}
       </View>
     </KeyboardAvoidingView>
   );

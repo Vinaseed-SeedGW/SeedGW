@@ -3,6 +3,7 @@ import {
   ClipboardCheck,
   Combine,
   FileChartColumn,
+  HousePlus,
   LayoutDashboard,
   LifeBuoy,
   MapPin,
@@ -71,6 +72,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       label: 'Danh mục',
       items: [
         { label: 'Đại lý', href: '/quan-tri/dai-ly', icon: Store },
+        { label: 'Đại lý mới', href: '/quan-tri/dai-ly/dai-ly-moi', icon: HousePlus },
         { label: 'Duyệt toạ độ', href: '/quan-tri/dai-ly/duyet-toa-do', icon: MapPinCheck },
         { label: 'Đại lý trùng', href: '/quan-tri/dai-ly/trung', icon: Combine },
         { label: 'Số điện thoại sai', href: '/quan-tri/dai-ly/so-dien-thoai', icon: PhoneOff },

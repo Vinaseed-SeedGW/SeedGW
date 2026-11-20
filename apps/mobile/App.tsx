@@ -38,7 +38,7 @@ import { TargetsScreen } from './src/components/targets-screen';
 import { TodayTab } from './src/components/today-tab';
 import { useTracking } from './src/components/use-tracking';
 import { useAutoSync, useSession } from './src/components/use-sync';
-import { WatermarkCamera } from './src/components/watermark-camera';
+import { WatermarkCamera, type CameraIntent } from './src/components/watermark-camera';
 import { Text } from './src/components/text';
 import { COLORS, FONT_FAMILY, SPACE } from './src/theme';
 
@@ -80,6 +80,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [tab, setTab] = useState<TabKey>('today');
   const [cameraOpen, setCameraOpen] = useState(false);
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
+  const [cameraIntent, setCameraIntent] = useState<CameraIntent>('check-in');
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
   // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
   const [overlay, setOverlay] = useState<'targets' | 'approvals' | 'routes' | 'support' | null>(
@@ -127,7 +128,11 @@ function Main({ signedIn }: { signedIn: boolean }) {
         setOverlay('support');
       } else if (target.screen === 'approvals') setOverlay('approvals');
       else if (target.screen === 'routes') setOverlay('routes');
-      else {
+      else if (target.screen === 'dealer-proposals') {
+        setOverlay(null);
+        setTab('route');
+        setRefreshKey((value) => value + 1);
+      } else {
         setOverlay(null);
         setTab('today');
       }
@@ -195,7 +200,14 @@ function Main({ signedIn }: { signedIn: boolean }) {
   }
 
   function openCamera(dealer: DealerChoice | null) {
+    setCameraIntent('check-in');
     setPresetDealer(dealer);
+    setCameraOpen(true);
+  }
+
+  function openNewDealer() {
+    setCameraIntent('new-dealer');
+    setPresetDealer(null);
     setCameraOpen(true);
   }
 
@@ -203,11 +215,13 @@ function Main({ signedIn }: { signedIn: boolean }) {
   if (cameraOpen) {
     return (
       <WatermarkCamera
+        intent={cameraIntent}
         presetDealer={presetDealer}
         onClose={() => {
           setPresetDealer(null);
           setCameraOpen(false);
           sync.actions.refreshCounts();
+          setRefreshKey((value) => value + 1);
         }}
         onSaved={() => void control.actions.startIfIdle()}
       />
@@ -276,6 +290,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
             <RouteTab
               onPick={openCamera}
               onOpenRoutes={() => setOverlay('routes')}
+              onAddDealer={capabilities?.canProposeDealer ? openNewDealer : null}
               refreshKey={refreshKey}
             />
           ) : (

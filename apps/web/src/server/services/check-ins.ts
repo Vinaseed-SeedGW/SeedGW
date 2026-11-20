@@ -147,6 +147,24 @@ export async function saveCheckIn(
         dealerDistanceM: check.distanceM,
         farReason: input.farReason || null,
         flags: [...checkInFlags(input, clockSkewMs), ...check.flags],
+        // M10: đề xuất đại lý mới ghi cùng câu lệnh với check-in nên không có check-in nào mất đề xuất.
+        // Tài khoản không có quyền đề xuất thì vẫn lưu check-in, bỏ phần đề xuất.
+        ...(input.newDealer && user.permissions.has('sales.dealer.propose')
+          ? {
+              dealerProposal: {
+                create: {
+                  orgUnitId: user.orgUnitId,
+                  proposedById: user.id,
+                  name: input.newDealer.name,
+                  phone: input.newDealer.phone,
+                  address: input.newDealer.address,
+                  ownerName: input.newDealer.ownerName,
+                  taxCode: input.newDealer.taxCode,
+                  level: input.newDealer.level,
+                },
+              },
+            }
+          : {}),
       },
       select: { id: true },
     })

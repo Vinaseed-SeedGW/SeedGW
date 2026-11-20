@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MAX_PAGE_SIZE, pageResult } from './common';
+import { newDealerInput } from './dealer-proposals';
 import { parseDisplayDate, vietnamToday } from './format';
 
 // Hợp đồng dữ liệu check-in dùng chung cho app điện thoại, API /api/mobile và trang Báo cáo ghé thăm.
@@ -114,11 +115,15 @@ export const createCheckInInput = z
     // Lý do khi app thấy vị trí chụp xa toạ độ đại lý quá bán kính (M4). Máy chủ vẫn tự tính lại khoảng cách.
     farReason: z.string().trim().max(500).nullable().default(null),
     deviceIntegrity: deviceIntegrity.default('UNKNOWN'),
+    // M10: đề xuất đại lý mới tại nơi check-in, chỉ nhận với loại Điểm khác. App cũ không gửi.
+    // Phần đề xuất sai thì bỏ, không từ chối cả lượt: check-in luôn được ghi nhận.
+    newDealer: newDealerInput.nullable().default(null).catch(null),
   })
   .refine((value) => value.placeKind === 'DEALER' || value.note.length > 0, {
     path: ['note'],
     message: 'Nhập ghi chú khi không check-in tại đại lý',
-  });
+  })
+  .transform((value) => (value.placeKind === 'OTHER' ? value : { ...value, newDealer: null }));
 export type CreateCheckInInput = z.infer<typeof createCheckInInput>;
 
 export const checkInReceipt = z.object({

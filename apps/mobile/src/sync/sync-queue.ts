@@ -81,6 +81,16 @@ async function syncPoints(): Promise<{ sent: number; error: string | null }> {
   return { sent, error: null };
 }
 
+/** Đề xuất đại lý mới lưu dạng JSON trên máy (M10). Hỏng thì vẫn gửi check-in, bỏ phần đề xuất. */
+function parseNewDealer(json: string | null): unknown {
+  if (!json) return null;
+  try {
+    return JSON.parse(json) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 async function sendCheckIn(item: QueuedCheckIn): Promise<string | null> {
   if (item.status === 'pending') {
     const result = await apiCall<CheckInReceipt>('/api/mobile/check-ins', {
@@ -99,6 +109,7 @@ async function sendCheckIn(item: QueuedCheckIn): Promise<string | null> {
         dealerId: item.placeKind === 'DEALER' ? item.dealerId : null,
         farReason: item.placeKind === 'DEALER' ? item.farReason : null,
         deviceIntegrity: await getDeviceIntegrity(),
+        newDealer: item.placeKind === 'OTHER' ? parseNewDealer(item.newDealer) : null,
       },
     });
     if (!result.ok) {
