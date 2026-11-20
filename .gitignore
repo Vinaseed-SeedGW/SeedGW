@@ -32,3 +32,6 @@ deploy/osrm/data/
 # M7: tệp Firebase cho thông báo đẩy Android, lưu ở biến môi trường EAS, không đưa vào git.
 google-services.json
 GoogleService-Info.plist
+
+# Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
+*firebase-adminsdk*.json

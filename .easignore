@@ -39,3 +39,6 @@ GoogleService-Info.plist
 # Ghi chu rieng va tai lieu thiet ke, khong can de build app
 docs/VIEC_CAN_LAM.md
 .design/
+
+# Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
+*firebase-adminsdk*.json

@@ -16,3 +16,6 @@ docs/VIEC_CAN_LAM.md
 
 # R4: ban do OSRM (vai GB) gan vao container osrm qua volume, khong dua vao image
 deploy/osrm/data
+
+# Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
+*firebase-adminsdk*.json
