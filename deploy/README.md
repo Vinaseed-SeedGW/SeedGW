@@ -24,7 +24,7 @@ sudo usermod -aG docker seedgw
 
 # Mã nguồn (repo riêng tư, dùng tài khoản GitHub được cấp quyền đọc)
 sudo mkdir -p /opt/seedgw && sudo chown seedgw:seedgw /opt/seedgw
-git clone https://github.com/Vinaseed-DMS/dms-vinaseed.git /opt/seedgw/repo
+git clone https://github.com/Vinaseed-SeedGW/seedgw.git /opt/seedgw/repo
 
 # Biến môi trường: chép mẫu, điền mật khẩu và khoá thật (sinh bằng openssl rand -base64 32)
 cp /opt/seedgw/repo/deploy/staging/staging.env.example /opt/seedgw/staging.env
