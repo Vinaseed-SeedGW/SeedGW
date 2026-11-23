@@ -160,7 +160,7 @@ Phụ thuộc FAST gửi tài liệu API đọc và ghi khách hàng trước 11
 Chỉ số theo INFORMATION_ARCHITECTURE §3: lượt ghé thăm, độ phủ đại lý, đại lý lâu chưa ghé thăm theo cấp, km, Thực bán.
 
 - [ ] **K1. Nền số liệu** (1,5 buổi): bảng tổng hợp theo ngày, gắn đơn vị và nhân viên lúc phát sinh, công thức có test.
-- [ ] **K3. Chỉ tiêu và Lịch vụ** (1,5 buổi): khai báo vụ; giao chỉ tiêu theo kỳ cho đơn vị, nhân viên: Thực bán, số lượt ghé thăm, độ phủ.
+- [x] **K3. Chỉ tiêu và Lịch vụ** (code xong 23/11, kéo lên trước): trang Quản trị › Lịch vụ `/quan-tri/lich-vu` (một lịch chung toàn công ty, Quản trị hệ thống thêm, sửa, xoá vụ; quyền `admin.season.manage`); tab Giao chỉ tiêu ở `/kinh-doanh/chi-tieu?tab=giao` cho Lãnh đạo đơn vị và Quản trị hệ thống (quyền `sales.target.assign`): giao chỉ tiêu tháng (lượt ghé thăm, số đại lý được ghé) cho đơn vị và nhân viên trong phạm vi, tháng này và 2 tháng sau, nhập tay hoặc Excel (file mẫu điền sẵn, có dòng lỗi thì không ghi dòng nào). Chỉ tiêu được giao là chỉ tiêu chính, tháng đã được giao thì nhân viên không tự đăng ký; chưa được giao thì tự đăng ký như K3a. Bật lại Chỉ tiêu trên web và app (quyết định 33 chỉ còn ẩn Thực bán, công nợ). Đơn vị chưa giao thì dùng tổng chỉ tiêu nhân viên. Thực bán (kg) làm khi nối FAST.
 - [ ] **K4. Dashboard Kinh doanh** (1 buổi): thêm Thực bán, so chỉ tiêu, so cùng kỳ vào dashboard bản đầu K0.
 - [ ] **K5. Báo cáo Kinh doanh** (1,5 buổi): bảng số theo đại lý, nhân viên, đơn vị, kỳ; xuất Excel theo phạm vi.
 - [ ] **K6. Tổng quan điều hành** (1 buổi): dành cho Quản trị hệ thống và người được cấp quyền.
