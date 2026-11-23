@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { checkInTabParam, dayMapUrlParams, mobileHistoryQuery } from './check-ins';
+import {
+  checkInTabParam,
+  dayMapUrlParams,
+  mobileHistoryQuery,
+  mobileLoginInput,
+} from './check-ins';
 
 const NOW = new Date('2026-11-17T03:00:00Z');
 
@@ -33,5 +38,16 @@ describe('mobileHistoryQuery', () => {
     expect(mobileHistoryQuery.safeParse({ month: '2026-11' }).success).toBe(true);
     expect(mobileHistoryQuery.safeParse({ month: '2026-13' }).success).toBe(false);
     expect(mobileHistoryQuery.safeParse({ month: '11/2026' }).success).toBe(false);
+  });
+});
+
+describe('mobileLoginInput', () => {
+  it('đổi mã nhân viên sang chữ hoa như web', () => {
+    const parsed = mobileLoginInput.parse({
+      employeeCode: ' Admin ',
+      password: 'x',
+      device: { key: 'k'.repeat(16), name: 'Máy thử', platform: 'android' },
+    });
+    expect(parsed.employeeCode).toBe('ADMIN');
   });
 });

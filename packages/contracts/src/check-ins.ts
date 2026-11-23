@@ -17,7 +17,8 @@ export const CHECK_IN_RETENTION_MONTHS = 18;
 export const mobilePlatform = z.enum(['ios', 'android']);
 
 export const mobileLoginInput = z.object({
-  employeeCode: z.string().trim().min(1, 'Nhập mã nhân viên').max(50),
+  // Mã nhân viên lưu chữ hoa; bàn phím điện thoại hay tự viết hoa chữ đầu nên đổi hết sang chữ hoa như web.
+  employeeCode: z.string().trim().toUpperCase().min(1, 'Nhập mã nhân viên').max(50),
   password: z.string().min(1, 'Nhập mật khẩu').max(200),
   device: z.object({
     // Mã ngẫu nhiên app tạo lúc cài, lưu trong vùng bảo mật của máy.
