@@ -62,14 +62,24 @@ export async function registerForPush(): Promise<PushState> {
   if (status !== 'granted') return status === 'denied' ? 'DENIED' : 'UNDETERMINED';
   try {
     const { data: token } = await module.getExpoPushTokenAsync({ projectId: PROJECT_ID });
-    await apiCall('/api/mobile/push-token', {
+    const result = await apiCall('/api/mobile/push-token', {
       method: 'POST',
       json: { token, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
     });
-  } catch {
-    // Android chưa có cấu hình Firebase thì chưa lấy được mã; không ảnh hưởng phần khác của app.
+    registrationError = result.ok ? null : `Máy chủ không nhận mã: ${result.message}`;
+  } catch (error) {
+    // Không lấy được mã (thiếu dịch vụ Google, mạng, Firebase) thì vẫn dùng app bình thường, chỉ ghi lại lỗi
+    // để tab Tôi hiện ra cho người dùng chụp gửi Hỗ trợ.
+    registrationError = `Không lấy được mã nhận thông báo: ${error instanceof Error ? error.message : String(error)}`;
   }
   return 'GRANTED';
+}
+
+let registrationError: string | null = null;
+
+/** Lỗi lần đăng ký nhận thông báo gần nhất, null khi đã đăng ký được. */
+export function getPushRegistrationError(): string | null {
+  return registrationError;
 }
 
 function targetOf(data: unknown): PushTarget | null {

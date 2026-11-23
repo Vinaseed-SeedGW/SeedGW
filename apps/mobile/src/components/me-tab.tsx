@@ -22,7 +22,7 @@ import { cardStyle, InfoRow } from './info-row';
 import { Text, TextInput } from './text';
 import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
-import type { PushState } from '../sync/push';
+import { getPushRegistrationError, type PushState } from '../sync/push';
 
 const PERMISSION_LABEL = {
   ALWAYS: 'Luôn cho phép',
@@ -148,6 +148,9 @@ export function MeTab({
         <View style={styles.card}>
           <Text style={styles.section}>Thông báo</Text>
           <Text style={styles.body}>{PUSH_LABEL[notifications.state]}</Text>
+          {notifications.state === 'GRANTED' && getPushRegistrationError() ? (
+            <Text style={styles.muted}>{getPushRegistrationError()}</Text>
+          ) : null}
           {notifications.state === 'DENIED' ? (
             <View style={styles.actions}>
               <Button
