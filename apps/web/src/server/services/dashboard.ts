@@ -1,7 +1,22 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
 import type { CheckInPlaceKind } from '@seedgw/contracts/check-ins';
-import type { DashboardInput, DashboardResult } from '@seedgw/contracts/dashboard';
+import {
+  lastYearRange,
+  monthsInRange,
+  MONTHLY_PERIODS,
+  previousRange,
+  type DashboardInput,
+  type DashboardResult,
+  type PeriodFigures,
+} from '@seedgw/contracts/dashboard';
+import {
+  effectiveUnitTarget,
+  effectiveUserTarget,
+  type TargetSource,
+  type TargetValues,
+} from '@seedgw/contracts/target-assignments';
+import type { ScopedDb } from '@seedgw/db/scoped-client';
 import type { DealerLevel } from '@seedgw/contracts/dealers';
 import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
 import { db } from '@seedgw/db/client';
@@ -185,10 +200,34 @@ export async function readDashboard(
     ).map((unit) => [unit.id, unit.name]),
   );
   const coveredUnit = new Map(coveredByUnit.map((row) => [row.orgUnitId, row._count._all]));
+
+  // K4: so sánh, chỉ tiêu, tuyến, đại lý mới.
+  const figuresOf = (range: { from: string; to: string }) =>
+    periodFigures(scoped, checkInScope, dealerScope, range);
+  const [previous, lastYear, target, routes, newDealers] = await Promise.all([
+    figuresOf(previousRange(input.from, input.to)),
+    figuresOf(lastYearRange(input.from, input.to)),
+    MONTHLY_PERIODS.includes(input.period)
+      ? readTarget(scoped, input, unitIds, monthsInRange(input.from, input.to))
+      : Promise.resolve(null),
+    readRouteCompletion(scoped, input, unitIds, today),
+    scoped.dealerProposal.count({
+      where: {
+        status: 'APPROVED',
+        reviewedAt: { gte: from, lt: to },
+        ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
+        ...(input.employeeCode ? { proposedBy: { employeeCode: input.employeeCode } } : {}),
+      },
+    }),
+  ]);
   const coveredLevel = new Map(coveredByLevel.map((row) => [row.level, row._count._all]));
 
   return {
     updatedAt: now.toISOString(),
+    compare: { previous, lastYear },
+    target,
+    routes,
+    newDealers,
     kpi: {
       visits,
       coverage: { active: activeDealers, covered: coveredDealers },
@@ -340,4 +379,147 @@ async function readStaff(
     })),
     notCheckedInTotal: notCheckedIn.length,
   };
+}
+
+async function periodFigures(
+  scoped: ScopedDb,
+  checkInScope: Prisma.CheckInWhereInput,
+  dealerScope: Prisma.DealerWhereInput,
+  range: { from: string; to: string },
+): Promise<PeriodFigures> {
+  const capturedAt = { gte: vietnamDayStart(range.from), lt: vietnamNextDayStart(range.to) };
+  const [visits, covered] = await Promise.all([
+    scoped.checkIn.count({ where: { ...checkInScope, capturedAt } }),
+    scoped.dealer.count({ where: { ...dealerScope, checkIns: { some: { capturedAt } } } }),
+  ]);
+  return { ...range, visits, covered };
+}
+
+/**
+ * Chỉ tiêu của phạm vi đang xem, cộng các tháng trong kỳ (K3, K4). Chọn một nhân viên: chỉ tiêu của người đó.
+ * Chọn đơn vị: chỉ tiêu giao cho đơn vị, tháng chưa giao thì cộng chỉ tiêu nhân viên trong đơn vị. Không lọc:
+ * cộng chỉ tiêu nhân viên trong phạm vi người xem.
+ */
+async function readTarget(
+  scoped: ScopedDb,
+  input: DashboardInput,
+  unitIds: string[] | null,
+  months: string[],
+): Promise<DashboardResult['target']> {
+  const members = await scoped.user.findMany({
+    where: {
+      isActive: true,
+      roles: { some: { role: { permissions: { some: { code: 'sales.check-in.create' } } } } },
+      ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
+      ...(input.employeeCode ? { employeeCode: input.employeeCode } : {}),
+    },
+    select: { id: true },
+  });
+  const ids = members.map((member) => member.id);
+  if (ids.length === 0) return null;
+  const [userAssigned, unitAssigned, selfTargets] = await Promise.all([
+    db.assignedSalesTarget.findMany({
+      where: { kind: 'USER', userId: { in: ids }, month: { in: months } },
+      select: { userId: true, month: true, visitCountTarget: true, dealerCoverageTarget: true },
+    }),
+    input.orgUnitId && !input.employeeCode
+      ? db.assignedSalesTarget.findMany({
+          where: { kind: 'UNIT', orgUnitId: input.orgUnitId, month: { in: months } },
+          select: { month: true, visitCountTarget: true, dealerCoverageTarget: true },
+        })
+      : Promise.resolve([]),
+    db.monthlySalesTarget.findMany({
+      where: { userId: { in: ids }, month: { in: months }, approvedAt: { not: null } },
+      select: { userId: true, month: true, approvedVisitCount: true, approvedDealerCoverage: true },
+    }),
+  ]);
+  const key = (userId: string | null, month: string) => `${userId ?? ''}|${month}`;
+  const assignedMap = new Map(userAssigned.map((row) => [key(row.userId, row.month), row]));
+  const selfMap = new Map(
+    selfTargets.map((row) => [
+      key(row.userId, row.month),
+      {
+        visitCountTarget: row.approvedVisitCount ?? 0,
+        dealerCoverageTarget: row.approvedDealerCoverage ?? 0,
+      },
+    ]),
+  );
+  const unitMap = new Map(unitAssigned.map((row) => [row.month, row]));
+
+  let visitCountTarget = 0;
+  let dealerCoverageTarget = 0;
+  const sources = new Set<TargetSource>();
+  for (const month of months) {
+    const perUser = ids.map((id) =>
+      effectiveUserTarget(
+        assignedMap.get(key(id, month)) ?? null,
+        selfMap.get(key(id, month)) ?? null,
+      ),
+    );
+    const unit: TargetValues | null = unitMap.get(month) ?? null;
+    const value =
+      ids.length === 1 && input.employeeCode
+        ? (perUser[0] ?? null)
+        : effectiveUnitTarget(unit, perUser);
+    if (!value) continue;
+    visitCountTarget += value.visitCountTarget;
+    dealerCoverageTarget += value.dealerCoverageTarget;
+    sources.add(value.source);
+  }
+  if (sources.size === 0) return null;
+  const source: TargetSource = sources.size === 1 ? ([...sources][0] ?? 'SUM') : 'SUM';
+  return { visitCountTarget, dealerCoverageTarget, source, months };
+}
+
+/** Tỉ lệ hoàn thành tuyến (IA §3.5): điểm trong tuyến đã duyệt tới hôm nay có check-in đúng ngày đúng đại lý. */
+async function readRouteCompletion(
+  scoped: ScopedDb,
+  input: DashboardInput,
+  unitIds: string[] | null,
+  today: string,
+): Promise<DashboardResult['routes']> {
+  const end = input.to < today ? input.to : today;
+  if (end < input.from) return { planned: 0, visited: 0 };
+  const plans = await scoped.routePlan.findMany({
+    where: {
+      approvedRevision: { not: null },
+      // Tuyến tuần bắt đầu trước kỳ tối đa 6 ngày vẫn có ngày nằm trong kỳ.
+      periodStart: { gte: shiftIso(input.from, -6), lte: end },
+      ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
+      ...(input.employeeCode ? { user: { employeeCode: input.employeeCode } } : {}),
+    },
+    select: {
+      userId: true,
+      approvedRevision: true,
+      stops: {
+        where: { day: { gte: input.from, lte: end } },
+        select: { revision: true, day: true, dealerId: true },
+      },
+    },
+  });
+  const planned = plans.flatMap((plan) =>
+    plan.stops
+      .filter((stop) => stop.revision === plan.approvedRevision)
+      .map((stop) => ({ userId: plan.userId, day: stop.day, dealerId: stop.dealerId })),
+  );
+  if (planned.length === 0) return { planned: 0, visited: 0 };
+  const checkIns = await scoped.checkIn.findMany({
+    where: {
+      userId: { in: [...new Set(planned.map((stop) => stop.userId))] },
+      dealerId: { not: null },
+      capturedAt: { gte: vietnamDayStart(input.from), lt: vietnamNextDayStart(end) },
+    },
+    select: { userId: true, dealerId: true, capturedAt: true },
+  });
+  const done = new Set(
+    checkIns.map((row) => `${row.userId}|${row.dealerId}|${vnDay(row.capturedAt)}`),
+  );
+  const visited = planned.filter((stop) =>
+    done.has(`${stop.userId}|${stop.dealerId}|${stop.day}`),
+  ).length;
+  return { planned: planned.length, visited };
+}
+
+function shiftIso(date: string, days: number): string {
+  return new Date(Date.parse(`${date}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
 }

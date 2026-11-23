@@ -3,13 +3,18 @@ import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
 import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@seedgw/contracts/check-ins';
 import {
+  changePercent,
   DASHBOARD_PERIOD_LABEL,
   dashboardUrlParams,
   kmSourceNote,
   type Coverage,
   type DashboardInput,
   type DashboardResult,
+  type PeriodFigures,
+  type SeasonRange,
 } from '@seedgw/contracts/dashboard';
+import { formatMonthLabel, targetPercent } from '@seedgw/contracts/sales-targets';
+import { TARGET_SOURCE_LABEL } from '@seedgw/contracts/target-assignments';
 import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
 import {
   formatDate,
@@ -22,6 +27,7 @@ import { DashboardFilters } from '@/features/dashboard/components/dashboard-filt
 import { VisitsChartLazy } from '@/features/dashboard/components/visits-chart-lazy';
 import { requirePermission } from '@/server/auth/can';
 import { getDashboard, getDashboardFilterOptions } from '@/server/queries/dashboard';
+import { getSeasons } from '@/server/queries/seasons';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
@@ -29,16 +35,17 @@ type PageProps = { searchParams: Promise<Record<string, string | string[] | unde
 
 export default async function DashboardPage({ searchParams }: PageProps) {
   await requirePermission('sales.dashboard.read');
-  const input = dashboardUrlParams().parse(await searchParams);
+  const seasons: SeasonRange[] = await getSeasons();
+  const input = dashboardUrlParams(new Date(), seasons).parse(await searchParams);
 
   return (
     <>
       <h1 className="text-2xl font-bold text-brand">Dashboard</h1>
       <p className="mt-1 text-text-muted">
-        Số liệu check-in và đại lý trong phạm vi bạn được xem. Thực bán và chỉ tiêu có khi nối FAST.
+        Số liệu check-in, đại lý và chỉ tiêu trong phạm vi bạn được xem. Thực bán có khi nối FAST.
       </p>
       <Suspense fallback={<div className="mt-4 h-10 animate-pulse rounded-md bg-surface-subtle" />}>
-        <Filters input={input} />
+        <Filters input={input} seasons={seasons} />
       </Suspense>
       <Suspense key={JSON.stringify(input)} fallback={<DashboardSkeleton />}>
         <DashboardBody input={input} />
@@ -47,11 +54,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   );
 }
 
-async function Filters({ input }: { input: DashboardInput }) {
+async function Filters({ input, seasons }: { input: DashboardInput; seasons: SeasonRange[] }) {
   const options = await getDashboardFilterOptions(input.orgUnitId);
   return (
     <div className="mt-4">
-      <DashboardFilters input={input} options={options} />
+      <DashboardFilters input={input} options={options} seasons={seasons} />
     </div>
   );
 }
@@ -59,7 +66,7 @@ async function Filters({ input }: { input: DashboardInput }) {
 function DashboardSkeleton() {
   return (
     <div className="mt-6 grid gap-4" aria-label="Đang tải số liệu">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((key) => (
           <div key={key} className="h-28 animate-pulse rounded-md bg-surface-subtle" />
         ))}
@@ -108,25 +115,51 @@ async function DashboardBody({ input }: { input: DashboardInput }) {
       : `${isoDateToDisplay(input.from)} tới ${isoDateToDisplay(input.to)}`;
 
   return (
-    <div className="mt-6 grid gap-8">
-      <section aria-labelledby="so-chinh" className="grid gap-3">
+    <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8">
+      <section aria-labelledby="so-chinh" className="grid grid-cols-[minmax(0,1fr)] gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="so-chinh" className="text-lg font-bold">
             {DASHBOARD_PERIOD_LABEL[input.period]}, {periodText}
           </h2>
           <span className="text-sm text-text-muted">{updated}</span>
         </div>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Kpi
             href={checkInHref(input)}
             label="Lượt ghé thăm"
             value={formatNumber(data.kpi.visits)}
+            note={targetNote(data.kpi.visits, data.target?.visitCountTarget, 'lượt')}
+            extra={
+              <CompareLines
+                data={data}
+                pick={(figures) => figures.visits}
+                current={data.kpi.visits}
+              />
+            }
           />
           <Kpi
             href={dealerHref(input, {})}
             label="Độ phủ đại lý"
             value={percent(data.kpi.coverage)}
             note={`${formatNumber(data.kpi.coverage.covered)} trên ${formatNumber(data.kpi.coverage.active)} đại lý`}
+            extra={
+              <>
+                {data.target ? (
+                  <span className="text-sm text-text-muted">
+                    {targetNote(
+                      data.kpi.coverage.covered,
+                      data.target.dealerCoverageTarget,
+                      'đại lý được ghé',
+                    )}
+                  </span>
+                ) : null}
+                <CompareLines
+                  data={data}
+                  pick={(figures) => figures.covered}
+                  current={data.kpi.coverage.covered}
+                />
+              </>
+            }
           />
           <Kpi
             href={checkInHref({ ...input, from: vietnamToday(), to: vietnamToday() })}
@@ -140,14 +173,35 @@ async function DashboardBody({ input }: { input: DashboardInput }) {
             value={formatKm(data.kpi.km)}
             note={kmSourceNote(data.kpi.kmSource)}
           />
+          <Kpi
+            href={`/kinh-doanh/tuyen-vieng-tham?tab=pham-vi`}
+            label="Tỉ lệ hoàn thành tuyến"
+            value={
+              data.routes.planned > 0
+                ? `${Math.round((data.routes.visited / data.routes.planned) * 100)}%`
+                : 'Chưa có'
+            }
+            note={
+              data.routes.planned > 0
+                ? `${formatNumber(data.routes.visited)} trên ${formatNumber(data.routes.planned)} điểm trong tuyến đã duyệt`
+                : 'Không có tuyến đã duyệt trong kỳ'
+            }
+          />
+          <Kpi
+            href={dealerHref(input, {})}
+            label="Đại lý mới"
+            value={formatNumber(data.newDealers)}
+            note="Đề xuất trên app được duyệt trong kỳ"
+          />
+          <TargetSummary data={data} />
         </div>
       </section>
 
-      <section aria-labelledby="thi-truong" className="grid gap-3">
+      <section aria-labelledby="thi-truong" className="grid grid-cols-[minmax(0,1fr)] gap-3">
         <h2 id="thi-truong" className="text-lg font-bold text-brand">
           Thị trường
         </h2>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <Panel title="Lượt ghé thăm theo ngày">
             {data.kpi.visits === 0 ? (
               <p className="text-text-muted">Không có lượt check-in nào trong kỳ này.</p>
@@ -191,11 +245,11 @@ function DealerSection({ input, data }: { input: DashboardInput; data: Dashboard
   const overdueTotal =
     dealers.overdueByLevel[1] + dealers.overdueByLevel[2] + dealers.overdueByLevel[3];
   return (
-    <section aria-labelledby="dai-ly" className="grid gap-3">
+    <section aria-labelledby="dai-ly" className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <h2 id="dai-ly" className="text-lg font-bold text-brand">
         Đại lý
       </h2>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi
           href={dealerHref(input, { 'ghe-tham': 'qua-moc' })}
           label="Quá mốc chưa ghé lại"
@@ -230,7 +284,7 @@ function DealerSection({ input, data }: { input: DashboardInput; data: Dashboard
           .join(', ')}
         . Đại lý chưa ghé lần nào tính riêng.
       </p>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
         <Panel title="Quá mốc lâu nhất">
           {dealers.overdueList.length === 0 ? (
             <p className="text-text-muted">Chưa có đại lý nào quá mốc chưa ghé lại.</p>
@@ -285,11 +339,11 @@ function StaffSection({
   input: DashboardInput;
 }) {
   return (
-    <section aria-labelledby="nhan-vien" className="grid gap-3">
+    <section aria-labelledby="nhan-vien" className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <h2 id="nhan-vien" className="text-lg font-bold text-brand">
         Nhân viên
       </h2>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
         <Panel title="Xếp hạng theo lượt ghé thăm">
           {data.ranking.length === 0 ? (
             <p className="text-text-muted">Chưa có nhân viên nào check-in trong kỳ này.</p>
@@ -343,27 +397,30 @@ function Kpi({
   label,
   value,
   note,
+  extra,
 }: {
   href: string;
   label: string;
   value: string;
-  note?: string;
+  note?: string | null;
+  extra?: ReactNode;
 }) {
   return (
     <Link
       href={href}
-      className="grid content-start gap-1 rounded-md border border-border bg-surface p-4 hover:border-brand hover:bg-brand-soft"
+      className="grid min-w-0 content-start gap-1 rounded-md border border-border bg-surface p-4 break-words hover:border-brand hover:bg-brand-soft"
     >
       <span className="text-sm text-text-muted">{label}</span>
       <span className="text-2xl font-bold text-brand">{value}</span>
       {note ? <span className="text-sm text-text-muted">{note}</span> : null}
+      {extra}
     </Link>
   );
 }
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="grid content-start gap-3 rounded-md border border-border bg-surface p-4">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-3 rounded-md border border-border bg-surface p-4">
       <h3 className="font-bold">{title}</h3>
       {children}
     </div>
@@ -404,6 +461,74 @@ function Table({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function targetNote(
+  actual: number,
+  target: number | null | undefined,
+  unit: string,
+): string | null {
+  if (!target) return null;
+  const done = targetPercent(actual, target);
+  return `Chỉ tiêu ${formatNumber(target)} ${unit}${done !== null ? `, đạt ${done}%` : ''}`;
+}
+
+function changeText(
+  label: string,
+  current: number,
+  base: PeriodFigures,
+  pick: (figures: PeriodFigures) => number,
+) {
+  const value = pick(base);
+  const change = changePercent(current, value);
+  const range = `${isoDateToDisplay(base.from)} tới ${isoDateToDisplay(base.to)}`;
+  if (change === null) return `${label}: ${formatNumber(value)} (${range})`;
+  const sign = change > 0 ? 'tăng' : change < 0 ? 'giảm' : 'bằng';
+  return `${label}: ${formatNumber(value)}, ${sign}${change === 0 ? '' : ` ${Math.abs(change)}%`}`;
+}
+
+/** So với kỳ trước và cùng kỳ năm trước (K4). */
+function CompareLines({
+  data,
+  current,
+  pick,
+}: {
+  data: DashboardResult;
+  current: number;
+  pick: (figures: PeriodFigures) => number;
+}) {
+  return (
+    <span className="grid text-sm text-text-muted">
+      <span>{changeText('Kỳ trước', current, data.compare.previous, pick)}</span>
+      <span>{changeText('Cùng kỳ năm trước', current, data.compare.lastYear, pick)}</span>
+    </span>
+  );
+}
+
+/** Chỉ tiêu đang so: tháng nào, từ đâu. Kỳ không tính theo tháng thì nhắc chọn kỳ khác. */
+function TargetSummary({ data }: { data: DashboardResult }) {
+  return (
+    <div className="grid content-start gap-1 rounded-md border border-border bg-surface p-4">
+      <span className="text-sm text-text-muted">Chỉ tiêu</span>
+      {data.target ? (
+        <>
+          <span className="text-lg font-bold text-brand">
+            {formatNumber(data.target.visitCountTarget)} lượt,{' '}
+            {formatNumber(data.target.dealerCoverageTarget)} đại lý
+          </span>
+          <span className="text-sm text-text-muted">
+            {TARGET_SOURCE_LABEL[data.target.source]},{' '}
+            {data.target.months.map((month) => formatMonthLabel(month)).join(', ')}
+          </span>
+        </>
+      ) : (
+        <span className="text-sm text-text-muted">
+          Chưa có chỉ tiêu trong kỳ, hoặc kỳ không tính theo tháng. Chỉ tiêu so được với kỳ Tháng,
+          Quý, Vụ, Năm.
+        </span>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   DASHBOARD_PERIOD_LABEL,
   DASHBOARD_PERIODS,
   type DashboardInput,
+  type SeasonRange,
 } from '@seedgw/contracts/dashboard';
 import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
 import { isoDateToDisplay } from '@seedgw/contracts/format';
@@ -19,9 +20,11 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 export function DashboardFilters({
   input,
   options,
+  seasons,
 }: {
   input: DashboardInput;
   options: DayMapFilterOptions;
+  seasons: readonly SeasonRange[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -45,7 +48,7 @@ export function DashboardFilters({
           className={CONTROL}
           value={input.period}
           onChange={(event) =>
-            setParams({ ky: event.target.value, 'tu-ngay': null, 'den-ngay': null })
+            setParams({ ky: event.target.value, 'tu-ngay': null, 'den-ngay': null, vu: null })
           }
         >
           {DASHBOARD_PERIODS.map((period) => (
@@ -55,6 +58,22 @@ export function DashboardFilters({
           ))}
         </select>
       </label>
+      {input.period === 'vu' ? (
+        <label className="grid gap-1 text-sm">
+          Vụ
+          <select
+            className={CONTROL}
+            value={input.seasonId ?? ''}
+            onChange={(event) => setParams({ vu: event.target.value || null })}
+          >
+            {seasons.map((season) => (
+              <option key={season.id} value={season.id}>
+                {season.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {input.period === 'tuy-chon' ? (
         <>
           <label className="grid gap-1 text-sm">
