@@ -4,7 +4,7 @@ import { currentVnMonth, type MyTargetMonth } from '@seedgw/contracts/sales-targ
 import { loadMyTargets } from '../api/targets';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
-import { StatusTag, TargetValues } from './target-figures';
+import { StatusTag, AssignedValues, TargetValues } from './target-figures';
 import { Text } from './text';
 
 /** Thẻ chỉ tiêu tháng này ở tab Hôm nay (K3a). Mất mạng thì ẩn, không ảnh hưởng check-in. */
@@ -33,7 +33,9 @@ export function TargetCard({ refreshKey, onOpen }: { refreshKey: number; onOpen:
           <StatusTag status={target.approvalStatus} />
         ) : null}
       </View>
-      {target ? (
+      {month.assigned ? (
+        <AssignedValues assigned={month.assigned} progress={month.progress} />
+      ) : target ? (
         <TargetValues
           proposed={target.proposed}
           approved={target.approved}
@@ -47,7 +49,7 @@ export function TargetCard({ refreshKey, onOpen }: { refreshKey: number; onOpen:
       )}
       <View style={styles.actions}>
         <Button
-          label={target || !month.editable ? 'Xem chỉ tiêu' : 'Đăng ký chỉ tiêu'}
+          label={target || month.assigned || !month.editable ? 'Xem chỉ tiêu' : 'Đăng ký chỉ tiêu'}
           onPress={onOpen}
           variant="ghost"
         />

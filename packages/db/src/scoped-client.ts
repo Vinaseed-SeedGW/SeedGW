@@ -19,6 +19,8 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   UserConsent: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   ApprovalRequest: { ownerField: 'submittedById', orgUnitField: 'orgUnitId' },
   MonthlySalesTarget: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
+  // K3: dong don vi gan org_unit_id, dong nhan vien gan ca nhan vien lan don vi luc giao.
+  AssignedSalesTarget: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
   RoutePlan: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
   // Hỗ trợ (T1): người gửi thấy yêu cầu của mình, Quản trị đơn vị thấy theo đơn vị lúc gửi.
   SupportRequest: { ownerField: 'requesterId', orgUnitField: 'orgUnitId' },

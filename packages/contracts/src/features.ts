@@ -1,8 +1,9 @@
-// Tính năng tạm hold theo yêu cầu 19/11/2026: chỉ tiêu, công nợ, doanh thu (Thực bán).
+// Tính năng tạm hold theo yêu cầu 19/11/2026: chỉ tiêu, công nợ, doanh thu (Thực bán). Chỉ tiêu bật lại 23/11/2026
+// (K3, phần lượt ghé thăm và số đại lý được ghé); Thực bán vẫn ẩn tới khi nối FAST.
 // Ẩn khỏi menu, trang, app và Tham số; dữ liệu và code giữ nguyên, đổi sang true là bật lại.
 export const FEATURES = {
   /** Chỉ tiêu tháng tự đăng ký (K3a) và phiếu Chỉ tiêu trong Cần duyệt (A10b). */
-  salesTargets: false,
+  salesTargets: true,
   /** Công nợ và hạn mức từ FAST (S11). */
   debt: false,
   /** Doanh số Thực bán từ hoá đơn FAST (K2). */

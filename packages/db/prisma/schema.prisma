@@ -38,6 +38,7 @@ model OrgUnit {
   dealerProposals         DealerProposal[]
   approvalRequests        ApprovalRequest[]
   monthlySalesTargets     MonthlySalesTarget[]
+  assignedSalesTargets    AssignedSalesTarget[]
   supportRequests         SupportRequest[]
   createdAt               DateTime                 @default(now()) @map("created_at")
   updatedAt               DateTime                 @updatedAt @map("updated_at")
@@ -99,6 +100,8 @@ model User {
   leaderApprovals        ApprovalRequest[]        @relation("approval_leader_approver")
   approvalActions        ApprovalAction[]         @relation("approval_actor")
   monthlySalesTargets    MonthlySalesTarget[]
+  assignedSalesTargets   AssignedSalesTarget[]    @relation("target_assignee")
+  givenSalesTargets      AssignedSalesTarget[]    @relation("target_assigner")
   routePlans             RoutePlan[]
   supportRequests        SupportRequest[]         @relation("support_requester")
   assignedSupport        SupportRequest[]         @relation("support_assignee")
@@ -630,6 +633,53 @@ model MonthlySalesTarget {
   @@unique([userId, month])
   @@index([orgUnitId, month])
   @@map("monthly_sales_targets")
+}
+
+// K3 (23/11/2026): chỉ tiêu tháng giao từ trên xuống cho đơn vị hoặc nhân viên. Có chỉ tiêu được giao thì
+// thay chỉ tiêu nhân viên tự đăng ký (MonthlySalesTarget) của tháng đó.
+enum TargetAssigneeKind {
+  UNIT
+  USER
+
+  @@map("target_assignee_kind")
+}
+
+model AssignedSalesTarget {
+  id                   String             @id @default(uuid()) @db.Uuid
+  month                String
+  kind                 TargetAssigneeKind
+  // Đơn vị được giao (UNIT), hoặc đơn vị của nhân viên lúc giao (USER) để áp phạm vi dữ liệu.
+  orgUnitId            String?            @map("org_unit_id") @db.Uuid
+  orgUnit              OrgUnit?           @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  userId               String?            @map("user_id") @db.Uuid
+  user                 User?              @relation("target_assignee", fields: [userId], references: [id], onDelete: Cascade)
+  visitCountTarget     Int                @map("visit_count_target")
+  dealerCoverageTarget Int                @map("dealer_coverage_target")
+  // Thực bán (kg) dùng khi nối FAST.
+  salesKgTarget        Float              @default(0) @map("sales_kg_target")
+  note                 String             @default("")
+  assignedById         String             @map("assigned_by_id") @db.Uuid
+  assignedBy           User               @relation("target_assigner", fields: [assignedById], references: [id], onDelete: Cascade)
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@index([month, orgUnitId])
+  @@index([month, userId])
+  @@map("assigned_sales_targets")
+}
+
+// K3: lịch vụ chung toàn công ty.
+model Season {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  note      String   @default("")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([startDate, endDate])
+  @@map("seasons")
 }
 
 enum RouteKind {

@@ -11,6 +11,7 @@ export const PERMISSIONS = [
   { code: 'sales.approval.override', name: 'Duyệt thay, sửa thay Tuyến và Chỉ tiêu' },
   { code: 'sales.target.read', name: 'Xem Chỉ tiêu' },
   { code: 'sales.target.register', name: 'Đăng ký Chỉ tiêu tháng của mình' },
+  { code: 'sales.target.assign', name: 'Giao Chỉ tiêu cho đơn vị và nhân viên' },
   { code: 'sales.dealer.read', name: 'Xem Đại lý' },
   { code: 'sales.dealer.create', name: 'Thêm Đại lý' },
   { code: 'sales.dealer.update', name: 'Sửa Đại lý' },
@@ -40,6 +41,7 @@ export const PERMISSIONS = [
   { code: 'admin.dealer-proposal.approve', name: 'Duyệt Đại lý mới' },
   { code: 'admin.dealer.cleanup', name: 'Gộp Đại lý trùng, sửa số điện thoại sai' },
   { code: 'admin.season.read', name: 'Xem Lịch vụ' },
+  { code: 'admin.season.manage', name: 'Sửa Lịch vụ' },
   { code: 'admin.setting.read', name: 'Xem Tham số' },
   { code: 'admin.setting.manage', name: 'Sửa Tham số' },
   { code: 'admin.connection.read', name: 'Xem Kết nối' },
@@ -319,6 +321,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
           code !== 'sales.approval.review' &&
           code !== 'sales.approval.override' &&
           code !== 'sales.target.register' &&
+          code !== 'sales.target.assign' &&
           code !== 'sales.route.register',
       ),
       ...codesInModule('support'),
@@ -345,6 +348,7 @@ export const ROLE_PRESETS: readonly RolePreset[] = [
       'sales.approval.review',
       'sales.target.read',
       'sales.target.register',
+      'sales.target.assign',
       'sales.dealer.read',
       'sales.dealer.propose',
       'sales.customer.read',

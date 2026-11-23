@@ -6,6 +6,7 @@ import {
   type ListSalesTargetsResult,
   type SalesTargetRow,
 } from '@seedgw/contracts/sales-targets';
+import { FEATURES } from '@seedgw/contracts/features';
 import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
 import { TargetOnBehalfCreateButton, TargetOnBehalfEditButton } from './target-form-sheet';
@@ -54,13 +55,17 @@ const COLUMNS: ColumnDef<SalesTargetRow>[] = [
         row.original.approved?.dealerCoverageTarget ?? null,
       ),
   },
-  {
-    id: 'sales',
-    header: 'Thực bán (kg)',
-    meta: { label: 'Thực bán (kg)', className: SECONDARY_COLUMN },
-    cell: ({ row }) =>
-      row.original.approved ? formatNumber(row.original.approved.salesKgTarget) : 'Chưa có',
-  },
+  ...(FEATURES.sales
+    ? [
+        {
+          id: 'sales',
+          header: 'Thực bán (kg)',
+          meta: { label: 'Thực bán (kg)', className: SECONDARY_COLUMN },
+          cell: ({ row }: { row: { original: SalesTargetRow } }) =>
+            row.original.approved ? formatNumber(row.original.approved.salesKgTarget) : 'Chưa có',
+        },
+      ]
+    : []),
   {
     accessorKey: 'approvalStatus',
     header: 'Trạng thái',

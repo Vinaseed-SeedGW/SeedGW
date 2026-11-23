@@ -1,9 +1,14 @@
 import Link from 'next/link';
 import { PENDING_APPROVAL_STATUSES } from '@seedgw/contracts/approvals';
-import type { MyTargetMonth, MyTargetsResult } from '@seedgw/contracts/sales-targets';
+import { formatNumber } from '@seedgw/contracts/format';
+import {
+  targetPercent,
+  type MyTargetMonth,
+  type MyTargetsResult,
+} from '@seedgw/contracts/sales-targets';
 import { ApprovalWithdrawButton } from '@/features/approvals/components/approval-decision';
 import { ApprovalStatusBadge } from '@/features/approvals/components/approval-status-badge';
-import { TargetCompare } from './target-compare';
+import { PercentBar, TargetCompare } from './target-compare';
 import { TargetEditButton, TargetRegisterButton } from './target-form-sheet';
 
 function MonthActions({ month }: { month: MyTargetMonth }) {
@@ -24,6 +29,53 @@ function MonthActions({ month }: { month: MyTargetMonth }) {
       {target.canWithdraw && target.approvalCode ? (
         <ApprovalWithdrawButton code={target.approvalCode} />
       ) : null}
+    </div>
+  );
+}
+
+/** K3: chỉ tiêu được giao thay chỉ tiêu tự đăng ký của tháng đó. */
+function AssignedTarget({
+  assigned,
+  progress,
+}: {
+  assigned: NonNullable<MyTargetMonth['assigned']>;
+  progress: MyTargetMonth['progress'];
+}) {
+  const rows = [
+    {
+      label: 'Lượt ghé thăm',
+      target: assigned.visitCountTarget,
+      actual: progress.visitCount,
+      unit: 'lượt',
+    },
+    {
+      label: 'Số đại lý được ghé',
+      target: assigned.dealerCoverageTarget,
+      actual: progress.dealerCoverage,
+      unit: 'đại lý',
+    },
+  ];
+  return (
+    <div className="mt-2">
+      <p className="text-sm text-text-muted">
+        Chỉ tiêu được giao bởi {assigned.assignedByName}
+        {assigned.note ? `. ${assigned.note}` : ''}
+      </p>
+      <dl className="mt-2 grid gap-3 sm:grid-cols-2">
+        {rows.map((row) => {
+          const percent = targetPercent(row.actual, row.target);
+          return (
+            <div key={row.label}>
+              <dt className="text-sm text-text-muted">{row.label}</dt>
+              <dd className="font-bold">
+                {formatNumber(row.actual)} / {formatNumber(row.target)} {row.unit}
+                {percent !== null ? `, ${percent}%` : ''}
+              </dd>
+              <PercentBar percent={percent} />
+            </div>
+          );
+        })}
+      </dl>
     </div>
   );
 }
@@ -52,7 +104,11 @@ function MonthCard({ month, canOpenApproval }: { month: MyTargetMonth; canOpenAp
             <span className="text-sm text-text-muted">Phiếu {target.approvalCode}</span>
           )
         ) : null}
-        {!month.editable ? <span className="text-sm text-text-muted">Chỉ xem</span> : null}
+        {month.assigned ? (
+          <span className="text-sm text-text-muted">Được giao</span>
+        ) : !month.editable ? (
+          <span className="text-sm text-text-muted">Chỉ xem</span>
+        ) : null}
       </div>
 
       {target?.returnReason ? (
@@ -62,7 +118,9 @@ function MonthCard({ month, canOpenApproval }: { month: MyTargetMonth; canOpenAp
         </p>
       ) : null}
 
-      {target ? (
+      {month.assigned ? (
+        <AssignedTarget assigned={month.assigned} progress={month.progress} />
+      ) : target ? (
         <TargetCompare
           view={{ proposed: target.proposed, approved: target.approved, progress: month.progress }}
         />

@@ -5,6 +5,7 @@ import {
   type SalesTargetSnapshot,
   type TargetProgress,
 } from '@seedgw/contracts/sales-targets';
+import { FEATURES } from '@seedgw/contracts/features';
 
 type Metric = {
   label: string;
@@ -34,14 +35,18 @@ function metrics(
       actual: progress.dealerCoverage,
       unit: 'đại lý',
     },
-    {
-      label: 'Thực bán',
-      proposed: proposed.salesKgTarget,
-      approved: approved?.salesKgTarget ?? null,
-      // Có số khi nối FAST (K3a).
-      actual: null,
-      unit: 'kg',
-    },
+    // Thực bán có số khi nối FAST; ẩn tới khi bật FEATURES.sales.
+    ...(FEATURES.sales
+      ? [
+          {
+            label: 'Thực bán',
+            proposed: proposed.salesKgTarget,
+            approved: approved?.salesKgTarget ?? null,
+            actual: null,
+            unit: 'kg',
+          },
+        ]
+      : []),
   ];
 }
 

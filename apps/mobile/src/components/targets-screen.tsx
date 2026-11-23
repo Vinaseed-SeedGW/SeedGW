@@ -6,11 +6,12 @@ import {
   type MyTargetMonth,
   type MyTargetsResult,
 } from '@seedgw/contracts/sales-targets';
+import { FEATURES } from '@seedgw/contracts/features';
 import { loadMyTargets, submitMyTarget, withdrawMyApproval } from '../api/targets';
 import { COLORS, FONT, SPACE } from '../theme';
 import { BackBar } from './back-bar';
 import { Button } from './button';
-import { StatusTag, TargetValues } from './target-figures';
+import { AssignedValues, StatusTag, TargetValues } from './target-figures';
 import { Text, TextInput } from './text';
 
 type Draft = { visit: string; dealers: string; kg: string; note: string };
@@ -84,7 +85,7 @@ function TargetForm({
       ) : null}
       {field('visit', 'Lượt ghé thăm trong tháng', true)}
       {field('dealers', 'Số đại lý được ghé', true)}
-      {field('kg', 'Thực bán (kg), để 0 nếu chưa giao', true)}
+      {FEATURES.sales ? field('kg', 'Thực bán (kg), để 0 nếu chưa giao', true) : null}
       {field('note', 'Ghi chú (không bắt buộc)', false)}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.actions}>
@@ -137,7 +138,9 @@ function MonthCard({
       {target?.returnReason ? (
         <Text style={styles.returned}>Lý do trả lại: {target.returnReason}</Text>
       ) : null}
-      {target ? (
+      {month.assigned ? (
+        <AssignedValues assigned={month.assigned} progress={month.progress} />
+      ) : target ? (
         <TargetValues
           proposed={target.proposed}
           approved={target.approved}

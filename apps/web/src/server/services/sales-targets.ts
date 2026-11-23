@@ -62,6 +62,17 @@ export async function submitSalesTarget(
       },
     );
   }
+  // K3: tháng đã có chỉ tiêu được giao thì không tự đăng ký.
+  const assigned = await db.assignedSalesTarget.findFirst({
+    where: { kind: 'USER', userId, month: input.month },
+    select: { id: true },
+  });
+  if (assigned) {
+    throw new DomainError(
+      'CONFLICT',
+      `${formatMonthLabel(input.month)} đã có chỉ tiêu được giao, không cần tự đăng ký`,
+    );
+  }
   const { start, end } = monthBoundsUtc(input.month);
   const values = {
     visitCountTarget: input.visitCountTarget,
@@ -151,7 +162,7 @@ export async function submitSalesTarget(
 // ---------- Kết quả thực tế ----------
 
 /** Lượt ghé thăm là số check-in; số đại lý được ghé là số đại lý khác nhau đã check-in trong tháng. */
-async function progressByUser(
+export async function progressByUser(
   userIds: readonly string[],
   month: string,
 ): Promise<Map<string, TargetProgress>> {
@@ -246,10 +257,23 @@ export async function readMyTargets(
   const months = [shiftMonth(current, 1), current];
   for (let back = 1; back <= PAST_MONTHS_SHOWN; back += 1) months.push(shiftMonth(current, -back));
 
-  const targets = await db.monthlySalesTarget.findMany({
-    where: { userId, month: { in: months } },
-    select: TARGET_SELECT,
-  });
+  const [targets, assignments] = await Promise.all([
+    db.monthlySalesTarget.findMany({
+      where: { userId, month: { in: months } },
+      select: TARGET_SELECT,
+    }),
+    db.assignedSalesTarget.findMany({
+      where: { kind: 'USER', userId, month: { in: months } },
+      select: {
+        month: true,
+        visitCountTarget: true,
+        dealerCoverageTarget: true,
+        note: true,
+        assignedBy: { select: { fullName: true } },
+      },
+    }),
+  ]);
+  const assignedByMonth = new Map(assignments.map((row) => [row.month, row]));
   const [requests, progressList] = await Promise.all([
     requestsFor(targets.map((target) => target.id)),
     // Tháng sau chưa có check-in nên không cần đếm.
@@ -265,10 +289,19 @@ export async function readMyTargets(
         index === 0
           ? { visitCount: 0, dealerCoverage: 0 }
           : (progressList[index - 1]?.get(userId) ?? { visitCount: 0, dealerCoverage: 0 });
+      const assigned = assignedByMonth.get(month);
       return {
         month,
         monthLabel: formatMonthLabel(month),
-        editable: canRegister && isEditableTargetMonth(month, now.getTime()),
+        editable: canRegister && !assigned && isEditableTargetMonth(month, now.getTime()),
+        assigned: assigned
+          ? {
+              visitCountTarget: assigned.visitCountTarget,
+              dealerCoverageTarget: assigned.dealerCoverageTarget,
+              note: assigned.note,
+              assignedByName: assigned.assignedBy.fullName,
+            }
+          : null,
         target: record
           ? {
               proposed: proposedOf(record),

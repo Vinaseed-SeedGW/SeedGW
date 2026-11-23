@@ -3,9 +3,11 @@ import { APPROVAL_STATUS_LABEL, type ApprovalStatus } from '@seedgw/contracts/ap
 import {
   targetPercent,
   type ApprovedTargetValues,
+  type MyTargetMonth,
   type SalesTargetSnapshot,
   type TargetProgress,
 } from '@seedgw/contracts/sales-targets';
+import { FEATURES } from '@seedgw/contracts/features';
 import { COLORS, FONT, SPACE } from '../theme';
 import { Text } from './text';
 
@@ -93,18 +95,49 @@ export function TargetValues({
         target={approved?.dealerCoverageTarget ?? null}
         unit="đại lý"
       />
-      <Text style={styles.muted}>
-        Thực bán:{' '}
-        {approved ? `${groupDigits(approved.salesKgTarget)} kg, có % khi nối FAST` : 'chưa có'}
-      </Text>
+      {FEATURES.sales ? (
+        <Text style={styles.muted}>
+          Thực bán:{' '}
+          {approved ? `${groupDigits(approved.salesKgTarget)} kg, có % khi nối FAST` : 'chưa có'}
+        </Text>
+      ) : null}
       {approved === null || changed ? (
         <Text style={styles.muted}>
           {approved === null ? 'Đề nghị' : 'Bản sửa đề nghị'}:{' '}
           {groupDigits(proposed.visitCountTarget)} lượt,{' '}
-          {groupDigits(proposed.dealerCoverageTarget)} đại lý, {groupDigits(proposed.salesKgTarget)}{' '}
-          kg
+          {groupDigits(proposed.dealerCoverageTarget)} đại lý
+          {FEATURES.sales ? `, ${groupDigits(proposed.salesKgTarget)} kg` : ''}
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+/** K3: chỉ tiêu được giao thay chỉ tiêu tự đăng ký của tháng đó. */
+export function AssignedValues({
+  assigned,
+  progress,
+}: {
+  assigned: NonNullable<MyTargetMonth['assigned']>;
+  progress: TargetProgress;
+}) {
+  return (
+    <View style={styles.values}>
+      <ProgressRow
+        label="Lượt ghé thăm"
+        actual={progress.visitCount}
+        target={assigned.visitCountTarget}
+        unit="lượt"
+      />
+      <ProgressRow
+        label="Số đại lý được ghé"
+        actual={progress.dealerCoverage}
+        target={assigned.dealerCoverageTarget}
+        unit="đại lý"
+      />
+      <Text style={styles.muted}>
+        {`Chỉ tiêu được giao bởi ${assigned.assignedByName}${assigned.note ? `. ${assigned.note}` : ''}`}
+      </Text>
     </View>
   );
 }

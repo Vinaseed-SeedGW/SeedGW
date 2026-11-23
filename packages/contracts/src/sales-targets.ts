@@ -67,6 +67,16 @@ export const myTargetMonth = z.object({
     })
     .nullable(),
   progress: targetProgress,
+  // K3: chỉ tiêu được giao thay chỉ tiêu tự đăng ký của tháng đó. App cũ bỏ qua trường này.
+  assigned: z
+    .object({
+      visitCountTarget: z.number().int(),
+      dealerCoverageTarget: z.number().int(),
+      note: z.string(),
+      assignedByName: z.string(),
+    })
+    .nullable()
+    .default(null),
 });
 export type MyTargetMonth = z.infer<typeof myTargetMonth>;
 
@@ -91,7 +101,7 @@ export type SalesTargetRow = z.infer<typeof salesTargetRow>;
 export const listSalesTargetsResult = pageResult(salesTargetRow);
 export type ListSalesTargetsResult = z.infer<typeof listSalesTargetsResult>;
 
-export const SALES_TARGET_TABS = ['cua-toi', 'pham-vi'] as const;
+export const SALES_TARGET_TABS = ['cua-toi', 'pham-vi', 'giao'] as const;
 export type SalesTargetTab = (typeof SALES_TARGET_TABS)[number];
 export const SALES_TARGET_PAGE_SIZE = 20;
 

@@ -10,6 +10,7 @@ import {
   type SalesTargetSnapshot,
 } from '@seedgw/contracts/sales-targets';
 import { Form } from '@seedgw/ui/form';
+import { FEATURES } from '@seedgw/contracts/features';
 import { FormSheet } from '@seedgw/ui/form-sheet';
 import { submitSalesTargetAction } from '@/server/actions/sales-targets';
 
@@ -55,13 +56,16 @@ function TargetForm({
       <Form.Field name="dealerCoverageTarget" label="Số đại lý được ghé">
         <Form.Input type="number" inputMode="numeric" min={1} step={1} />
       </Form.Field>
-      <Form.Field
-        name="salesKgTarget"
-        label="Thực bán (kg)"
-        hint="Có % hoàn thành khi nối FAST. Để 0 nếu đơn vị chưa giao."
-      >
-        <Form.Input type="number" inputMode="decimal" min={0} step="any" />
-      </Form.Field>
+      {/* Thực bán ẩn tới khi nối FAST, giá trị giữ 0. */}
+      {FEATURES.sales ? (
+        <Form.Field
+          name="salesKgTarget"
+          label="Thực bán (kg)"
+          hint="Có % hoàn thành khi nối FAST. Để 0 nếu đơn vị chưa giao."
+        >
+          <Form.Input type="number" inputMode="decimal" min={0} step="any" />
+        </Form.Field>
+      ) : null}
       <Form.Field name="note" label="Ghi chú (không bắt buộc)">
         <Form.Input maxLength={500} />
       </Form.Field>
