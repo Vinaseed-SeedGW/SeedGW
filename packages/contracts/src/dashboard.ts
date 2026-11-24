@@ -44,6 +44,16 @@ export const DASHBOARD_PERIOD_LABEL: Record<DashboardPeriod, string> = {
 // Kỳ tuỳ chọn dài nhất, để biểu đồ theo ngày và truy vấn không quá nặng khi chưa có bảng tổng hợp (K1).
 export const MAX_DASHBOARD_DAYS = 366;
 
+/** Xếp hạng nhân viên (K4c, IA §3.2): theo lượt ghé thăm, độ phủ đại lý phụ trách hoặc km. */
+export const DASHBOARD_RANKINGS = ['luot', 'do-phu', 'km'] as const;
+export type DashboardRanking = (typeof DASHBOARD_RANKINGS)[number];
+
+export const DASHBOARD_RANKING_LABEL: Record<DashboardRanking, string> = {
+  luot: 'Lượt ghé thăm',
+  'do-phu': 'Độ phủ đại lý phụ trách',
+  km: 'Km',
+};
+
 export type DashboardInput = {
   period: DashboardPeriod;
   from: string;
@@ -57,6 +67,7 @@ export type DashboardInput = {
   // K7: vùng canh tác và tỉnh, lọc theo tỉnh của đại lý.
   regionId: string | null;
   provinceName: ProvinceName | null;
+  rankBy: DashboardRanking;
 };
 
 export type SeasonRange = SeasonDates & { id: string; name: string; regionId: string | null };
@@ -195,6 +206,7 @@ export function dashboardUrlParams(
         .catch(undefined),
       vu: z.uuid().optional().catch(undefined),
       'nien-vu': z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+      'sap-xep': z.enum(DASHBOARD_RANKINGS).catch('luot'),
       vung: z.uuid().optional().catch(undefined),
       tinh: z
         .string()
@@ -248,9 +260,66 @@ export function dashboardUrlParams(
         level: url.cap ?? null,
         regionId,
         provinceName,
+        rankBy: url['sap-xep'],
       };
     });
 }
+
+/**
+ * Biểu đồ lượt ghé thăm (K4c): kỳ tới 31 ngày vẽ theo ngày, tới 186 ngày (Quý, Vụ) theo tuần bắt đầu thứ Hai,
+ * dài hơn theo tháng, để kỳ Năm không thành vài trăm cột.
+ */
+export type ChartBucket = 'day' | 'week' | 'month';
+
+export function chartBucket(from: string, to: string): ChartBucket {
+  const days = Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000) + 1;
+  if (days <= 31) return 'day';
+  if (days <= 186) return 'week';
+  return 'month';
+}
+
+/** Ngày đầu nhóm chứa ngày này; nhóm đầu kỳ không lùi quá ngày bắt đầu kỳ. */
+export function bucketStart(day: string, bucket: ChartBucket, from: string): string {
+  let start = day;
+  if (bucket === 'week') {
+    const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
+    start = shiftDays(day, -((weekday + 6) % 7));
+  } else if (bucket === 'month') {
+    start = `${day.slice(0, 7)}-01`;
+  }
+  return start < from ? from : start;
+}
+
+/** Nhãn trục: ngày 05/11, tuần ghi ngày đầu tuần 02/11, tháng 11/2026. */
+export function bucketLabel(start: string, bucket: ChartBucket): string {
+  const [year, month, day] = start.split('-');
+  return bucket === 'month' ? `${month}/${year}` : `${day}/${month}`;
+}
+
+/** Gộp số lượt theo ngày thành chuỗi cột của kỳ (K1, K4c); ngày không có lượt vẫn có cột bằng 0. */
+export function bucketSeries(
+  from: string,
+  to: string,
+  daily: ReadonlyArray<{ day: string; visits: number }>,
+): { bucket: ChartBucket; series: { start: string; visits: number }[] } {
+  const bucket = chartBucket(from, to);
+  const counts = new Map<string, number>();
+  for (let day = from; day <= to; day = shiftDays(day, 1)) {
+    counts.set(bucketStart(day, bucket, from), 0);
+  }
+  for (const row of daily) {
+    if (row.day < from || row.day > to) continue;
+    const key = bucketStart(row.day, bucket, from);
+    counts.set(key, (counts.get(key) ?? 0) + row.visits);
+  }
+  return { bucket, series: [...counts].map(([start, visits]) => ({ start, visits })) };
+}
+
+export const CHART_BUCKET_TITLE: Record<ChartBucket, string> = {
+  day: 'Lượt ghé thăm theo ngày',
+  week: 'Lượt ghé thăm theo tuần',
+  month: 'Lượt ghé thăm theo tháng',
+};
 
 export type Coverage = { active: number; covered: number };
 
@@ -297,7 +366,9 @@ export type DashboardResult = {
     kmSource: KmSource;
   };
   market: {
-    perDay: { day: string; visits: number }[];
+    // K4c: gộp theo ngày, tuần hoặc tháng tuỳ độ dài kỳ.
+    bucket: ChartBucket;
+    series: { start: string; visits: number }[];
     byKind: Record<CheckInPlaceKind, number>;
     kmPerVisit: number | null;
     flagged: number;
@@ -328,6 +399,8 @@ export type DashboardResult = {
       visits: number;
       coveredDealers: number;
       assignedDealers: number;
+      // Đại lý được giao cho nhân viên đã được ghé trong kỳ, để tính độ phủ đại lý phụ trách.
+      assignedVisited: number;
       km: number;
     }[];
     notCheckedInToday: { code: string; name: string; orgUnitName: string | null }[];

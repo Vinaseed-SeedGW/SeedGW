@@ -1,18 +1,28 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { isoDateToDisplay } from '@seedgw/contracts/format';
+import { bucketLabel, type ChartBucket } from '@seedgw/contracts/dashboard';
 
-type Props = { data: { day: string; visits: number }[] };
+type Props = { data: { start: string; visits: number }[]; bucket: ChartBucket };
 
-/** Lượt ghé thăm theo ngày. Màu lấy từ token biểu đồ (BRAND.md), không viết mã màu trực tiếp. */
-export function VisitsChart({ data }: Props) {
-  const rows = data.map((row) => ({ ...row, label: isoDateToDisplay(row.day).slice(0, 5) }));
+const UNIT: Record<ChartBucket, string> = { day: 'ngày', week: 'tuần', month: 'tháng' };
+const TOOLTIP_PREFIX: Record<ChartBucket, string> = {
+  day: 'Ngày',
+  week: 'Tuần từ',
+  month: 'Tháng',
+};
+
+/**
+ * Lượt ghé thăm theo ngày, tuần hoặc tháng (K4c). Màu lấy từ token biểu đồ (BRAND.md), không viết mã màu
+ * trực tiếp.
+ */
+export function VisitsChart({ data, bucket }: Props) {
+  const rows = data.map((row) => ({ ...row, label: bucketLabel(row.start, bucket) }));
   return (
     <div
       className="h-64 w-full"
       role="img"
-      aria-label={`Biểu đồ lượt ghé thăm theo ngày, ${data.length} ngày`}
+      aria-label={`Biểu đồ lượt ghé thăm theo ${UNIT[bucket]}, ${data.length} ${UNIT[bucket]}`}
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
@@ -34,7 +44,7 @@ export function VisitsChart({ data }: Props) {
           <Tooltip
             cursor={{ fill: 'var(--brand-soft)' }}
             formatter={(value) => [String(value), 'Lượt ghé thăm']}
-            labelFormatter={(label) => `Ngày ${String(label)}`}
+            labelFormatter={(label) => `${TOOLTIP_PREFIX[bucket]} ${String(label)}`}
             contentStyle={{
               borderRadius: 6,
               borderColor: 'var(--border)',

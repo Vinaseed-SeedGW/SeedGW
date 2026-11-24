@@ -2,11 +2,13 @@ import 'server-only';
 import type { Prisma } from '@prisma/client';
 import type { CheckInPlaceKind } from '@seedgw/contracts/check-ins';
 import {
+  bucketSeries,
   lastYearRange,
   monthsInRange,
   MONTHLY_PERIODS,
   previousRange,
   type DashboardInput,
+  type DashboardRanking,
   type DashboardResult,
   type PeriodFigures,
 } from '@seedgw/contracts/dashboard';
@@ -42,21 +44,9 @@ function vnDay(date: Date): string {
   return new Date(date.getTime() + VN_OFFSET_MS).toISOString().slice(0, 10);
 }
 
-function eachDay(from: string, to: string): string[] {
-  const days: string[] = [];
-  for (
-    let at = Date.parse(`${from}T00:00:00Z`);
-    at <= Date.parse(`${to}T00:00:00Z`);
-    at += DAY_MS
-  ) {
-    days.push(new Date(at).toISOString().slice(0, 10));
-  }
-  return days;
-}
-
 /**
  * Số liệu dashboard check-in (K0). Mọi truy vấn qua client có phạm vi dữ liệu của người xem; bộ lọc đơn vị
- * gồm cả đơn vị con. Tính thẳng từ dữ liệu gốc, bảng tổng hợp theo ngày làm ở K1.
+ * gồm cả đơn vị con. Biểu đồ theo ngày đọc bảng gộp K1 (daily_visit_stats), các số khác đếm thẳng vì CSDL trả nhanh.
  */
 export async function readDashboard(
   input: DashboardInput,
@@ -86,6 +76,12 @@ export async function readDashboard(
     ...(input.level ? { level: input.level } : {}),
     ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
     ...(input.employeeCode ? { assignedUser: { employeeCode: input.employeeCode } } : {}),
+    ...(inProvinces ?? {}),
+  };
+  // K1: bảng gộp theo ngày, cùng bộ lọc với check-in (đơn vị lúc check-in, nhân viên, tỉnh của đại lý).
+  const statsScope: Prisma.DailyVisitStatWhereInput = {
+    ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
+    ...(input.employeeCode ? { user: { employeeCode: input.employeeCode } } : {}),
     ...(inProvinces ?? {}),
   };
   const visitedInPeriod: Prisma.DealerWhereInput = {
@@ -121,7 +117,7 @@ export async function readDashboard(
     gpsFallbackSum,
     gpsFallbackVisits,
     flagged,
-    capturedDays,
+    dailyVisits,
     activeDealers,
     coveredDealers,
     todayUsers,
@@ -151,7 +147,7 @@ export async function readDashboard(
       where: { AND: [inPeriod, { roadDistanceKm: null }, { gpsDistanceKm: { gt: 0 } }] },
     }),
     scoped.checkIn.count({ where: { ...inPeriod, flags: { isEmpty: false } } }),
-    scoped.checkIn.findMany({ where: inPeriod, select: { capturedAt: true } }),
+    readDailyVisits(scoped, statsScope, checkInScope, input, today),
     scoped.dealer.count({ where: dealerScope }),
     scoped.dealer.count({ where: visitedInPeriod }),
     scoped.checkIn.groupBy({
@@ -190,11 +186,8 @@ export async function readDashboard(
     scoped.dealer.groupBy({ by: ['orgUnitId'], where: visitedInPeriod, _count: { _all: true } }),
   ]);
 
-  const perDayCounts = new Map<string, number>();
-  for (const row of capturedDays) {
-    const day = vnDay(row.capturedAt);
-    perDayCounts.set(day, (perDayCounts.get(day) ?? 0) + 1);
-  }
+  // K4c: gộp lượt ghé theo ngày, tuần hoặc tháng tuỳ độ dài kỳ.
+  const chart = bucketSeries(input.from, input.to, dailyVisits);
   const byKind: Record<CheckInPlaceKind, number> = { DEALER: 0, CUSTOMER: 0, OTHER: 0 };
   for (const row of byKindRows) byKind[row.placeKind] = row._count._all;
   // Km chính là km theo đường đi; lượt máy chủ chưa tính (hoặc chưa bật) lấy km theo GPS (V1b).
@@ -249,10 +242,8 @@ export async function readDashboard(
       kmSource: { roadVisits: roadSum._count._all, gpsVisits: gpsFallbackVisits },
     },
     market: {
-      perDay: eachDay(input.from, input.to).map((day) => ({
-        day,
-        visits: perDayCounts.get(day) ?? 0,
-      })),
+      bucket: chart.bucket,
+      series: chart.series,
       byKind,
       kmPerVisit: visits > 0 ? round3(km / visits) : null,
       flagged,
@@ -293,9 +284,55 @@ export async function readDashboard(
         .sort((a, b) => a.unitName.localeCompare(b.unitName, 'vi')),
     },
     staff: showStaff
-      ? await readStaff(staffScope, inPeriod, checkInScope, today, inProvinces ?? {})
+      ? await readStaff(staffScope, inPeriod, checkInScope, today, {
+          dealerFilter: inProvinces ?? {},
+          capturedAt: { gte: from, lt: to },
+          rankBy: input.rankBy,
+        })
       : null,
   };
+}
+
+function utcDate(day: string): Date {
+  return new Date(`${day}T00:00:00Z`);
+}
+
+/**
+ * Số lượt theo ngày cho biểu đồ (K1): các ngày đã qua đọc bảng gộp daily_visit_stats, ngày hôm nay đếm thẳng từ
+ * check-in để số luôn mới. Trước đây kéo từng lượt check-in của cả kỳ về máy chủ, kỳ Năm mất vài giây.
+ */
+async function readDailyVisits(
+  scoped: ScopedDb,
+  statsScope: Prisma.DailyVisitStatWhereInput,
+  checkInScope: Prisma.CheckInWhereInput,
+  input: DashboardInput,
+  today: string,
+): Promise<{ day: string; visits: number }[]> {
+  const statsTo = input.to < today ? input.to : shiftIso(today, -1);
+  const [stats, todayRows] = await Promise.all([
+    input.from <= statsTo
+      ? scoped.dailyVisitStat.groupBy({
+          by: ['day'],
+          where: { ...statsScope, day: { gte: utcDate(input.from), lte: utcDate(statsTo) } },
+          _sum: { visits: true },
+        })
+      : Promise.resolve([]),
+    input.to >= today
+      ? scoped.checkIn.count({
+          where: {
+            ...checkInScope,
+            capturedAt: { gte: vietnamDayStart(today), lt: vietnamNextDayStart(today) },
+          },
+        })
+      : Promise.resolve(0),
+  ]);
+  return [
+    ...stats.map((row) => ({
+      day: row.day.toISOString().slice(0, 10),
+      visits: row._sum.visits ?? 0,
+    })),
+    ...(input.to >= today ? [{ day: today, visits: todayRows }] : []),
+  ];
 }
 
 async function readStaff(
@@ -303,53 +340,76 @@ async function readStaff(
   inPeriod: Prisma.CheckInWhereInput,
   checkInScope: Prisma.CheckInWhereInput,
   today: string,
-  dealerFilter: Prisma.DealerWhereInput,
+  options: {
+    dealerFilter: Prisma.DealerWhereInput;
+    capturedAt: { gte: Date; lt: Date };
+    rankBy: DashboardRanking;
+  },
 ): Promise<DashboardResult['staff']> {
+  const { dealerFilter, capturedAt, rankBy } = options;
   const scoped = await getScopedDb();
-  const [perUser, perUserRoad, perUserGps, perUserDealer, assigned, staff, todayUsers] =
-    await Promise.all([
-      scoped.checkIn.groupBy({
-        by: ['userId'],
-        where: inPeriod,
-        _count: { _all: true },
-      }),
-      scoped.checkIn.groupBy({
-        by: ['userId'],
-        where: { AND: [inPeriod, { roadDistanceKm: { not: null } }] },
-        _sum: { roadDistanceKm: true },
-      }),
-      scoped.checkIn.groupBy({
-        by: ['userId'],
-        where: { AND: [inPeriod, { roadDistanceKm: null }] },
-        _sum: { gpsDistanceKm: true },
-      }),
-      scoped.checkIn.groupBy({
-        by: ['userId', 'dealerId'],
-        where: { ...inPeriod, dealerId: { not: null } },
-      }),
-      scoped.dealer.groupBy({
-        by: ['assignedUserId'],
-        where: { ...dealerFilter, status: 'ACTIVE', assignedUserId: { not: null } },
-        _count: { _all: true },
-      }),
-      scoped.user.findMany({
-        where: staffScope,
-        orderBy: { employeeCode: 'asc' },
-        select: {
-          id: true,
-          employeeCode: true,
-          fullName: true,
-          orgUnit: { select: { name: true } },
-        },
-      }),
-      scoped.checkIn.groupBy({
-        by: ['userId'],
-        where: {
-          ...checkInScope,
-          capturedAt: { gte: vietnamDayStart(today), lt: vietnamNextDayStart(today) },
-        },
-      }),
-    ]);
+  const [
+    perUser,
+    perUserRoad,
+    perUserGps,
+    perUserDealer,
+    assigned,
+    assignedVisitedRows,
+    staff,
+    todayUsers,
+  ] = await Promise.all([
+    scoped.checkIn.groupBy({
+      by: ['userId'],
+      where: inPeriod,
+      _count: { _all: true },
+    }),
+    scoped.checkIn.groupBy({
+      by: ['userId'],
+      where: { AND: [inPeriod, { roadDistanceKm: { not: null } }] },
+      _sum: { roadDistanceKm: true },
+    }),
+    scoped.checkIn.groupBy({
+      by: ['userId'],
+      where: { AND: [inPeriod, { roadDistanceKm: null }] },
+      _sum: { gpsDistanceKm: true },
+    }),
+    scoped.checkIn.groupBy({
+      by: ['userId', 'dealerId'],
+      where: { ...inPeriod, dealerId: { not: null } },
+    }),
+    scoped.dealer.groupBy({
+      by: ['assignedUserId'],
+      where: { ...dealerFilter, status: 'ACTIVE', assignedUserId: { not: null } },
+      _count: { _all: true },
+    }),
+    scoped.dealer.groupBy({
+      by: ['assignedUserId'],
+      where: {
+        ...dealerFilter,
+        status: 'ACTIVE',
+        assignedUserId: { not: null },
+        checkIns: { some: { capturedAt } },
+      },
+      _count: { _all: true },
+    }),
+    scoped.user.findMany({
+      where: staffScope,
+      orderBy: { employeeCode: 'asc' },
+      select: {
+        id: true,
+        employeeCode: true,
+        fullName: true,
+        orgUnit: { select: { name: true } },
+      },
+    }),
+    scoped.checkIn.groupBy({
+      by: ['userId'],
+      where: {
+        ...checkInScope,
+        capturedAt: { gte: vietnamDayStart(today), lt: vietnamNextDayStart(today) },
+      },
+    }),
+  ]);
   const visits = new Map(perUser.map((row) => [row.userId, row]));
   const kmByUser = new Map<string, number>();
   for (const row of perUserRoad) kmByUser.set(row.userId, row._sum.roadDistanceKm ?? 0);
@@ -359,6 +419,9 @@ async function readStaff(
   const covered = new Map<string, number>();
   for (const row of perUserDealer) covered.set(row.userId, (covered.get(row.userId) ?? 0) + 1);
   const assignedCount = new Map(assigned.map((row) => [row.assignedUserId, row._count._all]));
+  const assignedVisited = new Map(
+    assignedVisitedRows.map((row) => [row.assignedUserId, row._count._all]),
+  );
   const checkedIn = new Set(todayUsers.map((row) => row.userId));
   // Người ngoài danh sách NVKD nhưng có check-in (ví dụ tài khoản quản trị đi thử) vẫn vào xếp hạng.
   const people = new Map(staff.map((user) => [user.id, user]));
@@ -379,10 +442,11 @@ async function readStaff(
       visits: visits.get(user.id)?._count._all ?? 0,
       coveredDealers: covered.get(user.id) ?? 0,
       assignedDealers: assignedCount.get(user.id) ?? 0,
+      assignedVisited: assignedVisited.get(user.id) ?? 0,
       km: round3(kmByUser.get(user.id) ?? 0),
     }))
     .filter((row) => row.visits > 0)
-    .sort((a, b) => b.visits - a.visits || b.km - a.km)
+    .sort(RANKING_ORDER[rankBy])
     .slice(0, RANKING_SIZE);
   const notCheckedIn = staff.filter((user) => !checkedIn.has(user.id));
   return {
@@ -395,6 +459,22 @@ async function readStaff(
     notCheckedInTotal: notCheckedIn.length,
   };
 }
+
+type RankingRow = NonNullable<DashboardResult['staff']>['ranking'][number];
+
+/** Độ phủ đại lý phụ trách; nhân viên chưa được giao đại lý xếp sau cùng. */
+function assignedCoverage(row: RankingRow): number {
+  return row.assignedDealers > 0 ? row.assignedVisited / row.assignedDealers : -1;
+}
+
+const RANKING_ORDER: Record<DashboardRanking, (a: RankingRow, b: RankingRow) => number> = {
+  luot: (a, b) => b.visits - a.visits || b.km - a.km,
+  'do-phu': (a, b) =>
+    assignedCoverage(b) - assignedCoverage(a) ||
+    b.assignedVisited - a.assignedVisited ||
+    b.visits - a.visits,
+  km: (a, b) => b.km - a.km || b.visits - a.visits,
+};
 
 async function periodFigures(
   scoped: ScopedDb,

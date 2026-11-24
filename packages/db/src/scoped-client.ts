@@ -8,6 +8,8 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   AuditLog: { ownerField: 'actorId', orgUnitField: 'actor.orgUnitId' },
   // Theo don vi luc check-in de bao cao cu khong doi khi nhan vien chuyen don vi.
   CheckIn: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
+  // K1: bảng gộp theo ngày, cùng phạm vi với check-in.
+  DailyVisitStat: { ownerField: 'userId', orgUnitField: 'orgUnitId' },
   TrackPoint: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   TrackSession: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   // Nhan vien thay dai ly duoc giao, quan ly thay theo don vi phu trach cua dai ly.

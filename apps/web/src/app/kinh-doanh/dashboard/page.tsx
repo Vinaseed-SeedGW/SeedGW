@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
 import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@seedgw/contracts/check-ins';
 import {
+  CHART_BUCKET_TITLE,
   changePercent,
   periodTitle,
   dashboardUrlParams,
@@ -24,6 +25,7 @@ import {
   vietnamToday,
 } from '@seedgw/contracts/format';
 import { DashboardFilters } from '@/features/dashboard/components/dashboard-filters';
+import { RankingSort } from '@/features/dashboard/components/ranking-sort';
 import { VisitsChartLazy } from '@/features/dashboard/components/visits-chart-lazy';
 import { requirePermission } from '@/server/auth/can';
 import { getDashboard, getDashboardFilterOptions } from '@/server/queries/dashboard';
@@ -218,11 +220,11 @@ async function DashboardBody({
           Thị trường
         </h2>
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <Panel title="Lượt ghé thăm theo ngày">
+          <Panel title={CHART_BUCKET_TITLE[data.market.bucket]}>
             {data.kpi.visits === 0 ? (
               <p className="text-text-muted">Không có lượt check-in nào trong kỳ này.</p>
             ) : (
-              <VisitsChartLazy data={data.market.perDay} />
+              <VisitsChartLazy data={data.market.series} bucket={data.market.bucket} />
             )}
           </Panel>
           <Panel title="Theo loại điểm">
@@ -360,12 +362,13 @@ function StaffSection({
         Nhân viên
       </h2>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
-        <Panel title="Xếp hạng theo lượt ghé thăm">
+        <Panel title="Xếp hạng nhân viên">
+          <RankingSort value={input.rankBy} />
           {data.ranking.length === 0 ? (
             <p className="text-text-muted">Chưa có nhân viên nào check-in trong kỳ này.</p>
           ) : (
             <Table
-              head={['Nhân viên', 'Lượt', 'Đại lý được ghé', 'Km']}
+              head={['Nhân viên', 'Lượt', 'Đại lý được ghé', 'Độ phủ phụ trách', 'Km']}
               rows={data.ranking.map((row) => [
                 <Link
                   key="name"
@@ -375,7 +378,10 @@ function StaffSection({
                   {row.code}, {row.name}
                 </Link>,
                 formatNumber(row.visits),
-                `${formatNumber(row.coveredDealers)}/${formatNumber(row.assignedDealers)}`,
+                formatNumber(row.coveredDealers),
+                row.assignedDealers > 0
+                  ? `${percent({ covered: row.assignedVisited, active: row.assignedDealers })} (${formatNumber(row.assignedVisited)}/${formatNumber(row.assignedDealers)})`
+                  : 'Chưa giao',
                 formatKm(row.km),
               ])}
             />

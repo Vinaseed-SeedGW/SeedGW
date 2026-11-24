@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bucketLabel,
+  bucketSeries,
+  bucketStart,
+  chartBucket,
   changePercent,
   dashboardUrlParams,
   lastYearRange,
@@ -54,6 +58,7 @@ describe('dashboardUrlParams', () => {
       seasonYear: null,
       regionId: null,
       provinceName: null,
+      rankBy: 'luot',
     });
     const parsed = dashboardUrlParams(now).parse({ ky: '7-ngay', 'nhan-vien': 'KD001', cap: '2' });
     expect(parsed.period).toBe('7-ngay');
@@ -203,5 +208,44 @@ describe('kỳ mới và so sánh (K4)', () => {
     expect(parse({ ky: 'vu', vung: RED_RIVER, vu: seasons[0]?.id ?? '' })).toMatchObject({
       seasonId: seasons[1]?.id,
     });
+  });
+
+  it('K4c: biểu đồ gộp theo ngày, tuần, tháng và xếp hạng theo tham số', () => {
+    expect(chartBucket('2026-11-01', '2026-11-30')).toBe('day');
+    expect(chartBucket('2026-10-01', '2026-12-31')).toBe('week');
+    expect(chartBucket('2026-01-01', '2026-11-24')).toBe('month');
+    // 24/11/2026 là thứ Ba, tuần bắt đầu thứ Hai 23/11; nhóm đầu kỳ không lùi quá ngày bắt đầu.
+    expect(bucketStart('2026-11-24', 'week', '2026-10-01')).toBe('2026-11-23');
+    expect(bucketStart('2026-10-02', 'week', '2026-10-01')).toBe('2026-10-01');
+    expect(bucketStart('2026-11-24', 'month', '2026-01-01')).toBe('2026-11-01');
+    expect(bucketLabel('2026-11-01', 'month')).toBe('11/2026');
+    expect(bucketLabel('2026-11-23', 'week')).toBe('23/11');
+    expect(dashboardUrlParams().parse({ 'sap-xep': 'km' }).rankBy).toBe('km');
+    expect(dashboardUrlParams().parse({ 'sap-xep': 'x' }).rankBy).toBe('luot');
+  });
+
+  it('K1: gộp số lượt theo ngày thành cột, bỏ ngày ngoài kỳ', () => {
+    expect(
+      bucketSeries('2026-11-01', '2026-11-03', [
+        { day: '2026-11-01', visits: 2 },
+        { day: '2026-11-03', visits: 1 },
+        { day: '2026-11-03', visits: 4 },
+        { day: '2026-10-31', visits: 9 },
+      ]),
+    ).toEqual({
+      bucket: 'day',
+      series: [
+        { start: '2026-11-01', visits: 2 },
+        { start: '2026-11-02', visits: 0 },
+        { start: '2026-11-03', visits: 5 },
+      ],
+    });
+    const year = bucketSeries('2026-01-01', '2026-03-15', [
+      { day: '2026-01-05', visits: 3 },
+      { day: '2026-01-06', visits: 1 },
+    ]);
+    expect(year.bucket).toBe('week');
+    expect(year.series[0]).toEqual({ start: '2026-01-01', visits: 0 });
+    expect(year.series[1]).toEqual({ start: '2026-01-05', visits: 4 });
   });
 });

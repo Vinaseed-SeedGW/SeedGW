@@ -88,6 +88,7 @@ model User {
   impersonationsReceived ImpersonationSession[]   @relation("impersonation_target")
   mobileRefreshTokens    MobileRefreshToken[]
   checkIns               CheckIn[]
+  dailyVisitStats        DailyVisitStat[]
   trackPoints            TrackPoint[]
   trackSessions          TrackSession[]
   assignedDealers        Dealer[]                 @relation("dealer_assignee")
@@ -257,6 +258,31 @@ enum CheckInPlaceKind {
   OTHER
 
   @@map("check_in_place_kind")
+}
+
+// K1: lượt ghé thăm gộp theo ngày (giờ Việt Nam), đơn vị và nhân viên lúc check-in, loại điểm, tỉnh của đại lý.
+// Worker tính lại 15 phút một lần cho ngày có check-in mới và mỗi đêm cho 7 ngày gần nhất; Dashboard đọc bảng này
+// cho các ngày đã qua, ngày hôm nay vẫn đếm thẳng từ check_ins.
+model DailyVisitStat {
+  id           String           @id @default(uuid()) @db.Uuid
+  day          DateTime         @db.Date
+  orgUnitId    String?          @map("org_unit_id") @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeKind    CheckInPlaceKind @map("place_kind")
+  provinceName String?          @map("province_name")
+  visits       Int
+  flagged      Int
+  roadKm       Float            @map("road_km")
+  roadVisits   Int              @map("road_visits")
+  gpsKm        Float            @map("gps_km")
+  gpsVisits    Int              @map("gps_visits")
+  computedAt   DateTime         @default(now()) @map("computed_at")
+
+  @@index([day])
+  @@index([userId, day])
+  @@index([orgUnitId, day])
+  @@map("daily_visit_stats")
 }
 
 model CheckIn {

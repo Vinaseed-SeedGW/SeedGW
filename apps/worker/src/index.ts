@@ -1,4 +1,5 @@
 import { Queue, Worker, type Job } from 'bullmq';
+import { recomputeDailyVisitStats, touchedVisitDays } from '@seedgw/db/daily-visit-stats';
 import { FAST_SYNC_QUEUE } from '@seedgw/contracts/fast';
 import {
   PUSH_QUEUE,
@@ -13,10 +14,15 @@ import { roadDistanceProvider } from './osrm';
 import { computeRoadDay, userDaysWithCheckIns } from './road-distance';
 import { autoCloseDone, purgeExpired } from './support';
 
-// Worker chạy nền (F8): km theo đường đi (V1b), việc định kỳ của Hỗ trợ (T5), đồng bộ FAST (A8).
+// Worker chạy nền (F8): km theo đường đi (V1b), việc định kỳ của Hỗ trợ (T5), đồng bộ FAST (A8), bảng gộp lượt
+// ghé thăm theo ngày (K1).
 const REDIS_URL = process.env.REDIS_URL?.trim();
 const DAY_MS = 86_400_000;
 const SUPPORT_QUEUE = 'support';
+const DAILY_STATS_QUEUE = 'daily-visit-stats';
+// Mỗi lần chạy xét check-in tạo hoặc sửa trong 30 phút qua (lịch 15 phút, chồng lên nhau để không sót).
+const DAILY_STATS_LOOKBACK_MS = 30 * 60_000;
+const DAILY_STATS_NIGHTLY_DAYS = 7;
 
 const vnToday = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 
@@ -78,6 +84,45 @@ async function startSupport(connection: Connection): Promise<Array<Queue | Worke
     { connection, concurrency: 1 },
   );
   logJobs(worker, 'Hỗ trợ');
+  return [queue, worker];
+}
+
+async function startDailyStats(connection: Connection): Promise<Array<Queue | Worker>> {
+  const queue = new Queue(DAILY_STATS_QUEUE, { connection });
+  const opts = {
+    attempts: 3,
+    backoff: { type: 'exponential' as const, delay: 60_000 },
+    removeOnComplete: 200,
+    removeOnFail: 200,
+  };
+  // 15 phút một lần cho ngày có check-in mới hoặc gửi trễ; 00:30 tính lại 7 ngày gần nhất phòng khi worker dừng.
+  await queue.upsertJobScheduler(
+    'daily-stats-refresh',
+    { pattern: '*/15 * * * *', tz: 'Asia/Ho_Chi_Minh' },
+    { name: 'refresh', data: {}, opts },
+  );
+  await queue.upsertJobScheduler(
+    'daily-stats-nightly',
+    { pattern: '30 0 * * *', tz: 'Asia/Ho_Chi_Minh' },
+    { name: 'nightly', data: {}, opts },
+  );
+  const worker = new Worker(
+    DAILY_STATS_QUEUE,
+    async (job: Job) => {
+      const days =
+        job.name === 'nightly'
+          ? Array.from({ length: DAILY_STATS_NIGHTLY_DAYS }, (_, index) =>
+              new Date(Date.parse(`${vnToday()}T00:00:00Z`) - (index + 1) * DAY_MS)
+                .toISOString()
+                .slice(0, 10),
+            )
+          : await touchedVisitDays(new Date(Date.now() - DAILY_STATS_LOOKBACK_MS));
+      const rows = await recomputeDailyVisitStats(days);
+      return { days: days.length, rows };
+    },
+    { connection, concurrency: 1 },
+  );
+  logJobs(worker, 'Bảng gộp lượt ghé');
   return [queue, worker];
 }
 
@@ -162,6 +207,7 @@ async function main() {
   const parts = [
     ...(await startRoadDistance(connection)),
     ...(await startSupport(connection)),
+    ...(await startDailyStats(connection)),
     ...(await startFastSync(connection)),
     ...(await startPush(connection)),
   ];
