@@ -6,6 +6,7 @@ import {
   HousePlus,
   LayoutDashboard,
   LifeBuoy,
+  Map as MapIcon,
   MapPin,
   MapPinCheck,
   Network,
@@ -82,6 +83,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       label: 'Quy định',
       items: [
         { label: 'Lịch vụ', href: '/quan-tri/lich-vu', icon: CalendarDays },
+        { label: 'Vùng và tỉnh', href: '/quan-tri/vung-tinh', icon: MapIcon },
         { label: 'Tham số', href: '/quan-tri/tham-so', icon: SlidersHorizontal },
       ],
     },

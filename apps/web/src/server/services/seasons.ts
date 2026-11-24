@@ -1,32 +1,43 @@
 import 'server-only';
 import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
-import { formatDate } from '@seedgw/contracts/format';
-import { seasonDays, type SeasonRow, type UpsertSeasonInput } from '@seedgw/contracts/seasons';
+import {
+  crossesYear,
+  seasonDays,
+  seasonRangeText,
+  type SeasonDates,
+  type SeasonRow,
+  type UpsertSeasonInput,
+} from '@seedgw/contracts/seasons';
 import { db } from '@seedgw/db/client';
 import { isUniqueViolation } from './approvals';
 import { DomainError } from './domain-error';
 
-// Lịch vụ (K3): một lịch chung toàn công ty, không theo phạm vi dữ liệu. Ai đăng nhập cũng đọc được để chọn
-// kỳ Vụ trên Dashboard và Báo cáo; chỉ Quản trị hệ thống sửa.
+// Lịch vụ (K3): một lịch chung toàn công ty, lặp lại mọi năm, không theo phạm vi dữ liệu. Ai đăng nhập cũng đọc
+// được để chọn kỳ Vụ trên Dashboard và Báo cáo; chỉ Quản trị hệ thống sửa.
 
-function toIsoDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-function fromIsoDate(value: string): Date {
-  return new Date(`${value}T00:00:00.000Z`);
-}
+const SELECT = {
+  id: true,
+  name: true,
+  startDay: true,
+  startMonth: true,
+  endDay: true,
+  endMonth: true,
+  regionId: true,
+  region: { select: { name: true } },
+  note: true,
+} as const;
 
 export async function listSeasons(): Promise<SeasonRow[]> {
   const rows = await db.season.findMany({
-    orderBy: [{ startDate: 'desc' }, { name: 'asc' }],
-    select: { id: true, name: true, startDate: true, endDate: true, note: true },
+    orderBy: [{ startMonth: 'asc' }, { startDay: 'asc' }, { name: 'asc' }],
+    select: SELECT,
   });
-  return rows.map((row) => {
-    const startDate = toIsoDate(row.startDate);
-    const endDate = toIsoDate(row.endDate);
-    return { ...row, startDate, endDate, days: seasonDays(startDate, endDate) };
-  });
+  return rows.map(({ region, ...row }) => ({
+    ...row,
+    regionName: region?.name ?? null,
+    days: seasonDays(row),
+    crossesYear: crossesYear(row),
+  }));
 }
 
 export type SeasonOutcome = {
@@ -36,22 +47,37 @@ export type SeasonOutcome = {
   changes: AuditChanges;
 };
 
-function snapshot(row: { name: string; startDate: string; endDate: string; note: string }) {
+function snapshot(row: SeasonDates & { name: string; note: string; regionName: string | null }) {
   return {
     'Tên vụ': row.name,
-    'Từ ngày': formatDate(`${row.startDate}T00:00:00+07:00`),
-    'Đến ngày': formatDate(`${row.endDate}T00:00:00+07:00`),
+    Vùng: row.regionName,
+    'Thời gian': seasonRangeText(row),
     'Ghi chú': row.note,
   };
+}
+
+async function regionNameOf(regionId: string | null): Promise<string | null> {
+  if (!regionId) return null;
+  const region = await db.region.findUnique({ where: { id: regionId }, select: { name: true } });
+  if (!region) {
+    throw new DomainError('VALIDATION', 'Vùng không hợp lệ', {
+      regionId: 'Không tìm thấy vùng, vui lòng tải lại trang',
+    });
+  }
+  return region.name;
 }
 
 export async function upsertSeason(input: UpsertSeasonInput): Promise<SeasonOutcome> {
   const data = {
     name: input.name,
-    startDate: fromIsoDate(input.startDate),
-    endDate: fromIsoDate(input.endDate),
+    startDay: input.startDay,
+    startMonth: input.startMonth,
+    endDay: input.endDay,
+    endMonth: input.endMonth,
+    regionId: input.regionId,
     note: input.note,
   };
+  const regionName = await regionNameOf(input.regionId);
   try {
     if (!input.id) {
       const created = await db.season.create({ data, select: { id: true } });
@@ -59,13 +85,10 @@ export async function upsertSeason(input: UpsertSeasonInput): Promise<SeasonOutc
         id: created.id,
         name: input.name,
         created: true,
-        changes: auditChanges({}, snapshot(input)),
+        changes: auditChanges({}, snapshot({ ...data, regionName })),
       };
     }
-    const before = await db.season.findUnique({
-      where: { id: input.id },
-      select: { name: true, startDate: true, endDate: true, note: true },
-    });
+    const before = await db.season.findUnique({ where: { id: input.id }, select: SELECT });
     if (!before) throw new DomainError('NOT_FOUND', 'Không tìm thấy vụ, vui lòng tải lại trang');
     await db.season.update({ where: { id: input.id }, data });
     return {
@@ -73,12 +96,8 @@ export async function upsertSeason(input: UpsertSeasonInput): Promise<SeasonOutc
       name: input.name,
       created: false,
       changes: auditChanges(
-        snapshot({
-          ...before,
-          startDate: toIsoDate(before.startDate),
-          endDate: toIsoDate(before.endDate),
-        }),
-        snapshot(input),
+        snapshot({ ...before, regionName: before.region?.name ?? null }),
+        snapshot({ ...data, regionName }),
       ),
     };
   } catch (error) {

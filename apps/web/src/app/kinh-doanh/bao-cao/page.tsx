@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { DASHBOARD_PERIOD_LABEL, type SeasonRange } from '@seedgw/contracts/dashboard';
+import { periodTitle, type SeasonRange } from '@seedgw/contracts/dashboard';
 import { isoDateToDisplay } from '@seedgw/contracts/format';
 import {
   REPORT_GROUP_LABEL,
@@ -16,6 +16,7 @@ import { ExportReportButton, ReportTable } from '@/features/reports/components/r
 import { requirePermission } from '@/server/auth/can';
 import { getDashboardFilterOptions } from '@/server/queries/dashboard';
 import { getReport } from '@/server/queries/reports';
+import { getGeoFilterOptions, getProvinceRegions } from '@/server/queries/regions';
 import { getSeasons } from '@/server/queries/seasons';
 
 export const metadata: Metadata = { title: 'Báo cáo' };
@@ -33,8 +34,12 @@ function groupHref(params: Record<string, string | string[] | undefined>, group:
 
 export default async function ReportPage({ searchParams }: PageProps) {
   await requirePermission('sales.report.read');
-  const [raw, seasons] = await Promise.all([searchParams, getSeasons()]);
-  const input = reportUrlParams(new Date(), seasons).parse(raw);
+  const [raw, seasons, provinces] = await Promise.all([
+    searchParams,
+    getSeasons(),
+    getProvinceRegions(),
+  ]);
+  const input = reportUrlParams(new Date(), seasons, provinces).parse(raw);
   const periodText =
     input.from === input.to
       ? isoDateToDisplay(input.from)
@@ -71,7 +76,7 @@ export default async function ReportPage({ searchParams }: PageProps) {
         })}
       </nav>
       <p className="mt-3 font-bold">
-        {DASHBOARD_PERIOD_LABEL[input.period]}, {periodText}
+        {periodTitle(input, seasons)}, {periodText}
       </p>
       <Suspense key={JSON.stringify(input)} fallback={<DataTableSkeleton columns={5} rows={8} />}>
         <ReportResults input={input} />
@@ -82,9 +87,10 @@ export default async function ReportPage({ searchParams }: PageProps) {
 
 async function Filters({ input, seasons }: { input: ReportInput; seasons: SeasonRange[] }) {
   const options = await getDashboardFilterOptions(input.orgUnitId);
+  const geo = await getGeoFilterOptions(options, 'sales.report.read');
   return (
     <div className="mt-4">
-      <DashboardFilters input={input} options={options} seasons={seasons} />
+      <DashboardFilters input={input} options={options} seasons={seasons} geo={geo} />
     </div>
   );
 }
@@ -93,7 +99,12 @@ async function ReportResults({ input }: { input: ReportInput }) {
   const result = await getReport(input);
   return (
     <>
-      {result.group !== 'dai-ly' ? (
+      {input.regionId || input.provinceName ? (
+        <p className="mt-1 text-sm text-text-muted">
+          Đang lọc theo tỉnh của đại lý: chỉ tính lượt ghé đại lý; chỉ tiêu giao theo đơn vị và nhân
+          viên nên không so khi lọc Vùng, Tỉnh.
+        </p>
+      ) : result.group !== 'dai-ly' ? (
         <p className="mt-1 text-sm text-text-muted">
           {result.targetMonths
             ? `Chỉ tiêu cộng các tháng: ${result.targetMonths.map(formatMonthLabel).join(', ')}.`

@@ -4,7 +4,7 @@ import { Suspense, type ReactNode } from 'react';
 import { CHECK_IN_PLACE_KIND_LABEL, formatKm } from '@seedgw/contracts/check-ins';
 import {
   changePercent,
-  DASHBOARD_PERIOD_LABEL,
+  periodTitle,
   dashboardUrlParams,
   kmSourceNote,
   type Coverage,
@@ -27,6 +27,7 @@ import { DashboardFilters } from '@/features/dashboard/components/dashboard-filt
 import { VisitsChartLazy } from '@/features/dashboard/components/visits-chart-lazy';
 import { requirePermission } from '@/server/auth/can';
 import { getDashboard, getDashboardFilterOptions } from '@/server/queries/dashboard';
+import { getGeoFilterOptions, getProvinceRegions } from '@/server/queries/regions';
 import { getSeasons } from '@/server/queries/seasons';
 
 export const metadata: Metadata = { title: 'Dashboard' };
@@ -35,8 +36,12 @@ type PageProps = { searchParams: Promise<Record<string, string | string[] | unde
 
 export default async function DashboardPage({ searchParams }: PageProps) {
   await requirePermission('sales.dashboard.read');
-  const seasons: SeasonRange[] = await getSeasons();
-  const input = dashboardUrlParams(new Date(), seasons).parse(await searchParams);
+  const [seasons, provinces, raw] = await Promise.all([
+    getSeasons(),
+    getProvinceRegions(),
+    searchParams,
+  ]);
+  const input = dashboardUrlParams(new Date(), seasons, provinces).parse(raw);
 
   return (
     <>
@@ -48,7 +53,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         <Filters input={input} seasons={seasons} />
       </Suspense>
       <Suspense key={JSON.stringify(input)} fallback={<DashboardSkeleton />}>
-        <DashboardBody input={input} />
+        <DashboardBody input={input} seasons={seasons} />
       </Suspense>
     </>
   );
@@ -56,9 +61,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
 async function Filters({ input, seasons }: { input: DashboardInput; seasons: SeasonRange[] }) {
   const options = await getDashboardFilterOptions(input.orgUnitId);
+  const geo = await getGeoFilterOptions(options, 'sales.dashboard.read');
   return (
     <div className="mt-4">
-      <DashboardFilters input={input} options={options} seasons={seasons} />
+      <DashboardFilters input={input} options={options} seasons={seasons} geo={geo} />
     </div>
   );
 }
@@ -106,7 +112,13 @@ function dealerHref(input: DashboardInput, extra: Record<string, string>): strin
   return `/kinh-doanh/dai-ly?${params.toString()}`;
 }
 
-async function DashboardBody({ input }: { input: DashboardInput }) {
+async function DashboardBody({
+  input,
+  seasons,
+}: {
+  input: DashboardInput;
+  seasons: SeasonRange[];
+}) {
   const data = await getDashboard(input);
   const updated = `Cập nhật lúc ${formatDateTime(data.updatedAt).slice(-5)}`;
   const periodText =
@@ -119,10 +131,11 @@ async function DashboardBody({ input }: { input: DashboardInput }) {
       <section aria-labelledby="so-chinh" className="grid grid-cols-[minmax(0,1fr)] gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="so-chinh" className="text-lg font-bold">
-            {DASHBOARD_PERIOD_LABEL[input.period]}, {periodText}
+            {periodTitle(input, seasons)}, {periodText}
           </h2>
           <span className="text-sm text-text-muted">{updated}</span>
         </div>
+        {input.regionId || input.provinceName ? <AreaNote /> : null}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Kpi
             href={checkInHref(input)}
@@ -193,7 +206,10 @@ async function DashboardBody({ input }: { input: DashboardInput }) {
             value={formatNumber(data.newDealers)}
             note="Đề xuất trên app được duyệt trong kỳ"
           />
-          <TargetSummary data={data} />
+          <TargetSummary
+            data={data}
+            byArea={input.regionId !== null || input.provinceName !== null}
+          />
         </div>
       </section>
 
@@ -507,8 +523,18 @@ function CompareLines({
   );
 }
 
+/** K7: lọc vùng, tỉnh tính theo tỉnh của đại lý. */
+function AreaNote() {
+  return (
+    <p className="text-sm text-text-muted">
+      Đang lọc theo tỉnh của đại lý: chỉ tính lượt ghé đại lý (không tính Khách hàng, Điểm khác) và
+      nhân viên thuộc đơn vị phụ trách tỉnh đó.
+    </p>
+  );
+}
+
 /** Chỉ tiêu đang so: tháng nào, từ đâu. Kỳ không tính theo tháng thì nhắc chọn kỳ khác. */
-function TargetSummary({ data }: { data: DashboardResult }) {
+function TargetSummary({ data, byArea }: { data: DashboardResult; byArea: boolean }) {
   return (
     <div className="grid content-start gap-1 rounded-md border border-border bg-surface p-4">
       <span className="text-sm text-text-muted">Chỉ tiêu</span>
@@ -523,6 +549,11 @@ function TargetSummary({ data }: { data: DashboardResult }) {
             {data.target.months.map((month) => formatMonthLabel(month)).join(', ')}
           </span>
         </>
+      ) : byArea ? (
+        <span className="text-sm text-text-muted">
+          Chỉ tiêu giao theo đơn vị và nhân viên, không chia theo vùng, tỉnh. Bỏ lọc Vùng, Tỉnh để
+          so với chỉ tiêu.
+        </span>
       ) : (
         <span className="text-sm text-text-muted">
           Chưa có chỉ tiêu trong kỳ, hoặc kỳ không tính theo tháng. Chỉ tiêu so được với kỳ Tháng,

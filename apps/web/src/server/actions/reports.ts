@@ -15,6 +15,7 @@ import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { buildWorkbookBase64, type ExcelColumn } from '@/server/services/excel';
 import { readReport } from '@/server/services/reports';
+import { listProvinceRegions } from '@/server/services/regions';
 import { listSeasons } from '@/server/services/seasons';
 
 function percentText(part: number, whole: number | null | undefined): string | number {
@@ -52,7 +53,8 @@ export async function exportReportAction(
   try {
     const user = await requireUser();
     assertCan(user, 'sales.report.read');
-    const input = reportUrlParams(new Date(), await listSeasons()).parse(params);
+    const [seasons, provinces] = await Promise.all([listSeasons(), listProvinceRegions()]);
+    const input = reportUrlParams(new Date(), seasons, provinces).parse(params);
     const result = await readReport({ ...input, page: 1, pageSize: MAX_REPORT_EXPORT_ROWS }, true);
     const fileName = `bao-cao-${input.group}-${input.from}-${input.to}.xlsx`;
     const sheet = `${REPORT_GROUP_LABEL[input.group]}`;

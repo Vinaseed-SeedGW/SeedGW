@@ -1,5 +1,6 @@
 import 'server-only';
 import type { ManagerOption, OrgUnitAssignScope, OrgUnitRow } from '@seedgw/contracts/org-units';
+import { PROVINCES } from '@seedgw/contracts/provinces';
 import { db } from '@seedgw/db/client';
 import { assertCan } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
@@ -20,13 +21,15 @@ export async function listOrgUnits(): Promise<OrgUnitRow[]> {
       routeKind: true,
       manager: { select: { fullName: true } },
       _count: { select: { users: true } },
+      provinces: { select: { provinceName: true } },
     },
   });
 
-  return rows.map(({ manager, _count, ...row }) => ({
+  return rows.map(({ manager, _count, provinces, ...row }) => ({
     ...row,
     managerName: manager?.fullName ?? null,
     memberCount: _count.users,
+    provinces: PROVINCES.filter((name) => provinces.some((item) => item.provinceName === name)),
   }));
 }
 

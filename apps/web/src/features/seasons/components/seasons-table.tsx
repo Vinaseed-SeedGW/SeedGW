@@ -5,24 +5,25 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { formatNumber } from '@seedgw/contracts/format';
-import { upsertSeasonInput, type SeasonRow } from '@seedgw/contracts/seasons';
+import type { RegionOption } from '@seedgw/contracts/regions';
+import {
+  formatDayMonth,
+  seasonRangeText,
+  seasonFormInput,
+  type SeasonRow,
+} from '@seedgw/contracts/seasons';
 import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 import { Form } from '@seedgw/ui/form';
 import { FormSheet } from '@seedgw/ui/form-sheet';
 import { deleteSeasonAction, upsertSeasonAction } from '@/server/actions/seasons';
 
-type FormValues = z.input<typeof upsertSeasonInput>;
+type FormValues = z.input<typeof seasonFormInput>;
 type Editing =
   { kind: 'create' } | { kind: 'edit'; row: SeasonRow } | { kind: 'delete'; row: SeasonRow };
 
 const BUTTON =
   'inline-flex h-9.5 items-center rounded-md border border-border bg-surface px-3 font-bold hover:bg-brand-soft';
-
-function displayDate(iso: string): string {
-  const [year, month, day] = iso.split('-');
-  return `${day}/${month}/${year}`;
-}
 
 function columns(canManage: boolean, onEdit: (editing: Editing) => void): ColumnDef<SeasonRow>[] {
   return [
@@ -33,11 +34,17 @@ function columns(canManage: boolean, onEdit: (editing: Editing) => void): Column
       cell: ({ row }) => <span className="font-bold">{row.original.name}</span>,
     },
     {
+      id: 'region',
+      header: 'Vùng',
+      meta: { label: 'Vùng' },
+      cell: ({ row }) => row.original.regionName ?? 'Mọi vùng',
+    },
+    {
       id: 'range',
-      header: 'Thời gian',
+      header: 'Thời gian, mọi năm',
       meta: { label: 'Thời gian' },
       cell: ({ row }) =>
-        `${displayDate(row.original.startDate)} tới ${displayDate(row.original.endDate)}, ${formatNumber(row.original.days)} ngày`,
+        `${seasonRangeText(row.original)}, ${formatNumber(row.original.days)} ngày`,
     },
     {
       accessorKey: 'note',
@@ -74,14 +81,17 @@ function columns(canManage: boolean, onEdit: (editing: Editing) => void): Column
   ];
 }
 
-function SeasonSheet({ row, onClose }: { row: SeasonRow | null; onClose: () => void }) {
+type SheetProps = { row: SeasonRow | null; regions: RegionOption[]; onClose: () => void };
+
+function SeasonSheet({ row, regions, onClose }: SheetProps) {
   const form = useForm<FormValues>({
-    resolver: zodResolver(upsertSeasonInput),
+    resolver: zodResolver(seasonFormInput),
     defaultValues: {
       id: row?.id ?? null,
       name: row?.name ?? '',
-      startDate: row?.startDate ?? '',
-      endDate: row?.endDate ?? '',
+      regionId: row?.regionId ?? null,
+      start: row ? formatDayMonth(row.startDay, row.startMonth) : '',
+      end: row ? formatDayMonth(row.endDay, row.endMonth) : '',
       note: row?.note ?? '',
     },
   });
@@ -93,14 +103,28 @@ function SeasonSheet({ row, onClose }: { row: SeasonRow | null; onClose: () => v
         successMessage="Đã lưu vụ"
         onSuccess={onClose}
       >
-        <Form.Field name="name" label="Tên vụ" hint="Ví dụ: Đông Xuân 2026-2027">
+        <Form.Field name="name" label="Tên vụ" hint="Không ghi năm, ví dụ: Đông Xuân, ĐBSCL">
           <Form.Input maxLength={100} autoComplete="off" />
         </Form.Field>
-        <Form.Field name="startDate" label="Từ ngày">
-          <Form.DateInput />
+        <Form.Field
+          name="regionId"
+          label="Vùng"
+          hint="Lọc vùng trên Dashboard, Báo cáo thì chỉ chọn được vụ của vùng đó và vụ cho mọi vùng"
+        >
+          <Form.Select
+            options={regions.map((region) => ({ value: region.id, label: region.name }))}
+            emptyLabel="Mọi vùng"
+          />
         </Form.Field>
-        <Form.Field name="endDate" label="Đến ngày">
-          <Form.DateInput />
+        <Form.Field name="start" label="Từ ngày (dd/mm)" hint="Ví dụ 05/11">
+          <Form.Input inputMode="numeric" maxLength={5} autoComplete="off" />
+        </Form.Field>
+        <Form.Field
+          name="end"
+          label="Đến ngày (dd/mm)"
+          hint="Trước ngày bắt đầu trong năm là sang năm sau, ví dụ 15/03"
+        >
+          <Form.Input inputMode="numeric" maxLength={5} autoComplete="off" />
         </Form.Field>
         <Form.Field name="note" label="Ghi chú (không bắt buộc)">
           <Form.Input maxLength={500} />
@@ -119,7 +143,9 @@ function getId(row: SeasonRow) {
   return row.id;
 }
 
-export function SeasonsTable({ rows, canManage }: { rows: SeasonRow[]; canManage: boolean }) {
+type TableProps = { rows: SeasonRow[]; regions: RegionOption[]; canManage: boolean };
+
+export function SeasonsTable({ rows, regions, canManage }: TableProps) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const close = () => setEditing(null);
   return (
@@ -145,8 +171,12 @@ export function SeasonsTable({ rows, canManage }: { rows: SeasonRow[]; canManage
       >
         <DataTable.Body emptyMessage="Chưa khai báo vụ nào. Bấm Thêm vụ để khai báo tên và thời gian từng vụ." />
       </DataTable.Root>
-      {editing?.kind === 'create' ? <SeasonSheet row={null} onClose={close} /> : null}
-      {editing?.kind === 'edit' ? <SeasonSheet row={editing.row} onClose={close} /> : null}
+      {editing?.kind === 'create' ? (
+        <SeasonSheet row={null} regions={regions} onClose={close} />
+      ) : null}
+      {editing?.kind === 'edit' ? (
+        <SeasonSheet row={editing.row} regions={regions} onClose={close} />
+      ) : null}
       {editing?.kind === 'delete' ? (
         <ConfirmDialog
           title="Xoá vụ"

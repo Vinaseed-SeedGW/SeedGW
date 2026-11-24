@@ -2,6 +2,16 @@ import { z } from 'zod';
 import type { CheckInPlaceKind } from './check-ins';
 import type { DealerLevel } from './dealers';
 import { parseDisplayDate, vietnamToday } from './format';
+import type { ProvinceName } from './provinces';
+import { provinceFromSlug } from './regions';
+import {
+  activeSeason,
+  latestStartYear,
+  seasonOccurrence,
+  seasonYearLabel,
+  SEASON_YEARS_SHOWN,
+  type SeasonDates,
+} from './seasons';
 import type { TargetSource } from './target-assignments';
 
 // Dashboard check-in bản đầu (K0), IA §3. Chỉ phần không cần FAST; Thực bán và chỉ tiêu thêm ở K3a, K4.
@@ -41,11 +51,24 @@ export type DashboardInput = {
   orgUnitId: string | null;
   employeeCode: string | null;
   level: DealerLevel | null;
-  // Kỳ Vụ (K4): vụ đang chọn trong Lịch vụ.
+  // Kỳ Vụ (K4): vụ đang chọn trong Lịch vụ và năm bắt đầu của niên vụ.
   seasonId: string | null;
+  seasonYear: number | null;
+  // K7: vùng canh tác và tỉnh, lọc theo tỉnh của đại lý.
+  regionId: string | null;
+  provinceName: ProvinceName | null;
 };
 
-export type SeasonRange = { id: string; name: string; startDate: string; endDate: string };
+export type SeasonRange = SeasonDates & { id: string; name: string; regionId: string | null };
+
+/** Vụ chọn được khi lọc vùng: vụ của vùng và vụ chưa gắn vùng; không lọc vùng thì mọi vụ. */
+export function seasonsForRegion<T extends { regionId: string | null }>(
+  seasons: readonly T[],
+  regionId: string | null,
+): T[] {
+  if (!regionId) return [...seasons];
+  return seasons.filter((season) => season.regionId === null || season.regionId === regionId);
+}
 
 const dateParam = z
   .string()
@@ -153,7 +176,11 @@ export function monthsInRange(from: string, to: string): string[] {
 }
 
 /** Đổi tham số tiếng Việt trên URL. Mặc định kỳ Tháng này (K0, duyệt 17/11/2026). */
-export function dashboardUrlParams(now: Date = new Date(), seasons: readonly SeasonRange[] = []) {
+export function dashboardUrlParams(
+  now: Date = new Date(),
+  seasons: readonly SeasonRange[] = [],
+  provinces: ReadonlyArray<{ name: ProvinceName; regionId: string | null }> = [],
+) {
   return z
     .object({
       ky: z.enum(DASHBOARD_PERIODS).catch('thang-nay'),
@@ -167,32 +194,60 @@ export function dashboardUrlParams(now: Date = new Date(), seasons: readonly Sea
         .optional()
         .catch(undefined),
       vu: z.uuid().optional().catch(undefined),
+      'nien-vu': z.coerce.number().int().min(2000).max(2100).optional().catch(undefined),
+      vung: z.uuid().optional().catch(undefined),
+      tinh: z
+        .string()
+        .transform((value) => provinceFromSlug(value) ?? undefined)
+        .optional()
+        .catch(undefined),
     })
     .transform((url): DashboardInput => {
       const today = vietnamToday(now);
-      // Vụ: vụ đã chọn, không có thì vụ đang diễn ra, rồi tới vụ gần nhất đã bắt đầu.
+      // Tỉnh không thuộc vùng đang chọn thì bỏ; chỉ chọn tỉnh thì vụ lấy theo vùng của tỉnh.
+      const regionOf = (name: ProvinceName) =>
+        provinces.find((row) => row.name === name)?.regionId ?? null;
+      const regionId = url.vung ?? null;
+      const provinceName =
+        url.tinh && (!regionId || regionOf(url.tinh) === regionId) ? url.tinh : null;
+      const seasonRegion = regionId ?? (provinceName ? regionOf(provinceName) : null);
+      const choices = seasonsForRegion(seasons, seasonRegion);
+      // Vụ: vụ đã chọn, không có thì vụ đang diễn ra, rồi tới vụ đầu danh sách. Niên vụ mặc định là lần
+      // gần nhất đã bắt đầu; chỉ chọn được lần đó và 2 lần trước.
       const season =
         url.ky === 'vu'
-          ? (seasons.find((item) => item.id === url.vu) ??
-            seasons.find((item) => item.startDate <= today && today <= item.endDate) ??
-            seasons.find((item) => item.startDate <= today) ??
+          ? (choices.find((item) => item.id === url.vu) ??
+            activeSeason(choices, today) ??
+            choices[0] ??
             null)
+          : null;
+      const latest = season ? latestStartYear(season, today) : null;
+      const seasonYear =
+        season && latest !== null
+          ? url['nien-vu'] !== undefined &&
+            url['nien-vu'] <= latest &&
+            url['nien-vu'] > latest - SEASON_YEARS_SHOWN
+            ? url['nien-vu']
+            : latest
           : null;
       const period = url.ky === 'vu' && !season ? 'thang-nay' : url.ky;
       const range = periodRange(
         period,
         today,
-        season
-          ? { from: season.startDate, to: season.endDate }
+        season && seasonYear !== null
+          ? seasonOccurrence(season, seasonYear)
           : { from: url['tu-ngay'], to: url['den-ngay'] },
       );
       return {
         period,
         ...range,
         seasonId: season?.id ?? null,
+        seasonYear,
         orgUnitId: url['don-vi'] ?? null,
         employeeCode: url['nhan-vien'] || null,
         level: url.cap ?? null,
+        regionId,
+        provinceName,
       };
     });
 }
@@ -279,3 +334,12 @@ export type DashboardResult = {
     notCheckedInTotal: number;
   } | null;
 };
+
+/** Tên kỳ trên tiêu đề: kỳ Vụ ghi tên vụ và niên vụ, ví dụ "Vụ Đông Xuân, ĐBSCL 2026-2027". */
+export function periodTitle(input: DashboardInput, seasons: readonly SeasonRange[]): string {
+  if (input.period === 'vu' && input.seasonId && input.seasonYear !== null) {
+    const season = seasons.find((item) => item.id === input.seasonId);
+    if (season) return `Vụ ${season.name} ${seasonYearLabel(season, input.seasonYear)}`;
+  }
+  return DASHBOARD_PERIOD_LABEL[input.period];
+}

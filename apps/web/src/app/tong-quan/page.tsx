@@ -5,6 +5,7 @@ import {
   changePercent,
   DASHBOARD_PERIOD_LABEL,
   dashboardUrlParams,
+  periodTitle,
   type DashboardInput,
   type DashboardPeriod,
 } from '@seedgw/contracts/dashboard';
@@ -16,6 +17,7 @@ import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { can, requirePermission } from '@/server/auth/can';
 import { getExecutiveOverview } from '@/server/queries/executive';
+import { getProvinceRegions, getRegions } from '@/server/queries/regions';
 import { getSeasons } from '@/server/queries/seasons';
 
 export const metadata: Metadata = { title: 'Tổng quan điều hành' };
@@ -46,11 +48,19 @@ function changeText(current: number, base: number): string {
 
 export default async function ExecutivePage({ searchParams }: PageProps) {
   const user = await requirePermission('executive.overview.read');
-  const [raw, seasons] = await Promise.all([searchParams, getSeasons()]);
-  const input = dashboardUrlParams(new Date(), seasons).parse({
+  const [raw, seasons, regions, provinces] = await Promise.all([
+    searchParams,
+    getSeasons(),
+    getRegions(),
+    getProvinceRegions(),
+  ]);
+  // K7: Tổng quan lọc được theo vùng (tỉnh xem ở Dashboard, Báo cáo).
+  const input = dashboardUrlParams(new Date(), seasons, provinces).parse({
     ky: raw.ky,
     vu: raw.vu,
+    vung: raw.vung,
   });
+  const areaQuery = input.regionId ? `&vung=${input.regionId}` : '';
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -73,7 +83,7 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
             {PERIODS.map((period) => (
               <Link
                 key={period}
-                href={`/tong-quan?ky=${period}`}
+                href={`/tong-quan?ky=${period}${areaQuery}`}
                 aria-current={period === input.period ? 'page' : undefined}
                 className={`rounded-md border px-3 py-1.5 text-sm ${period === input.period ? 'border-brand bg-brand-soft font-bold text-brand' : 'border-border hover:bg-brand-soft'}`}
               >
@@ -82,12 +92,33 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
             ))}
           </nav>
         </div>
+        <nav aria-label="Vùng" className="mt-3 flex flex-wrap gap-2">
+          {[{ id: null, name: 'Tất cả vùng' }, ...regions].map((region) => {
+            const active = region.id === input.regionId;
+            return (
+              <Link
+                key={region.id ?? 'tat-ca'}
+                href={`/tong-quan?ky=${input.period}${region.id ? `&vung=${region.id}` : ''}`}
+                aria-current={active ? 'page' : undefined}
+                className={`rounded-md border px-3 py-1.5 text-sm ${active ? 'border-brand bg-brand-soft font-bold text-brand' : 'border-border hover:bg-brand-soft'}`}
+              >
+                {region.name}
+              </Link>
+            );
+          })}
+        </nav>
         <p className="mt-1 text-sm text-text-muted">
-          {isoDateToDisplay(input.from)} tới {isoDateToDisplay(input.to)}, trong phạm vi bạn được
-          xem. Thực bán và công nợ có khi nối FAST.
+          {periodTitle(input, seasons)}, {isoDateToDisplay(input.from)} tới{' '}
+          {isoDateToDisplay(input.to)}, trong phạm vi bạn được xem
+          {input.regionId ? ', tính theo tỉnh của đại lý' : ''}. Thực bán và công nợ có khi nối
+          FAST.
         </p>
         <Suspense key={JSON.stringify(input)} fallback={<OverviewSkeleton />}>
-          <Overview input={input} canOpenSupport={can(user, 'support.request.manage')} />
+          <Overview
+            input={input}
+            areaQuery={areaQuery}
+            canOpenSupport={can(user, 'support.request.manage')}
+          />
         </Suspense>
       </main>
       <AppFooter variant="full" />
@@ -110,9 +141,11 @@ function OverviewSkeleton() {
 
 async function Overview({
   input,
+  areaQuery,
   canOpenSupport,
 }: {
   input: DashboardInput;
+  areaQuery: string;
   canOpenSupport: boolean;
 }) {
   const { dashboard, units, supportOverdue } = await getExecutiveOverview(input);
@@ -131,7 +164,8 @@ async function Overview({
     .sort((a, b) => a.coverage - b.coverage)
     .slice(0, LOW_COVERAGE_UNITS);
   const ranked = [...units].sort((a, b) => b.visits - a.visits);
-  const reportHref = `/kinh-doanh/bao-cao?theo=don-vi&ky=${input.period}`;
+  const reportHref = `/kinh-doanh/bao-cao?theo=don-vi&ky=${input.period}${areaQuery}`;
+  const noTarget = input.regionId ? 'Không chia chỉ tiêu theo vùng' : 'Chưa có chỉ tiêu trong kỳ';
 
   return (
     <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -142,14 +176,14 @@ async function Overview({
         <Card
           label="Độ phủ đại lý"
           value={percentText(coverage)}
-          href={`/kinh-doanh/dashboard?ky=${input.period}`}
+          href={`/kinh-doanh/dashboard?ky=${input.period}${areaQuery}`}
         >
           {formatNumber(kpi.coverage.covered)} trên {formatNumber(kpi.coverage.active)} đại lý
         </Card>
         <Card
           label="Lượt ghé thăm"
           value={formatNumber(kpi.visits)}
-          href={`/kinh-doanh/dashboard?ky=${input.period}`}
+          href={`/kinh-doanh/dashboard?ky=${input.period}${areaQuery}`}
         >
           {changeText(kpi.visits, dashboard.compare.previous.visits)}
         </Card>
@@ -158,9 +192,7 @@ async function Overview({
           value={percentText(target ? targetPercent(kpi.visits, target.visitCountTarget) : null)}
           href="/kinh-doanh/chi-tieu?tab=giao"
         >
-          {target
-            ? `Chỉ tiêu ${formatNumber(target.visitCountTarget)} lượt`
-            : 'Chưa có chỉ tiêu trong kỳ'}
+          {target ? `Chỉ tiêu ${formatNumber(target.visitCountTarget)} lượt` : noTarget}
         </Card>
         <Card
           label="% chỉ tiêu đại lý được ghé"
@@ -169,9 +201,7 @@ async function Overview({
           )}
           href="/kinh-doanh/chi-tieu?tab=giao"
         >
-          {target
-            ? `Chỉ tiêu ${formatNumber(target.dealerCoverageTarget)} đại lý`
-            : 'Chưa có chỉ tiêu trong kỳ'}
+          {target ? `Chỉ tiêu ${formatNumber(target.dealerCoverageTarget)} đại lý` : noTarget}
         </Card>
         <Card
           label="Nhân viên đã check-in hôm nay"

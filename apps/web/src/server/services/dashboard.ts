@@ -22,6 +22,7 @@ import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/cont
 import { db } from '@seedgw/db/client';
 import { getOrgUnitTreeIds } from '@seedgw/db/org-units';
 import { getScopedDb } from '@/server/auth/scoped-db';
+import { readProvinceFilter, type ProvinceFilter } from './regions';
 import { readSystemSettings } from './settings';
 
 const DAY_MS = 86_400_000;
@@ -62,11 +63,14 @@ export async function readDashboard(
   showStaff: boolean,
   now = new Date(),
 ): Promise<DashboardResult> {
-  const [scoped, settings, unitIds] = await Promise.all([
+  const [scoped, settings, unitIds, geo] = await Promise.all([
     getScopedDb(),
     readSystemSettings(),
     input.orgUnitId ? getOrgUnitTreeIds(input.orgUnitId) : Promise.resolve(null),
+    readProvinceFilter(input),
   ]);
+  // K7: lọc vùng, tỉnh tính theo tỉnh của đại lý, nên chỉ còn lượt ghé đại lý.
+  const inProvinces = geo ? { provinceName: { in: geo.provinces } } : null;
   const from = vietnamDayStart(input.from);
   const to = vietnamNextDayStart(input.to);
   const today = vietnamToday(now);
@@ -74,6 +78,7 @@ export async function readDashboard(
   const checkInScope: Prisma.CheckInWhereInput = {
     ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
     ...(input.employeeCode ? { user: { employeeCode: input.employeeCode } } : {}),
+    ...(inProvinces ? { dealer: inProvinces } : {}),
   };
   const inPeriod: Prisma.CheckInWhereInput = { ...checkInScope, capturedAt: { gte: from, lt: to } };
   const dealerScope: Prisma.DealerWhereInput = {
@@ -81,6 +86,7 @@ export async function readDashboard(
     ...(input.level ? { level: input.level } : {}),
     ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
     ...(input.employeeCode ? { assignedUser: { employeeCode: input.employeeCode } } : {}),
+    ...(inProvinces ?? {}),
   };
   const visitedInPeriod: Prisma.DealerWhereInput = {
     ...dealerScope,
@@ -89,8 +95,12 @@ export async function readDashboard(
   const staffScope: Prisma.UserWhereInput = {
     isActive: true,
     roles: { some: { role: { code: FIELD_STAFF_ROLE } } },
-    ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
     ...(input.employeeCode ? { employeeCode: input.employeeCode } : {}),
+    AND: [
+      ...(unitIds ? [{ orgUnitId: { in: unitIds } }] : []),
+      // Lọc tỉnh: nhân viên của đơn vị phụ trách tỉnh đó và đơn vị con.
+      ...(geo ? [{ orgUnitId: { in: geo.staffUnitIds } }] : []),
+    ],
   };
 
   const overdueDays: Record<DealerLevel, number> = {
@@ -207,16 +217,18 @@ export async function readDashboard(
   const [previous, lastYear, target, routes, newDealers] = await Promise.all([
     figuresOf(previousRange(input.from, input.to)),
     figuresOf(lastYearRange(input.from, input.to)),
-    MONTHLY_PERIODS.includes(input.period)
+    // Chỉ tiêu giao theo đơn vị, nhân viên, không chia được theo tỉnh.
+    MONTHLY_PERIODS.includes(input.period) && !geo
       ? readTarget(scoped, input, unitIds, monthsInRange(input.from, input.to))
       : Promise.resolve(null),
-    readRouteCompletion(scoped, input, unitIds, today),
+    readRouteCompletion(scoped, input, unitIds, today, geo),
     scoped.dealerProposal.count({
       where: {
         status: 'APPROVED',
         reviewedAt: { gte: from, lt: to },
         ...(unitIds ? { orgUnitId: { in: unitIds } } : {}),
         ...(input.employeeCode ? { proposedBy: { employeeCode: input.employeeCode } } : {}),
+        ...(inProvinces ? { dealer: inProvinces } : {}),
       },
     }),
   ]);
@@ -280,7 +292,9 @@ export async function readDashboard(
         }))
         .sort((a, b) => a.unitName.localeCompare(b.unitName, 'vi')),
     },
-    staff: showStaff ? await readStaff(staffScope, inPeriod, checkInScope, today) : null,
+    staff: showStaff
+      ? await readStaff(staffScope, inPeriod, checkInScope, today, inProvinces ?? {})
+      : null,
   };
 }
 
@@ -289,6 +303,7 @@ async function readStaff(
   inPeriod: Prisma.CheckInWhereInput,
   checkInScope: Prisma.CheckInWhereInput,
   today: string,
+  dealerFilter: Prisma.DealerWhereInput,
 ): Promise<DashboardResult['staff']> {
   const scoped = await getScopedDb();
   const [perUser, perUserRoad, perUserGps, perUserDealer, assigned, staff, todayUsers] =
@@ -314,7 +329,7 @@ async function readStaff(
       }),
       scoped.dealer.groupBy({
         by: ['assignedUserId'],
-        where: { status: 'ACTIVE', assignedUserId: { not: null } },
+        where: { ...dealerFilter, status: 'ACTIVE', assignedUserId: { not: null } },
         _count: { _all: true },
       }),
       scoped.user.findMany({
@@ -477,6 +492,7 @@ async function readRouteCompletion(
   input: DashboardInput,
   unitIds: string[] | null,
   today: string,
+  geo: ProvinceFilter | null,
 ): Promise<DashboardResult['routes']> {
   const end = input.to < today ? input.to : today;
   if (end < input.from) return { planned: 0, visited: 0 };
@@ -492,7 +508,10 @@ async function readRouteCompletion(
       userId: true,
       approvedRevision: true,
       stops: {
-        where: { day: { gte: input.from, lte: end } },
+        where: {
+          day: { gte: input.from, lte: end },
+          ...(geo ? { dealer: { provinceName: { in: geo.provinces } } } : {}),
+        },
         select: { revision: true, day: true, dealerId: true },
       },
     },

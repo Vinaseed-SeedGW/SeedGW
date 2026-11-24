@@ -40,6 +40,8 @@ model OrgUnit {
   monthlySalesTargets     MonthlySalesTarget[]
   assignedSalesTargets    AssignedSalesTarget[]
   supportRequests         SupportRequest[]
+  // K7: tỉnh đơn vị phụ trách.
+  provinces               OrgUnitProvince[]
   createdAt               DateTime                 @default(now()) @map("created_at")
   updatedAt               DateTime                 @updatedAt @map("updated_at")
 
@@ -410,6 +412,7 @@ model Dealer {
   @@index([orgUnitId])
   @@index([assignedUserId])
   @@index([parentId])
+  @@index([provinceName])
   @@index([status, level, lastVisitedAt])
   @@map("dealers")
 }
@@ -668,18 +671,60 @@ model AssignedSalesTarget {
   @@map("assigned_sales_targets")
 }
 
-// K3: lịch vụ chung toàn công ty.
+// K3: lịch vụ chung toàn công ty, lặp lại mọi năm (đổi 23/11/2026). Kết thúc trước bắt đầu trong năm là vụ
+// sang năm sau, ví dụ 05/11 tới 15/03.
 model Season {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique
-  startDate DateTime @map("start_date") @db.Date
-  endDate   DateTime @map("end_date") @db.Date
-  note      String   @default("")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @unique
+  startDay   Int      @map("start_day")
+  startMonth Int      @map("start_month")
+  endDay     Int      @map("end_day")
+  endMonth   Int      @map("end_month")
+  // K7: vụ của một vùng canh tác; null là vụ chung, chọn được ở mọi vùng.
+  regionId   String?  @map("region_id") @db.Uuid
+  region     Region?  @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  note       String   @default("")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  @@index([startDate, endDate])
+  @@index([regionId])
   @@map("seasons")
+}
+
+// K7: vùng canh tác (Đồng bằng sông Hồng, Tây Nguyên...), khác Miền, Vùng trong cơ cấu tổ chức.
+model Region {
+  id        String           @id @default(uuid()) @db.Uuid
+  name      String           @unique
+  sortOrder Int              @map("sort_order")
+  provinces ProvinceRegion[]
+  seasons   Season[]
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  @@map("regions")
+}
+
+// Mỗi tỉnh mới (34 tỉnh) thuộc một vùng.
+model ProvinceRegion {
+  provinceName String   @id @map("province_name")
+  regionId     String   @map("region_id") @db.Uuid
+  region       Region   @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([regionId])
+  @@map("province_regions")
+}
+
+// Tỉnh đơn vị phụ trách; một đơn vị nhiều tỉnh, một tỉnh nhiều đơn vị.
+model OrgUnitProvince {
+  orgUnitId    String   @map("org_unit_id") @db.Uuid
+  orgUnit      OrgUnit  @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  provinceName String   @map("province_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@id([orgUnitId, provinceName])
+  @@index([provinceName])
+  @@map("org_unit_provinces")
 }
 
 enum RouteKind {

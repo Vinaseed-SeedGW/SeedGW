@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { seasonDays, seasonOn, upsertSeasonInput } from './seasons';
+import {
+  activeSeason,
+  crossesYear,
+  latestStartYear,
+  parseDayMonth,
+  seasonDays,
+  seasonOccurrence,
+  seasonYearLabel,
+  upsertSeasonInput,
+} from './seasons';
 import {
   assignableMonths,
   effectiveUnitTarget,
@@ -49,33 +58,46 @@ describe('tháng giao chỉ tiêu', () => {
   });
 });
 
-describe('lịch vụ', () => {
-  it('tính số ngày cả hai đầu', () => {
-    expect(seasonDays('2026-12-01', '2026-12-31')).toBe(31);
+describe('lịch vụ lặp lại hằng năm', () => {
+  const dongXuan = { startDay: 5, startMonth: 11, endDay: 15, endMonth: 3 };
+  const heThu = { startDay: 1, startMonth: 4, endDay: 15, endMonth: 8 };
+
+  it('đọc dd/mm, không nhận 29/02 và ngày sai', () => {
+    expect(parseDayMonth('5/11')).toEqual({ day: 5, month: 11 });
+    expect(parseDayMonth('29/02')).toBeNull();
+    expect(parseDayMonth('31/04')).toBeNull();
+    expect(
+      upsertSeasonInput.parse({
+        id: null,
+        name: 'Đông Xuân, ĐBSCL',
+        regionId: null,
+        start: '05/11',
+        end: '15/03',
+        note: '',
+      }),
+    ).toMatchObject({ startDay: 5, startMonth: 11, endDay: 15, endMonth: 3 });
   });
 
-  it('nhận ngày dd/mm/yyyy, chặn kết thúc trước bắt đầu và vụ quá 366 ngày', () => {
-    const base = { id: null, name: 'Đông Xuân 2026-2027', note: '' };
-    expect(
-      upsertSeasonInput.parse({ ...base, startDate: '01/12/2026', endDate: '30/04/2027' }),
-    ).toMatchObject({ startDate: '2026-12-01', endDate: '2027-04-30' });
-    expect(
-      upsertSeasonInput.safeParse({ ...base, startDate: '30/04/2027', endDate: '01/12/2026' })
-        .success,
-    ).toBe(false);
-    expect(
-      upsertSeasonInput.safeParse({ ...base, startDate: '01/01/2026', endDate: '05/01/2027' })
-        .success,
-    ).toBe(false);
+  it('vụ sang năm, số ngày, nhãn niên vụ', () => {
+    expect(crossesYear(dongXuan)).toBe(true);
+    expect(crossesYear(heThu)).toBe(false);
+    expect(seasonDays(dongXuan)).toBe(131);
+    expect(seasonOccurrence(dongXuan, 2026)).toEqual({ from: '2026-11-05', to: '2027-03-15' });
+    expect(seasonYearLabel(dongXuan, 2026)).toBe('2026-2027');
+    expect(seasonYearLabel(heThu, 2027)).toBe('2027');
   });
 
-  it('chọn vụ chứa ngày, vụ bắt đầu muộn hơn được ưu tiên khi chồng nhau', () => {
+  it('lần gần nhất đã bắt đầu và vụ đang diễn ra', () => {
+    expect(latestStartYear(dongXuan, '2026-11-23')).toBe(2026);
+    expect(latestStartYear(dongXuan, '2027-02-10')).toBe(2026);
+    expect(latestStartYear(heThu, '2026-11-23')).toBe(2026);
+    expect(latestStartYear(heThu, '2027-03-01')).toBe(2026);
     const seasons = [
-      { name: 'A', startDate: '2026-12-01', endDate: '2027-04-30' },
-      { name: 'B', startDate: '2027-04-15', endDate: '2027-08-31' },
+      { name: 'A', ...dongXuan },
+      { name: 'B', ...heThu },
     ];
-    expect(seasonOn(seasons, '2027-01-10')?.name).toBe('A');
-    expect(seasonOn(seasons, '2027-04-20')?.name).toBe('B');
-    expect(seasonOn(seasons, '2027-10-01')).toBeNull();
+    expect(activeSeason(seasons, '2027-01-10')?.name).toBe('A');
+    expect(activeSeason(seasons, '2027-05-01')?.name).toBe('B');
+    expect(activeSeason(seasons, '2027-10-01')).toBeNull();
   });
 });

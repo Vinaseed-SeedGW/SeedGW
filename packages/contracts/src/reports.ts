@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { dashboardUrlParams, type DashboardInput, type SeasonRange } from './dashboard';
 import type { DealerLevel } from './dealers';
+import type { ProvinceName } from './provinces';
 
 // Báo cáo Kinh doanh (K5, 23/11/2026): bảng số theo nhân viên, đơn vị hoặc đại lý trong kỳ, xuất Excel theo phạm vi.
 // Chưa có Thực bán (làm khi nối FAST). Kỳ và bộ lọc dùng chung với Dashboard.
@@ -20,13 +21,17 @@ export const MAX_REPORT_EXPORT_ROWS = 30_000;
 
 export type ReportInput = DashboardInput & { group: ReportGroup; page: number; pageSize: number };
 
-export function reportUrlParams(now: Date = new Date(), seasons: readonly SeasonRange[] = []) {
+export function reportUrlParams(
+  now: Date = new Date(),
+  seasons: readonly SeasonRange[] = [],
+  provinces: ReadonlyArray<{ name: ProvinceName; regionId: string | null }> = [],
+) {
   const extra = z.object({
     theo: z.enum(REPORT_GROUPS).catch('nhan-vien'),
     trang: z.coerce.number().int().positive().max(1_000_000).catch(1),
   });
   return z.record(z.string(), z.unknown()).transform((raw): ReportInput => {
-    const base = dashboardUrlParams(now, seasons).parse(raw);
+    const base = dashboardUrlParams(now, seasons, provinces).parse(raw);
     const { theo, trang } = extra.parse(raw);
     return { ...base, group: theo, page: trang, pageSize: REPORT_PAGE_SIZE };
   });

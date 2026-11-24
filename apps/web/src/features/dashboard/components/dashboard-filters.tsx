@@ -6,11 +6,20 @@ import type { DayMapFilterOptions } from '@seedgw/contracts/check-ins';
 import {
   DASHBOARD_PERIOD_LABEL,
   DASHBOARD_PERIODS,
+  seasonsForRegion,
   type DashboardInput,
   type SeasonRange,
 } from '@seedgw/contracts/dashboard';
 import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
-import { isoDateToDisplay } from '@seedgw/contracts/format';
+import { isoDateToDisplay, vietnamToday } from '@seedgw/contracts/format';
+import type { ProvinceName } from '@seedgw/contracts/provinces';
+import {
+  provinceSlug,
+  selectedProvinces,
+  shortProvinceName,
+  type GeoFilterOptions,
+} from '@seedgw/contracts/regions';
+import { seasonYearLabel, seasonYearOptions } from '@seedgw/contracts/seasons';
 import { DateInput } from '@seedgw/ui/date-input';
 
 const CONTROL = 'h-9.5 rounded-md border border-border bg-surface px-2.5';
@@ -21,15 +30,47 @@ export function DashboardFilters({
   input,
   options,
   seasons,
+  geo,
 }: {
   input: DashboardInput;
   options: DayMapFilterOptions;
   seasons: readonly SeasonRange[];
+  geo: GeoFilterOptions;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const selectedSeason = seasons.find((season) => season.id === input.seasonId) ?? null;
+  const regionOf = (name: ProvinceName) =>
+    geo.provinces.find((row) => row.name === name)?.regionId ?? null;
+  const seasonChoices = seasonsForRegion(
+    seasons,
+    input.regionId ?? (input.provinceName ? regionOf(input.provinceName) : null),
+  );
+  const provinceChoices = input.regionId
+    ? geo.provinces.filter((row) => row.regionId === input.regionId)
+    : geo.provinces;
+  // Lọc vùng, tỉnh thì ô Đơn vị chỉ hiện đơn vị liên quan (đơn vị phụ trách, đơn vị cha, đơn vị con).
+  const relatedTo = (provinces: ProvinceName[] | null, unitId: string) =>
+    provinces === null ||
+    (geo.unitProvinces[unitId] ?? []).some((name) => provinces.includes(name));
+  const activeProvinces = selectedProvinces(input, geo.provinces);
+  const unitChoices = options.orgUnits.filter(
+    (unit) => unit.id === input.orgUnitId || relatedTo(activeProvinces, unit.id),
+  );
+
+  function setArea(regionId: string | null, provinceName: ProvinceName | null) {
+    const provinces = selectedProvinces({ regionId, provinceName }, geo.provinces);
+    const keepUnit = input.orgUnitId !== null && relatedTo(provinces, input.orgUnitId);
+    setParams({
+      vung: regionId,
+      tinh: provinceName ? provinceSlug(provinceName) : null,
+      vu: null,
+      'nien-vu': null,
+      ...(keepUnit ? {} : { 'don-vi': null, 'nhan-vien': null }),
+    });
+  }
 
   function setParams(updates: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams.toString());
@@ -48,7 +89,13 @@ export function DashboardFilters({
           className={CONTROL}
           value={input.period}
           onChange={(event) =>
-            setParams({ ky: event.target.value, 'tu-ngay': null, 'den-ngay': null, vu: null })
+            setParams({
+              ky: event.target.value,
+              'tu-ngay': null,
+              'den-ngay': null,
+              vu: null,
+              'nien-vu': null,
+            })
           }
         >
           {DASHBOARD_PERIODS.map((period) => (
@@ -64,11 +111,27 @@ export function DashboardFilters({
           <select
             className={CONTROL}
             value={input.seasonId ?? ''}
-            onChange={(event) => setParams({ vu: event.target.value || null })}
+            onChange={(event) => setParams({ vu: event.target.value || null, 'nien-vu': null })}
           >
-            {seasons.map((season) => (
+            {seasonChoices.map((season) => (
               <option key={season.id} value={season.id}>
                 {season.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {input.period === 'vu' && selectedSeason && input.seasonYear !== null ? (
+        <label className="grid gap-1 text-sm">
+          Niên vụ
+          <select
+            className={CONTROL}
+            value={input.seasonYear}
+            onChange={(event) => setParams({ 'nien-vu': event.target.value })}
+          >
+            {seasonYearOptions(selectedSeason, vietnamToday()).map((year) => (
+              <option key={year} value={year}>
+                {seasonYearLabel(selectedSeason, year)}
               </option>
             ))}
           </select>
@@ -100,6 +163,41 @@ export function DashboardFilters({
           </label>
         </>
       ) : null}
+      {geo.regions.length > 0 ? (
+        <label className="grid gap-1 text-sm">
+          Vùng
+          <select
+            className={`${CONTROL} max-w-64`}
+            value={input.regionId ?? ''}
+            onChange={(event) => setArea(event.target.value || null, null)}
+          >
+            <option value="">Tất cả vùng</option>
+            {geo.regions.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      <label className="grid gap-1 text-sm">
+        Tỉnh
+        <select
+          className={`${CONTROL} max-w-56`}
+          value={input.provinceName ?? ''}
+          onChange={(event) => {
+            const name = provinceChoices.find((row) => row.name === event.target.value)?.name;
+            setArea(input.regionId, name ?? null);
+          }}
+        >
+          <option value="">Tất cả tỉnh</option>
+          {provinceChoices.map((row) => (
+            <option key={row.name} value={row.name}>
+              {shortProvinceName(row.name)}
+            </option>
+          ))}
+        </select>
+      </label>
       {options.orgUnits.length > 1 ? (
         <label className="grid gap-1 text-sm">
           Đơn vị
@@ -111,7 +209,7 @@ export function DashboardFilters({
             }
           >
             <option value="">Tất cả đơn vị</option>
-            {options.orgUnits.map((unit) => (
+            {unitChoices.map((unit) => (
               <option key={unit.id} value={unit.id}>
                 {unit.name}
               </option>

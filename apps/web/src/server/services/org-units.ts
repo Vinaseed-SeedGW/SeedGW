@@ -2,6 +2,8 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import { MAX_ORG_DEPTH, checkOrgUnitMove, orgDepth } from '@seedgw/contracts/org-tree';
+import { PROVINCES, type ProvinceName } from '@seedgw/contracts/provinces';
+import { shortProvinceName } from '@seedgw/contracts/regions';
 import { ROUTE_KIND_LABEL } from '@seedgw/contracts/route-plans';
 import type {
   AssignOrgUnitManagerInput,
@@ -44,6 +46,20 @@ function loadUnits(tx: Tx) {
 }
 
 const UNIT_LEADER_ROLE = 'unit-leader';
+
+function provincesText(names: readonly ProvinceName[]): string | null {
+  return names.length > 0 ? names.map(shortProvinceName).join(', ') : null;
+}
+
+/** K7: ghi lại toàn bộ tỉnh phụ trách của đơn vị. */
+async function replaceProvinces(tx: Tx, orgUnitId: string, provinces: readonly ProvinceName[]) {
+  await tx.orgUnitProvince.deleteMany({ where: { orgUnitId } });
+  if (provinces.length > 0) {
+    await tx.orgUnitProvince.createMany({
+      data: provinces.map((provinceName) => ({ orgUnitId, provinceName })),
+    });
+  }
+}
 const YES_NO = (value: boolean) => (value ? 'Có' : 'Không');
 
 /**
@@ -91,7 +107,9 @@ export function createOrgUnit(input: CreateOrgUnitInput): Promise<OrgUnitOutcome
     }
 
     const managerName = await resolveManagerName(tx, input.managerId);
-    const created = await tx.orgUnit.create({ data: input, select: { id: true } });
+    const { provinces, ...data } = input;
+    const created = await tx.orgUnit.create({ data, select: { id: true } });
+    await replaceProvinces(tx, created.id, provinces);
     const grantedRole = await grantUnitLeaderRole(tx, input.managerId);
 
     return {
@@ -106,6 +124,7 @@ export function createOrgUnit(input: CreateOrgUnitInput): Promise<OrgUnitOutcome
           manager: managerName,
           'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
           routeKind: ROUTE_KIND_LABEL[input.routeKind],
+          'Tỉnh phụ trách': provincesText(provinces),
           ...(grantedRole ? { 'Vai trò Trưởng đơn vị': `Gán ${grantedRole}` } : {}),
         },
       ),
@@ -123,9 +142,15 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
         hasManagerLevel: true,
         routeKind: true,
         manager: { select: { fullName: true } },
+        provinces: { select: { provinceName: true } },
       },
     });
     if (!current) throw new DomainError('NOT_FOUND', 'Không tìm thấy đơn vị này');
+    const currentProvinces = PROVINCES.filter((name) =>
+      current.provinces.some((row) => row.provinceName === name),
+    );
+    const before = provincesText(currentProvinces);
+    const after = provincesText(input.provinces);
 
     const managerName = await resolveManagerName(tx, input.managerId);
     const changes = auditChanges(
@@ -135,6 +160,7 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
         manager: current.manager?.fullName ?? null,
         'Có cấp Quản lý': YES_NO(current.hasManagerLevel),
         routeKind: ROUTE_KIND_LABEL[current.routeKind],
+        'Tỉnh phụ trách': before,
       },
       {
         code: input.code,
@@ -142,10 +168,12 @@ export function updateOrgUnit(input: UpdateOrgUnitInput): Promise<OrgUnitOutcome
         manager: managerName,
         'Có cấp Quản lý': YES_NO(input.hasManagerLevel),
         routeKind: ROUTE_KIND_LABEL[input.routeKind],
+        'Tỉnh phụ trách': after,
       },
     );
 
-    if (Object.keys(changes).length > 0) {
+    if (before !== after) await replaceProvinces(tx, input.id, input.provinces);
+    if (Object.keys(changes).some((key) => key !== 'Tỉnh phụ trách')) {
       await tx.orgUnit.update({
         where: { id: input.id },
         data: {

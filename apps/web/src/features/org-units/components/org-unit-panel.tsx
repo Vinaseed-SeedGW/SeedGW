@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { buildOrgTree, checkOrgUnitMove, flattenOrgTree } from '@seedgw/contracts/org-tree';
+import { PROVINCES } from '@seedgw/contracts/provinces';
+import { shortProvinceName } from '@seedgw/contracts/regions';
 import { ROUTE_KIND_HINT, ROUTE_KIND_OPTIONS } from '@seedgw/contracts/route-plans';
 import {
   createOrgUnitInput,
@@ -38,6 +40,10 @@ const LEADER_HINT =
 const MANAGER_LEVEL_HINT =
   'Bật thì phiếu Tuyến, Chỉ tiêu của nhân viên qua Quản lý trực tiếp trước khi tới Lãnh đạo đơn vị.';
 
+const PROVINCE_OPTIONS = PROVINCES.map((name) => ({ value: name, label: shortProvinceName(name) }));
+const PROVINCE_HINT =
+  'Lọc tỉnh, vùng trên Dashboard, Báo cáo thì ô Đơn vị chỉ hiện đơn vị phụ trách tỉnh đó, đơn vị cha và đơn vị con.';
+
 type FormProps = { managerOptions: ManagerOption[]; onClose: () => void };
 
 function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: OrgUnitRow }) {
@@ -50,6 +56,7 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
       managerId: null,
       hasManagerLevel: false,
       routeKind: 'WEEKLY',
+      provinces: [],
     },
   });
 
@@ -78,6 +85,12 @@ function CreateSheet({ parent, managerOptions, onClose }: FormProps & { parent: 
         <Form.Field name="routeKind" label="Kiểu tuyến" hint={ROUTE_KIND_HINT}>
           <Form.ChoiceSelect options={ROUTE_KIND_OPTIONS} />
         </Form.Field>
+        <Form.CheckboxGroup
+          name="provinces"
+          label="Tỉnh phụ trách"
+          hint={PROVINCE_HINT}
+          options={PROVINCE_OPTIONS}
+        />
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Tạo đơn vị</Form.Submit>
@@ -98,6 +111,7 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
       managerId: unit.managerId,
       hasManagerLevel: unit.hasManagerLevel,
       routeKind: unit.routeKind,
+      provinces: unit.provinces,
     },
   });
 
@@ -126,6 +140,12 @@ function EditSheet({ unit, managerOptions, onClose }: FormProps & { unit: OrgUni
         <Form.Field name="routeKind" label="Kiểu tuyến" hint={ROUTE_KIND_HINT}>
           <Form.ChoiceSelect options={ROUTE_KIND_OPTIONS} />
         </Form.Field>
+        <Form.CheckboxGroup
+          name="provinces"
+          label="Tỉnh phụ trách"
+          hint={PROVINCE_HINT}
+          options={PROVINCE_OPTIONS}
+        />
         <Form.Error />
         <Form.Actions>
           <Form.Submit>Lưu</Form.Submit>

@@ -21,6 +21,7 @@ import { db } from '@seedgw/db/client';
 import { getOrgUnitTreeIds } from '@seedgw/db/org-units';
 import type { ScopedDb } from '@seedgw/db/scoped-client';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
+import { readProvinceFilter, type ProvinceFilter } from './regions';
 
 // Báo cáo Kinh doanh (K5). Mọi truy vấn qua client có phạm vi dữ liệu của người xem; lọc đơn vị gồm đơn vị con.
 // Tính thẳng từ dữ liệu gốc như Dashboard (bảng tổng hợp để D5 Hiệu năng).
@@ -41,19 +42,27 @@ type Context = {
   unitIds: string[] | null;
   capturedAt: { gte: Date; lt: Date };
   months: string[] | null;
+  // K7: lọc vùng, tỉnh theo tỉnh của đại lý.
+  geo: ProvinceFilter | null;
+  dealerGeo: Prisma.DealerWhereInput;
 };
 
 async function contextOf(input: ReportInput): Promise<Context> {
-  const [scoped, unitIds] = await Promise.all([
+  const [scoped, unitIds, geo] = await Promise.all([
     getScopedDb(),
     input.orgUnitId ? getOrgUnitTreeIds(input.orgUnitId) : Promise.resolve(null),
+    readProvinceFilter(input),
   ]);
   return {
     scoped,
     input,
     unitIds,
     capturedAt: { gte: vietnamDayStart(input.from), lt: vietnamNextDayStart(input.to) },
-    months: MONTHLY_PERIODS.includes(input.period) ? monthsInRange(input.from, input.to) : null,
+    // Chỉ tiêu giao theo đơn vị, nhân viên, không chia được theo tỉnh.
+    months:
+      MONTHLY_PERIODS.includes(input.period) && !geo ? monthsInRange(input.from, input.to) : null,
+    geo,
+    dealerGeo: geo ? { provinceName: { in: geo.provinces } } : {},
   };
 }
 
@@ -143,8 +152,11 @@ async function staffMembers(ctx: Context) {
     where: {
       isActive: true,
       roles: { some: { role: { permissions: { some: { code: 'sales.check-in.create' } } } } },
-      ...(ctx.unitIds ? { orgUnitId: { in: ctx.unitIds } } : {}),
       ...(ctx.input.employeeCode ? { employeeCode: ctx.input.employeeCode } : {}),
+      AND: [
+        ...(ctx.unitIds ? [{ orgUnitId: { in: ctx.unitIds } }] : []),
+        ...(ctx.geo ? [{ orgUnitId: { in: ctx.geo.staffUnitIds } }] : []),
+      ],
     },
     orderBy: { employeeCode: 'asc' },
     select: {
@@ -161,8 +173,13 @@ async function staffReport(ctx: Context): Promise<StaffReportRow[]> {
   const members = await staffMembers(ctx);
   const ids = members.map((member) => member.id);
   if (ids.length === 0) return [];
-  const where: Prisma.CheckInWhereInput = { userId: { in: ids }, capturedAt: ctx.capturedAt };
+  const where: Prisma.CheckInWhereInput = {
+    userId: { in: ids },
+    capturedAt: ctx.capturedAt,
+    ...(ctx.geo ? { dealer: ctx.dealerGeo } : {}),
+  };
   const dealerActive: Prisma.DealerWhereInput = {
+    ...ctx.dealerGeo,
     status: 'ACTIVE',
     assignedUserId: { in: ids },
     ...(ctx.input.level ? { level: ctx.input.level } : {}),
@@ -195,7 +212,10 @@ async function staffReport(ctx: Context): Promise<StaffReportRow[]> {
             userId: true,
             approvedRevision: true,
             stops: {
-              where: { day: { gte: ctx.input.from, lte: end } },
+              where: {
+                day: { gte: ctx.input.from, lte: end },
+                ...(ctx.geo ? { dealer: ctx.dealerGeo } : {}),
+              },
               select: { revision: true, day: true, dealerId: true },
             },
           },
@@ -262,12 +282,15 @@ async function unitReport(ctx: Context): Promise<UnitReportRow[]> {
   ]);
   let units = assignable ? all.filter((unit) => assignable.has(unit.id)) : all;
   if (ctx.unitIds) units = units.filter((unit) => ctx.unitIds?.includes(unit.id));
+  if (ctx.geo) units = units.filter((unit) => ctx.geo?.relatedUnitIds.has(unit.id));
   const where: Prisma.CheckInWhereInput = {
     capturedAt: ctx.capturedAt,
     orgUnitId: { not: null },
     ...(ctx.input.employeeCode ? { user: { employeeCode: ctx.input.employeeCode } } : {}),
+    ...(ctx.geo ? { dealer: ctx.dealerGeo } : {}),
   };
   const dealerActive: Prisma.DealerWhereInput = {
+    ...ctx.dealerGeo,
     status: 'ACTIVE',
     ...(ctx.input.level ? { level: ctx.input.level } : {}),
   };
@@ -343,6 +366,7 @@ async function dealerReport(
   all: boolean,
 ): Promise<{ rows: DealerReportRow[]; total: number }> {
   const where: Prisma.DealerWhereInput = {
+    ...ctx.dealerGeo,
     status: 'ACTIVE',
     ...(ctx.input.level ? { level: ctx.input.level } : {}),
     ...(ctx.unitIds ? { orgUnitId: { in: ctx.unitIds } } : {}),

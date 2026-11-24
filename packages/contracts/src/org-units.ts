@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { ProvinceName } from './provinces';
+import { provinceListInput } from './regions';
 import { routeKind, type RouteKind } from './route-plans';
 
 const orgUnitCode = z
@@ -23,6 +25,8 @@ export const createOrgUnitInput = z.object({
   // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
   hasManagerLevel: z.boolean(),
   routeKind,
+  // K7: tỉnh đơn vị phụ trách.
+  provinces: provinceListInput,
 });
 export type CreateOrgUnitInput = z.infer<typeof createOrgUnitInput>;
 
@@ -34,6 +38,8 @@ export const updateOrgUnitInput = z.object({
   // Quyet dinh 31: bat thi phieu Tuyen, Chi tieu qua Quan ly truoc Lanh dao don vi.
   hasManagerLevel: z.boolean(),
   routeKind,
+  // K7: tỉnh đơn vị phụ trách.
+  provinces: provinceListInput,
 });
 export type UpdateOrgUnitInput = z.infer<typeof updateOrgUnitInput>;
 
@@ -60,6 +66,7 @@ export type OrgUnitRow = {
   hasManagerLevel: boolean;
   routeKind: RouteKind;
   memberCount: number;
+  provinces: ProvinceName[];
 };
 
 export type ManagerOption = { value: string; label: string };
