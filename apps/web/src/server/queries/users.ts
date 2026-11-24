@@ -127,6 +127,17 @@ export async function getUserDetail(id: string): Promise<UserDetail | null> {
 
 type FormOptionsContext = { editingUserId: string | null; currentManagerId: string | null };
 
+/** K7b: đơn vị của nhân viên và mọi đơn vị cha, để chỉ giao đại lý cho nhân viên thuộc đơn vị phụ trách. */
+export function unitPathOf(
+  units: ReadonlyArray<{ id: string; parentId: string | null }>,
+  unitId: string | null,
+): string[] {
+  const parentOf = new Map(units.map((unit) => [unit.id, unit.parentId]));
+  const path: string[] = [];
+  for (let at = unitId; at && !path.includes(at); at = parentOf.get(at) ?? null) path.push(at);
+  return path;
+}
+
 export function buildOrgUnitLabels(
   units: ReadonlyArray<{ id: string; name: string; parentId: string | null }>,
 ): SelectOption[] {

@@ -15,9 +15,9 @@ import { mapTileConfig } from '@/server/integrations/map-tiles';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
-import { buildOrgUnitLabels } from '@/server/queries/users';
+import { buildOrgUnitLabels, unitPathOf } from '@/server/queries/users';
 import { CHECK_IN_ROW_SELECT, toCheckInRow } from '@/server/services/check-in-report';
-import { dealerWhere, loadVisitCutoffs } from '@/server/services/dealers';
+import { buildDealerWhere } from '@/server/services/dealers';
 
 // Một hồ sơ, hai lối vào (IA §1): Kinh doanh dùng quyền sales.dealer.read, Quản trị dùng admin.dealer.read.
 export type DealerEntry = Extract<PermissionCode, 'sales.dealer.read' | 'admin.dealer.read'>;
@@ -74,7 +74,7 @@ export async function listDealers(
   const [user, scoped] = await Promise.all([requireUser(), getScopedDb()]);
   assertCan(user, entry);
 
-  const where = dealerWhere(input, await loadVisitCutoffs());
+  const where = await buildDealerWhere(input);
   const [rows, total] = await Promise.all([
     scoped.dealer.findMany({
       where,
@@ -177,14 +177,18 @@ export async function getDealerFormOptions(): Promise<DealerFormOptions> {
     scoped.user.findMany({
       where: { isActive: true },
       orderBy: { employeeCode: 'asc' },
-      select: { id: true, employeeCode: true, fullName: true },
+      select: { id: true, employeeCode: true, fullName: true, orgUnitId: true },
     }),
   ]);
   const labels = buildOrgUnitLabels(units);
   const orgUnits = assignable ? labels.filter((unit) => assignable.has(unit.value)) : labels;
   return {
     orgUnits,
-    users: users.map((row) => ({ value: row.id, label: `${row.employeeCode} - ${row.fullName}` })),
+    users: users.map((row) => ({
+      value: row.id,
+      label: `${row.employeeCode} - ${row.fullName}`,
+      unitPath: unitPathOf(units, row.orgUnitId),
+    })),
     canEdit: true,
     canMoveOrgUnit: orgUnits.length > 0,
     mapTiles: mapTileConfig(),

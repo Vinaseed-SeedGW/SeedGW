@@ -6,7 +6,10 @@ import {
   provinceSlug,
   selectedProvinces,
   shortProvinceName,
+  suggestOrgUnit,
 } from './regions';
+import { guessProvinceFromAddress } from './provinces';
+import { dealersUrlParams, userFitsUnit } from './dealers';
 
 describe('vùng và tỉnh', () => {
   it('mỗi tỉnh có tham số URL riêng, đọc ngược lại được', () => {
@@ -42,5 +45,24 @@ describe('vùng và tỉnh', () => {
     expect(selectedProvinces({ regionId: 'a', provinceName: 'Tỉnh Ninh Bình' }, provinces)).toEqual(
       ['Tỉnh Ninh Bình'],
     );
+  });
+
+  it('K7b: gợi ý đơn vị, đoán tỉnh từ địa chỉ, nhân viên theo đơn vị, lọc danh sách', () => {
+    expect(suggestOrgUnit(['a'], ['a', 'b'], 'c')).toBe('a');
+    expect(suggestOrgUnit(['a', 'b'], ['a', 'b'], 'c')).toBe('c');
+    expect(suggestOrgUnit(['x'], ['a'], 'c')).toBe('c');
+    expect(suggestOrgUnit(undefined, ['a'], '')).toBe('');
+    expect(guessProvinceFromAddress('12 Lê Lợi, Quy Nhơn, Bình Định')).toBe('Tỉnh Gia Lai');
+    expect(guessProvinceFromAddress('Xã A, Huyện B, Thành phố Hà Nội')).toBe('Thành phố Hà Nội');
+    expect(guessProvinceFromAddress('12 Phố Huế')).toBeNull();
+    expect(userFitsUnit({ unitPath: ['con', 'cha'] }, 'cha')).toBe(true);
+    expect(userFitsUnit({ unitPath: ['con', 'cha'] }, 'khac')).toBe(false);
+    expect(userFitsUnit({ unitPath: ['con'] }, null)).toBe(false);
+    expect(dealersUrlParams.parse({ tinh: 'gia-lai', 'dia-ban': 'ngoai' })).toMatchObject({
+      province: 'Tỉnh Gia Lai',
+      outsideArea: true,
+    });
+    expect(dealersUrlParams.parse({ tinh: 'chua-co' }).province).toBe('NONE');
+    expect(dealersUrlParams.parse({ tinh: 'khong-co' }).province).toBeUndefined();
   });
 });

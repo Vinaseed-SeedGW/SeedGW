@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import {
@@ -8,6 +9,7 @@ import {
   DEALER_LEVELS,
   DEALER_STATUS_LABEL,
   updateDealerInput,
+  userFitsUnit,
   type DealerDetail,
   type DealerFormOptions,
 } from '@seedgw/contracts/dealers';
@@ -59,13 +61,32 @@ export function DealerEditForm({ dealer, options }: Props) {
           ...options.orgUnits,
         ]
       : options.orgUnits;
-  const users =
-    dealer.assignedUserId && !options.users.some((user) => user.value === dealer.assignedUserId)
-      ? [
-          { value: dealer.assignedUserId, label: dealer.assignedUserName ?? 'Nhân viên hiện tại' },
-          ...options.users,
-        ]
-      : options.users;
+  // K7b: chỉ chọn nhân viên thuộc đơn vị phụ trách đang chọn hoặc đơn vị con; đổi đơn vị thì bỏ nhân viên
+  // không còn phù hợp.
+  const orgUnitId = form.watch('orgUnitId');
+  const fitting = options.users.filter((user) => userFitsUnit(user, orgUnitId));
+  const keepCurrent =
+    dealer.assignedUserId !== null &&
+    orgUnitId === dealer.orgUnitId &&
+    !fitting.some((user) => user.value === dealer.assignedUserId);
+  const users = keepCurrent
+    ? [
+        {
+          value: dealer.assignedUserId ?? '',
+          label: dealer.assignedUserName ?? 'Nhân viên hiện tại',
+        },
+        ...fitting,
+      ]
+    : fitting;
+  useEffect(() => {
+    const current = form.getValues('assignedUserId');
+    if (!current) return;
+    const unchanged = current === dealer.assignedUserId && orgUnitId === dealer.orgUnitId;
+    const fits = options.users.some(
+      (user) => user.value === current && userFitsUnit(user, orgUnitId),
+    );
+    if (!unchanged && !fits) form.setValue('assignedUserId', null);
+  }, [form, orgUnitId, options.users, dealer.assignedUserId, dealer.orgUnitId]);
 
   return (
     <Form.Root
@@ -127,7 +148,11 @@ export function DealerEditForm({ dealer, options }: Props) {
           <Form.Field name="orgUnitId" label="Đơn vị phụ trách">
             <Form.ChoiceSelect options={orgUnits} />
           </Form.Field>
-          <Form.Field name="assignedUserId" label="Nhân viên phụ trách">
+          <Form.Field
+            name="assignedUserId"
+            label="Nhân viên phụ trách"
+            hint="Chỉ nhân viên thuộc đơn vị phụ trách hoặc đơn vị con"
+          >
             <Form.Select options={users} emptyLabel="Chờ gán" />
           </Form.Field>
         </div>

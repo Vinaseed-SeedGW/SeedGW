@@ -93,6 +93,7 @@ describe('duyệt và từ chối', () => {
       ownerName: '',
       taxCode: '',
       level: '2',
+      provinceName: null,
       assignedUserId: null,
     };
     expect(approveDealerProposalInput.safeParse({ ...base, orgUnitId: null }).success).toBe(false);

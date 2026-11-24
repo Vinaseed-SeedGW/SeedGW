@@ -157,6 +157,20 @@ function provinceKey(name: string): string {
     .trim();
 }
 
+/** K7b: đoán tỉnh mới từ địa chỉ, xét từng đoạn sau dấu phẩy từ cuối lên. */
+export function guessProvinceFromAddress(address: string): ProvinceName | null {
+  const parts = address
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reverse();
+  for (const part of parts) {
+    const found = toNewProvince(part);
+    if (found) return found;
+  }
+  return null;
+}
+
 /** Đổi tên tỉnh cũ hoặc mới ra tên tỉnh mới. Không nhận ra thì trả null. */
 export function toNewProvince(name: string): ProvinceName | null {
   if (!name.trim()) return null;

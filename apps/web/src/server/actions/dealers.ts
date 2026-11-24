@@ -32,8 +32,7 @@ import {
 import {
   bulkAssignDealers,
   bulkMoveDealers,
-  dealerWhere,
-  loadVisitCutoffs,
+  buildDealerWhere,
   updateDealer,
 } from '@/server/services/dealers';
 import { buildWorkbookBase64, type ExcelColumn } from '@/server/services/excel';
@@ -87,10 +86,17 @@ export async function bulkAssignDealersAction(
     const parsed = bulkAssignDealersInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
 
-    const [{ count, userName }, ip] = await Promise.all([
+    const [{ count, skipped, userName }, ip] = await Promise.all([
       bulkAssignDealers(parsed.data),
       getClientIp(),
     ]);
+    if (count === 0 && skipped > 0) {
+      return {
+        ok: false,
+        code: 'VALIDATION',
+        message: `Không gán được: ${skipped} đại lý đều thuộc đơn vị khác, nhân viên chỉ phụ trách đại lý của đơn vị mình.`,
+      };
+    }
     after(() =>
       writeAudit({
         actor: user,
@@ -106,7 +112,20 @@ export async function bulkAssignDealersAction(
       }),
     );
     revalidateDealers();
-    return { ok: true, data: { count } };
+    return {
+      ok: true,
+      data: { count },
+      ...(skipped > 0
+        ? {
+            warnings: [
+              {
+                code: 'ASSIGNEE_OUTSIDE_UNIT',
+                message: `Đã gán ${count} đại lý. Bỏ qua ${skipped} đại lý thuộc đơn vị khác, nhân viên chỉ phụ trách đại lý của đơn vị mình.`,
+              },
+            ],
+          }
+        : {}),
+    };
   } catch (error) {
     return toActionError(error);
   }
@@ -121,7 +140,7 @@ export async function bulkMoveDealersAction(
     const parsed = bulkMoveDealersInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
 
-    const [{ count, unitName }, ip] = await Promise.all([
+    const [{ count, cleared, unitName }, ip] = await Promise.all([
       bulkMoveDealers(parsed.data),
       getClientIp(),
     ]);
@@ -132,12 +151,32 @@ export async function bulkMoveDealersAction(
         entityType: 'Dealer',
         entityId: `bulk-${new Date().toISOString()}`,
         entityLabel: `${count} đại lý`,
-        changes: auditChanges({}, { orgUnit: unitName, dealerCount: String(count) }),
+        changes: auditChanges(
+          {},
+          {
+            orgUnit: unitName,
+            dealerCount: String(count),
+            ...(cleared > 0 ? { 'Bỏ gán nhân viên ngoài đơn vị mới': String(cleared) } : {}),
+          },
+        ),
         ip,
       }),
     );
     revalidateDealers();
-    return { ok: true, data: { count } };
+    return {
+      ok: true,
+      data: { count },
+      ...(cleared > 0
+        ? {
+            warnings: [
+              {
+                code: 'ASSIGNEE_CLEARED',
+                message: `${cleared} đại lý đã bỏ gán nhân viên vì nhân viên không thuộc ${unitName}, cần gán lại.`,
+              },
+            ],
+          }
+        : {}),
+    };
   } catch (error) {
     return toActionError(error);
   }
@@ -227,7 +266,7 @@ export async function exportDealersAction(
     const where =
       parsed.data.ids.length > 0
         ? { id: { in: parsed.data.ids } }
-        : dealerWhere(parsed.data.filter, await loadVisitCutoffs());
+        : await buildDealerWhere(parsed.data.filter);
     const total = await scoped.dealer.count({ where });
     if (total > MAX_EXPORT_ROWS) {
       return {

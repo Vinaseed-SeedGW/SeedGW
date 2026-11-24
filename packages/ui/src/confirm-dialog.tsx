@@ -5,7 +5,8 @@ import { cn } from './cn';
 import { useToast } from './toast';
 import { useModalDialog } from './use-modal-dialog';
 
-type ConfirmResult = { ok: true } | { ok: false; message: string };
+type ConfirmResult =
+  { ok: true; warnings?: Array<{ message: string }> } | { ok: false; message: string };
 
 type ConfirmDialogProps = {
   title: string;
@@ -42,6 +43,7 @@ export function ConfirmDialog({
       const result = await onConfirm();
       if (result.ok) {
         toast.show({ tone: 'success', message: successMessage });
+        result.warnings?.forEach(({ message }) => toast.show({ tone: 'warning', message }));
         dialogRef.current?.close();
       } else {
         setErrorMessage(result.message);

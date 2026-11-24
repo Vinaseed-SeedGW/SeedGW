@@ -8,7 +8,8 @@ import { db } from '@seedgw/db/client';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
-import { buildOrgUnitLabels } from '@/server/queries/users';
+import { buildOrgUnitLabels, unitPathOf } from '@/server/queries/users';
+import { readProvinceUnits } from '@/server/services/regions';
 import { countPendingProposals, listProposals } from '@/server/services/dealer-proposals';
 
 // Đại lý mới (M10): Quản trị đơn vị duyệt đề xuất của nhân viên trong đơn vị và đơn vị con.
@@ -33,17 +34,23 @@ export async function getDealerProposalOptions(): Promise<DealerProposalOptions>
   const user = await requireUser();
   assertCan(user, 'admin.dealer-proposal.approve');
   const [scoped, assignable] = await Promise.all([getScopedDb(), getAssignableOrgUnitIds()]);
-  const [units, users] = await Promise.all([
+  const [units, users, provinceUnits] = await Promise.all([
     db.orgUnit.findMany({ select: { id: true, name: true, parentId: true } }),
     scoped.user.findMany({
       where: { isActive: true },
       orderBy: { employeeCode: 'asc' },
-      select: { id: true, employeeCode: true, fullName: true },
+      select: { id: true, employeeCode: true, fullName: true, orgUnitId: true },
     }),
+    readProvinceUnits(),
   ]);
   const labels = buildOrgUnitLabels(units);
   return {
     orgUnits: assignable ? labels.filter((unit) => assignable.has(unit.value)) : labels,
-    users: users.map((row) => ({ value: row.id, label: `${row.employeeCode} - ${row.fullName}` })),
+    users: users.map((row) => ({
+      value: row.id,
+      label: `${row.employeeCode} - ${row.fullName}`,
+      unitPath: unitPathOf(units, row.orgUnitId),
+    })),
+    provinceUnits,
   };
 }

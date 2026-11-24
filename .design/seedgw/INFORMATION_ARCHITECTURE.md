@@ -79,6 +79,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Duyệt toạ độ `/quan-tri/dai-ly/duyet-toa-do` (tab: Chờ duyệt · Đã xử lý; đề xuất toạ độ từ lần check-in đầu tại đại lý chưa có toạ độ, kèm ảnh, địa chỉ lúc chụp, cùng phố hay khác phố)
   - Quy định
     - Lịch vụ* `/quan-tri/lich-vu` (Đông Xuân, Hè Thu, Vụ Mùa… dùng làm kỳ báo cáo)
+    - Vùng và tỉnh `/quan-tri/vung-tinh` (K7, 23/11/2026; 34 tỉnh, vùng canh tác của từng tỉnh, số đại lý, đơn vị phụ trách; tỉnh phụ trách của đơn vị sửa ở Cơ cấu tổ chức)
     - Tham số `/quan-tri/tham-so`
   - Hệ thống
     - Kết nối `/quan-tri/ket-noi` (FAST: cấu hình, Kiểm tra kết nối, đồng bộ danh mục khách hàng 5 phút một lần, Đồng bộ ngay, lịch sử và dòng lỗi; không còn Mattermost, công nợ và Thực bán tạm hold từ 19/11/2026)
@@ -265,6 +266,7 @@ Quy tắc tính:
 | Quản trị chuyển yêu cầu cho cấp trên | **Chuyển lên** | |
 | Năm vai trò (quyết định 31) | **Quản trị hệ thống**, **Quản trị đơn vị**, **Lãnh đạo đơn vị**, **Quản lý**, **Nhân viên kinh doanh** | Chức danh là thông tin hồ sơ, không phải vai trò. Lãnh đạo đơn vị là Trưởng đơn vị; Quản lý thấy cấp dưới trực tiếp (phạm vi "Nhóm của tôi") |
 | Miền/Vùng/Khu vực trong cơ cấu | **Đơn vị** | Không gọi là "bộ phận" |
+| Vùng canh tác (Đồng bằng sông Hồng, Tây Nguyên...) | **Vùng** | Chỉ dùng cho nhóm tỉnh theo vùng canh tác (K7), ở trang Vùng và tỉnh, Lịch vụ và bộ lọc Vùng |
 | Bên mua và nhận hoá đơn, có mã FAST | **Đại lý** | Có trường Loại: Cấp 1, Cấp 2, Tổ chức |
 | Mã KH trên FAST | **Mã đại lý** | Một mã duy nhất |
 | Mã ở hệ thống cũ | **Mã cũ** | Chỉ để tra cứu |

@@ -30,6 +30,11 @@ const STATUS_OPTIONS = [
 ];
 const ASSIGNEE_OPTIONS = [{ value: DEALER_ASSIGNEE_UNASSIGNED, label: 'Chưa gán nhân viên' }];
 const LOCATION_OPTIONS = [{ value: 'chua-co', label: 'Chưa có toạ độ' }];
+// K7b: đại lý có tỉnh nằm ngoài Tỉnh phụ trách của đơn vị đang quản lý nó.
+const AREA_OPTIONS = [{ value: 'ngoai', label: 'Ngoài địa bàn đơn vị' }];
+
+/** Ô lọc Vùng, Tỉnh trên danh sách đại lý (K7b). */
+export type DealerAreaFilter = { regions: DealerOption[]; provinces: DealerOption[] };
 
 // Mốc quá hạn theo cấp đại lý đặt ở Tham số (K0).
 const VISIT_OPTIONS = [
@@ -129,10 +134,18 @@ type Props = {
   filter: DealerFilter;
   basePath: string;
   orgUnitFilter: DealerOption[];
+  areaFilter: DealerAreaFilter;
   editOptions: DealerFormOptions | null;
 };
 
-export function DealersTable({ data, filter, basePath, orgUnitFilter, editOptions }: Props) {
+export function DealersTable({
+  data,
+  filter,
+  basePath,
+  orgUnitFilter,
+  areaFilter,
+  editOptions,
+}: Props) {
   return (
     <DataTable.Root
       columns={columns(basePath)}
@@ -162,6 +175,25 @@ export function DealersTable({ data, filter, basePath, orgUnitFilter, editOption
             label="Lọc theo đơn vị phụ trách"
             allLabel="Tất cả đơn vị"
             options={orgUnitFilter}
+          />
+          <DataTable.SelectFilter
+            param="vung"
+            label="Lọc theo vùng"
+            allLabel="Tất cả vùng"
+            options={areaFilter.regions}
+            resetParams={['tinh']}
+          />
+          <DataTable.SelectFilter
+            param="tinh"
+            label="Lọc theo tỉnh"
+            allLabel="Tất cả tỉnh"
+            options={areaFilter.provinces}
+          />
+          <DataTable.SelectFilter
+            param="dia-ban"
+            label="Lọc theo địa bàn"
+            allLabel="Trong và ngoài địa bàn"
+            options={AREA_OPTIONS}
           />
           <DataTable.SelectFilter
             param="nhan-vien"

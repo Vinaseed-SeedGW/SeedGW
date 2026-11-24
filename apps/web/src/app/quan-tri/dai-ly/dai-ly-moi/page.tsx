@@ -61,7 +61,7 @@ async function ProposalResults({ input }: { input: ListDealerProposalsInput }) {
     listDealerProposals(input),
     input.tab === 'cho-duyet'
       ? getDealerProposalOptions()
-      : Promise.resolve({ orgUnits: [], users: [] }),
+      : Promise.resolve({ orgUnits: [], users: [], provinceUnits: {} }),
   ]);
   return <DealerProposalsTable data={data} tab={input.tab} options={options} />;
 }

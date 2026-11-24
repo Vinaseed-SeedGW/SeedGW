@@ -17,6 +17,7 @@ import {
 } from '@seedgw/contracts/dealer-proposals';
 import { distanceMeters } from '@seedgw/contracts/track-distance';
 import { db } from '@seedgw/db/client';
+import { getOrgUnitAncestorIds } from '@seedgw/db/org-units';
 import type { MobileUser } from '@/server/auth/mobile';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import { CHECK_IN_PHOTO_RETENTION_DAYS, presignGetUrl } from '@/server/integrations/object-storage';
@@ -271,9 +272,16 @@ export async function approveProposal(
   if (input.assignedUserId) {
     const assignee = await scoped.user.findFirst({
       where: { id: input.assignedUserId, isActive: true },
-      select: { id: true },
+      select: { id: true, orgUnitId: true },
     });
     if (!assignee) throw new DomainError('VALIDATION', 'Nhân viên phụ trách không hợp lệ');
+    // K7b: nhân viên phải thuộc đơn vị phụ trách đại lý hoặc đơn vị con của nó.
+    const unitPath = assignee.orgUnitId ? await getOrgUnitAncestorIds(assignee.orgUnitId) : [];
+    if (!unitPath.includes(input.orgUnitId)) {
+      throw new DomainError('VALIDATION', 'Nhân viên không thuộc đơn vị phụ trách đã chọn', {
+        assignedUserId: 'Chọn nhân viên thuộc đơn vị phụ trách, hoặc để Chưa giao',
+      });
+    }
   }
   const now = new Date();
   const { capturedAt, lat, lng } = proposal.checkIn;
@@ -287,6 +295,7 @@ export async function approveProposal(
         ownerName: input.ownerName,
         taxCode: input.taxCode,
         address: input.address,
+        provinceName: input.provinceName,
         lat,
         lng,
         locatedAt: now,
@@ -321,6 +330,7 @@ export async function approveProposal(
         'Tên đại lý': input.name,
         'Số điện thoại': input.phone,
         'Địa chỉ': input.address,
+        Tỉnh: input.provinceName,
         Cấp: DEALER_LEVEL_LABEL[input.level],
         'Toạ độ': `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
         'Từ đề xuất': proposal.name,

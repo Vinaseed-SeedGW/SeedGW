@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MAX_PAGE_SIZE, pageResult } from './common';
 import { PROVINCES } from './provinces';
+import { provinceFromSlug, provinceSlug } from './regions';
 
 // Danh mục đại lý (A7). Mã đại lý là mã khách hàng trên FAST, mã hệ thống cũ giữ để tìm và nhập lại.
 
@@ -109,11 +110,20 @@ export const DEALER_ASSIGNEE_UNASSIGNED = 'chua-gan';
 export const dealerSort = z.enum(['name', '-name', 'code', '-code', '-updatedAt']);
 const DEFAULT_DEALER_SORT = 'name';
 
+/** K7b: lọc tỉnh trên danh sách, gồm cả "chưa có tỉnh" để bổ sung tỉnh còn thiếu. */
+export const DEALER_PROVINCE_NONE = 'NONE';
+export const DEALER_PROVINCE_NONE_SLUG = 'chua-co';
+
 export const listDealersInput = z.object({
   q: z.string().trim().max(100).optional(),
   level: dealerLevel.optional(),
   status: dealerStatus.optional(),
   orgUnitId: z.uuid().optional(),
+  regionId: z.uuid().optional(),
+  province: z.union([z.enum(PROVINCES), z.literal(DEALER_PROVINCE_NONE)]).optional(),
+  // Đại lý có tỉnh không nằm trong Tỉnh phụ trách của đơn vị đang quản lý nó (đơn vị chưa khai báo thì
+  // lấy của đơn vị cha gần nhất). Chỉ để soát, không chặn.
+  outsideArea: z.boolean().default(false),
   unassignedOnly: z.boolean().default(false),
   missingLocationOnly: z.boolean().default(false),
   visit: dealerVisitFilter.optional(),
@@ -137,6 +147,17 @@ export const dealersUrlParams = z
     cap: z.coerce.number().pipe(dealerLevel).optional().catch(undefined),
     'trang-thai': z.enum(['dang-hoat-dong', 'ngung-hoat-dong']).optional().catch(undefined),
     'don-vi': z.uuid().optional().catch(undefined),
+    vung: z.uuid().optional().catch(undefined),
+    tinh: z
+      .string()
+      .transform((value) =>
+        value === DEALER_PROVINCE_NONE_SLUG
+          ? DEALER_PROVINCE_NONE
+          : (provinceFromSlug(value) ?? undefined),
+      )
+      .optional()
+      .catch(undefined),
+    'dia-ban': z.enum(['ngoai']).optional().catch(undefined),
     'nhan-vien': z.enum([DEALER_ASSIGNEE_UNASSIGNED]).optional().catch(undefined),
     'toa-do': z.enum(['chua-co']).optional().catch(undefined),
     'ghe-tham': z.enum(['qua-moc', 'chua-ghe']).optional().catch(undefined),
@@ -153,6 +174,9 @@ export const dealersUrlParams = z
           ? 'INACTIVE'
           : undefined,
     orgUnitId: url['don-vi'],
+    regionId: url.vung,
+    province: url.tinh,
+    outsideArea: url['dia-ban'] === 'ngoai',
     unassignedOnly: url['nhan-vien'] === DEALER_ASSIGNEE_UNASSIGNED,
     missingLocationOnly: url['toa-do'] === 'chua-co',
     visit:
@@ -349,10 +373,26 @@ export type MobileDealersResult = z.infer<typeof mobileDealersResult>;
 
 export type DealerOption = { value: string; label: string };
 
+/** Nhân viên trong ô Nhân viên phụ trách, kèm đơn vị của người đó và các đơn vị cha (K7b). */
+export type DealerUserOption = DealerOption & { unitPath: string[] };
+
+/** K7b: chỉ giao đại lý cho nhân viên thuộc đơn vị phụ trách đại lý hoặc đơn vị con của nó. */
+export function userFitsUnit(
+  user: { unitPath: readonly string[] },
+  orgUnitId: string | null | undefined,
+): boolean {
+  return !!orgUnitId && user.unitPath.includes(orgUnitId);
+}
+
+/** Giá trị tham số tỉnh trên URL danh sách đại lý. */
+export function dealerProvinceParam(province: (typeof PROVINCES)[number] | 'NONE'): string {
+  return province === DEALER_PROVINCE_NONE ? DEALER_PROVINCE_NONE_SLUG : provinceSlug(province);
+}
+
 /** Lựa chọn cho form sửa và thao tác hàng loạt, đã lọc theo phạm vi của người đang dùng. */
 export type DealerFormOptions = {
   orgUnits: DealerOption[];
-  users: DealerOption[];
+  users: DealerUserOption[];
   canEdit: boolean;
   canMoveOrgUnit: boolean;
   /** Bản đồ nền cho ô chọn toạ độ (A7b). */

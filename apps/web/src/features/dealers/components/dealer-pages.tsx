@@ -1,7 +1,14 @@
 import { notFound } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
 import { z } from 'zod';
-import { dealerFilter, dealersUrlParams, type ListDealersInput } from '@seedgw/contracts/dealers';
+import {
+  dealerFilter,
+  dealerProvinceParam,
+  dealersUrlParams,
+  DEALER_PROVINCE_NONE,
+  type ListDealersInput,
+} from '@seedgw/contracts/dealers';
+import { shortProvinceName } from '@seedgw/contracts/regions';
 import { DataTableSkeleton } from '@seedgw/ui/data-table-skeleton';
 import { requirePermission } from '@/server/auth/can';
 import {
@@ -12,6 +19,7 @@ import {
   listDealerVisits,
   type DealerEntry,
 } from '@/server/queries/dealers';
+import { getProvinceRegions, getRegions } from '@/server/queries/regions';
 import { DealerProfile } from './dealer-profile';
 import { DealersTable } from './dealers-table';
 
@@ -59,12 +67,30 @@ async function DealerResults({
   entry: DealerEntry;
   basePath: string;
 }) {
-  const [data, orgUnitFilter, editOptions] = await Promise.all([
+  const [data, orgUnitFilter, editOptions, regions, provinceRegions] = await Promise.all([
     listDealers(input, entry),
     listDealerOrgUnitFilter(),
     getDealerFormOptions(),
+    getRegions(),
+    getProvinceRegions(),
   ]);
   const filter = dealerFilter.parse(input);
+  // Đang lọc vùng thì ô Tỉnh chỉ hiện tỉnh của vùng đó; thêm dòng Chưa có tỉnh để bổ sung tỉnh còn thiếu.
+  const areaFilter = {
+    regions: regions.map((region) => ({ value: region.id, label: region.name })),
+    provinces: [
+      ...provinceRegions
+        .filter((row) => !input.regionId || row.regionId === input.regionId)
+        .map((row) => ({
+          value: dealerProvinceParam(row.name),
+          label: shortProvinceName(row.name),
+        })),
+      // Đại lý chưa có tỉnh không thuộc vùng nào, nên chỉ hiện khi không lọc vùng.
+      ...(input.regionId
+        ? []
+        : [{ value: dealerProvinceParam(DEALER_PROVINCE_NONE), label: 'Chưa có tỉnh' }]),
+    ],
+  };
   const canEdit = editOptions.canEdit;
   return (
     <DealersTable
@@ -72,6 +98,7 @@ async function DealerResults({
       filter={filter}
       basePath={basePath}
       orgUnitFilter={orgUnitFilter}
+      areaFilter={areaFilter}
       editOptions={canEdit ? editOptions : null}
     />
   );

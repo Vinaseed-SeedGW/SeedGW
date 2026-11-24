@@ -41,7 +41,7 @@ declare module '@tanstack/react-table' {
 const SEARCH_DEBOUNCE_MS = 300;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NUMBER_FORMAT = new Intl.NumberFormat('vi-VN');
-const CONTROL_CLASS = 'h-9 rounded-md border border-input bg-surface px-2.5';
+const CONTROL_CLASS = 'h-9 min-w-0 max-w-full rounded-md border border-input bg-surface px-2.5';
 const BUTTON_CLASS =
   'inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-brand bg-surface px-3 font-bold text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -197,7 +197,7 @@ function Search({ placeholder }: { placeholder: string }) {
 }
 
 function Filters({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-2">{children}</div>;
+  return <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">{children}</div>;
 }
 
 type SelectFilterProps = {
@@ -205,16 +205,24 @@ type SelectFilterProps = {
   label: string;
   allLabel: string;
   options: ReadonlyArray<{ value: string; label: string }>;
+  // Tham số khác bỏ đi khi đổi bộ lọc này, ví dụ đổi Vùng thì bỏ Tỉnh.
+  resetParams?: readonly string[];
 };
 
-function SelectFilter({ param, label, allLabel, options }: SelectFilterProps) {
+function SelectFilter({ param, label, allLabel, options, resetParams = [] }: SelectFilterProps) {
   const { state, actions } = useDataTable();
   return (
     <select
       className={CONTROL_CLASS}
       aria-label={label}
       value={state.readParam(param) ?? ''}
-      onChange={(event) => actions.setParams({ [param]: event.target.value || null, trang: null })}
+      onChange={(event) =>
+        actions.setParams({
+          [param]: event.target.value || null,
+          trang: null,
+          ...Object.fromEntries(resetParams.map((name) => [name, null])),
+        })
+      }
     >
       <option value="">{allLabel}</option>
       {options.map((option) => (

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { pageResult } from './common';
-import { dealerLevel, normalizeVnPhone, type DealerLevel } from './dealers';
+import { dealerLevel, normalizeVnPhone, type DealerLevel, type DealerUserOption } from './dealers';
+import { PROVINCES, type ProvinceName } from './provinces';
 
 // Đề xuất đại lý mới trên app (M10, 20/11/2026). Đề xuất đi kèm một lượt check-in tại cửa hàng nên có sẵn
 // ảnh, toạ độ, giờ máy chủ và địa chỉ lúc chụp. Quản trị đơn vị duyệt thì tạo đại lý, chưa có mã FAST (S10).
@@ -160,6 +161,8 @@ export const approveDealerProposalInput = z.object({
   ownerName: optionalName,
   taxCode: optionalTaxCode,
   level: z.coerce.number().pipe(dealerLevel),
+  // K7b: tỉnh của đại lý mới, gợi ý từ địa chỉ lúc chụp.
+  provinceName: z.enum(PROVINCES).nullable(),
   orgUnitId: z.uuid('Chọn đơn vị phụ trách'),
   assignedUserId: z.uuid().nullable(),
 });
@@ -181,7 +184,9 @@ export type MarkDuplicateDealerProposalInput = z.infer<typeof markDuplicateDeale
 
 export type DealerProposalOptions = {
   orgUnits: { value: string; label: string }[];
-  users: { value: string; label: string }[];
+  users: DealerUserOption[];
+  // K7b: đơn vị phụ trách từng tỉnh, để gợi ý đơn vị cho đại lý mới.
+  provinceUnits: Partial<Record<ProvinceName, string[]>>;
 };
 
 // ---------- App: đề xuất của tôi ----------

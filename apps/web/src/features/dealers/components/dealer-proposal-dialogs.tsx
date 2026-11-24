@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import {
@@ -10,7 +10,9 @@ import {
   type DealerProposalOptions,
   type DealerProposalRow,
 } from '@seedgw/contracts/dealer-proposals';
-import { DEALER_LEVEL_LABEL, DEALER_LEVELS } from '@seedgw/contracts/dealers';
+import { DEALER_LEVEL_LABEL, DEALER_LEVELS, userFitsUnit } from '@seedgw/contracts/dealers';
+import { guessProvinceFromAddress, PROVINCES } from '@seedgw/contracts/provinces';
+import { shortProvinceName, suggestOrgUnit } from '@seedgw/contracts/regions';
 import { formatNumber } from '@seedgw/contracts/format';
 import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
 import { Form } from '@seedgw/ui/form';
@@ -28,16 +30,27 @@ const LEVEL_OPTIONS = DEALER_LEVELS.map((level) => ({
   label: DEALER_LEVEL_LABEL[level],
 }));
 
+const PROVINCE_OPTIONS = PROVINCES.map((name) => ({ value: name, label: shortProvinceName(name) }));
+
 type DialogProps = { row: DealerProposalRow; onClose: () => void };
 
-/** Người duyệt sửa lại thông tin rồi tạo đại lý. Đơn vị và nhân viên mặc định theo người đề xuất. */
+/**
+ * Người duyệt sửa lại thông tin rồi tạo đại lý. K7b: tỉnh đoán từ địa chỉ lúc chụp; tỉnh chỉ có một đơn vị phụ
+ * trách thì điền sẵn đơn vị đó, còn lại giữ đơn vị của người đề xuất. Nhân viên chỉ chọn trong đơn vị đã chọn.
+ */
 export function ApproveProposalSheet({
   row,
   options,
   onClose,
 }: DialogProps & { options: DealerProposalOptions }) {
-  const unitAllowed = options.orgUnits.some((unit) => unit.value === row.orgUnitId);
-  const proposerAllowed = options.users.some((user) => user.value === row.proposedById);
+  const allowedUnits = options.orgUnits.map((unit) => unit.value);
+  const unitAllowed = allowedUnits.includes(row.orgUnitId ?? '');
+  const fallbackUnit = unitAllowed && row.orgUnitId ? row.orgUnitId : '';
+  const province = guessProvinceFromAddress(row.address);
+  const defaultUnit = province
+    ? suggestOrgUnit(options.provinceUnits[province], allowedUnits, fallbackUnit)
+    : fallbackUnit;
+  const proposer = options.users.find((user) => user.value === row.proposedById);
   const form = useForm<ApproveValues>({
     resolver: zodResolver(approveDealerProposalInput),
     defaultValues: {
@@ -48,10 +61,39 @@ export function ApproveProposalSheet({
       ownerName: row.ownerName ?? '',
       taxCode: row.taxCode ?? '',
       level: String(row.level),
-      orgUnitId: unitAllowed && row.orgUnitId ? row.orgUnitId : '',
-      assignedUserId: proposerAllowed ? row.proposedById : null,
+      provinceName: province,
+      orgUnitId: defaultUnit,
+      assignedUserId: proposer && userFitsUnit(proposer, defaultUnit) ? row.proposedById : null,
     },
   });
+
+  // Đổi tỉnh thì gợi ý lại đơn vị; đổi đơn vị thì bỏ nhân viên không thuộc đơn vị đó.
+  const provinceName = form.watch('provinceName');
+  const orgUnitId = form.watch('orgUnitId');
+  const firstProvince = useRef(provinceName);
+  useEffect(() => {
+    if (provinceName === firstProvince.current) return;
+    firstProvince.current = provinceName;
+    if (!provinceName) return;
+    const next = suggestOrgUnit(
+      options.provinceUnits[provinceName],
+      allowedUnits,
+      form.getValues('orgUnitId'),
+    );
+    form.setValue('orgUnitId', next);
+  }, [form, provinceName, options.provinceUnits, allowedUnits]);
+  const users = options.users.filter((user) => userFitsUnit(user, orgUnitId));
+  useEffect(() => {
+    const current = form.getValues('assignedUserId');
+    const fits = options.users.some(
+      (user) => user.value === current && userFitsUnit(user, orgUnitId),
+    );
+    if (current && !fits) form.setValue('assignedUserId', null);
+  }, [form, orgUnitId, options.users]);
+  const responsible = provinceName ? (options.provinceUnits[provinceName] ?? []) : [];
+  const responsibleNames = options.orgUnits
+    .filter((unit) => responsible.includes(unit.value))
+    .map((unit) => unit.label);
 
   return (
     <FormSheet.Root title="Duyệt đại lý mới" onClose={onClose}>
@@ -83,11 +125,32 @@ export function ApproveProposalSheet({
         <Form.Field name="level" label="Cấp đại lý">
           <Form.ChoiceSelect options={LEVEL_OPTIONS} />
         </Form.Field>
-        <Form.Field name="orgUnitId" label="Đơn vị phụ trách">
+        <Form.Field
+          name="provinceName"
+          label="Tỉnh, thành phố"
+          hint="Đoán từ địa chỉ lúc chụp, kiểm tra lại trước khi tạo"
+        >
+          <Form.Select options={PROVINCE_OPTIONS} emptyLabel="Chưa chọn" />
+        </Form.Field>
+        <Form.Field
+          name="orgUnitId"
+          label="Đơn vị phụ trách"
+          hint={
+            responsibleNames.length > 1
+              ? `Tỉnh này có nhiều đơn vị phụ trách: ${responsibleNames.join('; ')}`
+              : responsibleNames.length === 0 && provinceName
+                ? 'Chưa đơn vị nào khai báo phụ trách tỉnh này'
+                : undefined
+          }
+        >
           <Form.Select options={options.orgUnits} emptyLabel="Chọn đơn vị" />
         </Form.Field>
-        <Form.Field name="assignedUserId" label="Nhân viên phụ trách">
-          <Form.Select options={options.users} emptyLabel="Chưa giao" />
+        <Form.Field
+          name="assignedUserId"
+          label="Nhân viên phụ trách"
+          hint="Chỉ nhân viên thuộc đơn vị phụ trách hoặc đơn vị con"
+        >
+          <Form.Select options={users} emptyLabel="Chưa giao" />
         </Form.Field>
         <Form.Error />
         <Form.Actions>
