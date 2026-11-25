@@ -85,8 +85,30 @@ type ConsentContent = {
   sections: ReadonlyArray<{ heading: string; items: readonly string[] }>;
 };
 
+const SEEDGW_WEB_ITEM =
+  'Ngoài khoảng thời gian trên, app không ghi vị trí. Trang web SeedGW không lấy vị trí của bạn.';
+
+/**
+ * Bản 17/11/2026, trước khi đổi tên app (quyết định 34). Giữ nguyên văn người dùng đã đọc lúc đó, lấy từ git
+ * (commit a1c91de); chỉ khác bản hiện tại ở tên app trong 2 câu.
+ */
+const LOCATION_CONSENT_2026_11_17: ConsentContent = {
+  title: LOCATION_CONSENT.title,
+  intro:
+    'Để phục vụ hoạt động sản xuất kinh doanh, Công ty Cổ phần Tập đoàn Giống cây trồng Việt Nam (Vinaseed) cần thu thập dữ liệu vị trí của bạn khi bạn dùng DMS Vinaseed trong công việc.',
+  sections: LOCATION_CONSENT.sections.map((section) => ({
+    heading: section.heading,
+    items: section.items.map((item) =>
+      item === SEEDGW_WEB_ITEM
+        ? 'Ngoài khoảng thời gian trên, app không ghi vị trí. Trang web DMS không lấy vị trí của bạn.'
+        : item,
+    ),
+  })),
+};
+
 /** Nội dung theo từng phiên bản. Đổi câu chữ thì thêm phiên bản mới, không sửa bản cũ. */
 const LOCATION_CONSENT_BY_VERSION: Record<string, ConsentContent> = {
+  '2026-11-17': LOCATION_CONSENT_2026_11_17,
   [LOCATION_CONSENT_VERSION]: LOCATION_CONSENT,
 };
 
