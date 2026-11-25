@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ConsentPageFrame } from '@/features/consents/components/consent-page-frame';
 import Link from 'next/link';
 import {
   CONSENT_ACTION_LABEL,
@@ -8,8 +9,6 @@ import {
 } from '@seedgw/contracts/consents';
 import { formatDateTime } from '@seedgw/contracts/format';
 import { OwnConsentButtons } from '@/features/consents/components/own-consent-buttons';
-import { HubLayout } from '@/features/shell/components/hub-layout';
-import { listSearchPages } from '@/features/shell/search-pages';
 import { getMyConsents } from '@/server/queries/consents';
 
 export const metadata: Metadata = { title: 'Đồng ý của tôi' };
@@ -20,7 +19,7 @@ export default async function MyConsentsPage() {
   const { user, status, records } = await getMyConsents();
 
   return (
-    <HubLayout userName={user.fullName} searchPages={listSearchPages(user.permissions)}>
+    <ConsentPageFrame>
       <h1 className="text-2xl font-bold text-brand">Đồng ý của tôi</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
         Mỗi lần bạn đồng ý hay rút lại được ghi vào sổ đồng ý, kèm toàn văn bạn đã đọc và mã kiểm
@@ -103,6 +102,6 @@ export default async function MyConsentsPage() {
           </div>
         )}
       </section>
-    </HubLayout>
+    </ConsentPageFrame>
   );
 }

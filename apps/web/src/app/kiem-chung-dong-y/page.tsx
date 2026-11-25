@@ -1,10 +1,9 @@
 import { CircleCheck, CircleX } from 'lucide-react';
 import type { Metadata } from 'next';
+import { ConsentPageFrame } from '@/features/consents/components/consent-page-frame';
 import Link from 'next/link';
 import { CONSENT_ACTION_LABEL, shortConsentCode } from '@seedgw/contracts/consents';
 import { formatDateTime } from '@seedgw/contracts/format';
-import { HubLayout } from '@/features/shell/components/hub-layout';
-import { listSearchPages } from '@/features/shell/search-pages';
 import { signedInUser, verifyConsentCode } from '@/server/queries/consents';
 
 export const metadata: Metadata = { title: 'Kiểm chứng đồng ý' };
@@ -31,7 +30,7 @@ export default async function VerifyConsentPage({ searchParams }: PageProps) {
     : false;
 
   return (
-    <HubLayout userName={user.fullName} searchPages={listSearchPages(user.permissions)}>
+    <ConsentPageFrame>
       <h1 className="text-2xl font-bold text-brand">Kiểm chứng đồng ý</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
         Nhập mã kiểm chứng in trên giấy xác nhận (16 ký tự, ví dụ AB12-CD34-EF56-7890) hoặc mã đầy
@@ -88,6 +87,6 @@ export default async function VerifyConsentPage({ searchParams }: PageProps) {
           </Link>
         </section>
       ) : null}
-    </HubLayout>
+    </ConsentPageFrame>
   );
 }
