@@ -53,7 +53,7 @@ export async function previewUserImportAction(
 
 export async function commitUserImportAction(
   raw: unknown,
-): Promise<ActionResult<{ createdCount: number; file: ExportedFile }>> {
+): Promise<ActionResult<{ createdCount: number }>> {
   try {
     const user = await requireUser();
     assertCan(user, 'admin.user.manage');
@@ -61,8 +61,8 @@ export async function commitUserImportAction(
     const parsed = commitUserImportInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
 
-    const [{ created, file }, ip] = await Promise.all([
-      commitUserImport(user, parsed.data.rows),
+    const [{ created }, ip] = await Promise.all([
+      commitUserImport(user, parsed.data.rows, parsed.data.mustChangePassword),
       getClientIp(),
     ]);
 
@@ -80,7 +80,7 @@ export async function commitUserImportAction(
       ),
     );
     revalidatePath('/quan-tri/tai-khoan', 'layout');
-    return { ok: true, data: { createdCount: created.length, file } };
+    return { ok: true, data: { createdCount: created.length } };
   } catch (error) {
     return toActionError(error);
   }

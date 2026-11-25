@@ -161,6 +161,7 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   directManager: 'Quản lý trực tiếp',
   roles: 'Vai trò',
   device: 'Thiết bị',
+  mustChangePassword: 'Bắt đổi mật khẩu lần đăng nhập tới',
   level: 'Cấp đại lý',
   ownerName: 'Chủ đại lý',
   ownerPhone: 'Điện thoại chủ đại lý',

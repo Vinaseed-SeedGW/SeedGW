@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { passwordPolicy } from './auth';
 import { MAX_EXPORT_ROWS, MAX_PAGE_SIZE, pageResult } from './common';
 
 export const userStatus = z.enum(['ACTIVE', 'LOCKED']);
@@ -105,11 +106,35 @@ const userAssignmentFields = {
     .max(20, 'Chọn tối đa 20 vai trò'),
 };
 
-export const createUserInput = z.object({
-  employeeCode: employeeCodeField,
-  ...userProfileFields,
-  ...userAssignmentFields,
-});
+export const PASSWORD_HAS_EMPLOYEE_CODE = 'Mật khẩu không được chứa mã nhân viên';
+
+export function passwordHasEmployeeCode(password: string, employeeCode: string): boolean {
+  const code = employeeCode.trim().toUpperCase();
+  return code.length > 0 && password.toUpperCase().includes(code);
+}
+
+// 25/11/2026: quản trị tự đặt mật khẩu khi tạo hoặc đặt lại, không sinh mật khẩu ngẫu nhiên.
+const adminPasswordFields = {
+  password: passwordPolicy,
+  confirmPassword: z.string().min(1, 'Vui lòng nhập lại mật khẩu'),
+  /** Bật thì người dùng phải đổi mật khẩu trên web rồi mới đăng nhập được app. */
+  mustChangePassword: z.boolean(),
+};
+
+const PASSWORD_MISMATCH = { path: ['confirmPassword'], message: 'Mật khẩu nhập lại không khớp' };
+
+export const createUserInput = z
+  .object({
+    employeeCode: employeeCodeField,
+    ...userProfileFields,
+    ...userAssignmentFields,
+    ...adminPasswordFields,
+  })
+  .refine((value) => value.password === value.confirmPassword, PASSWORD_MISMATCH)
+  .refine((value) => !passwordHasEmployeeCode(value.password, value.employeeCode), {
+    path: ['password'],
+    message: PASSWORD_HAS_EMPLOYEE_CODE,
+  });
 export type CreateUserInput = z.infer<typeof createUserInput>;
 
 export const updateUserInput = z.object({
@@ -186,7 +211,12 @@ export type UserDetail = {
   allowed: UserAllowedActions;
 };
 
-export type CreatedUser = { id: string; employeeCode: string; temporaryPassword: string };
+export type CreatedUser = { id: string; employeeCode: string };
+
+export const setUserPasswordInput = z
+  .object({ id: z.uuid(), ...adminPasswordFields })
+  .refine((value) => value.password === value.confirmPassword, PASSWORD_MISMATCH);
+export type SetUserPasswordInput = z.infer<typeof setUserPasswordInput>;
 
 export const exportUsersInput = z.object({
   filter: listUsersInput.pick({ q: true, status: true, sort: true }),

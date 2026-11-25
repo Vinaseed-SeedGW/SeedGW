@@ -15,14 +15,9 @@ import {
 import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
-import { generateTemporaryPassword, hashPassword } from '@/server/services/credentials';
+import { hashPassword } from '@/server/services/credentials';
 import { DomainError } from '@/server/services/domain-error';
-import {
-  buildMultiSheetBase64,
-  buildWorkbookBase64,
-  readFirstSheet,
-  sheetWriter,
-} from '@/server/services/excel';
+import { buildMultiSheetBase64, readFirstSheet, sheetWriter } from '@/server/services/excel';
 import {
   dateFromInput,
   exceedsActor,
@@ -121,17 +116,16 @@ export async function previewUserImport(
 type CommittedRow = {
   id: string;
   employeeCode: string;
-  fullName: string;
-  temporaryPassword: string;
   changes: AuditChanges;
 };
 
-type CommitOutcome = { created: CommittedRow[]; file: ExportedFile };
+type CommitOutcome = { created: CommittedRow[] };
 
 // Ghi tat ca hoac khong ghi gi, de nguoi dung sua file roi nhap lai ma khong bi trung ma.
 export async function commitUserImport(
   actor: CurrentUser,
   rows: readonly UserImportRaw[],
+  mustChangePassword: boolean,
 ): Promise<CommitOutcome> {
   const { lookups, unitByCode, roleByCode, managerIdByCode } = await loadLookups(actor, rows);
   const validated = validateUserImportRows(rows, lookups);
@@ -144,15 +138,11 @@ export async function commitUserImport(
   }
 
   const prepared = await Promise.all(
-    values.map(async (row) => {
-      const temporaryPassword = generateTemporaryPassword();
-      return {
-        row,
-        id: randomUUID(),
-        temporaryPassword,
-        passwordHash: await hashPassword(temporaryPassword),
-      };
-    }),
+    values.map(async (row) => ({
+      row,
+      id: randomUUID(),
+      passwordHash: await hashPassword(row.password),
+    })),
   );
   const idByCode = new Map(prepared.map(({ row, id }) => [row.employeeCode, id]));
 
@@ -182,7 +172,7 @@ export async function commitUserImport(
             hiredAt: dateFromInput(row.hiredAt),
             orgUnitId: unitByCode.get(row.orgUnitCode)?.id ?? null,
             passwordHash,
-            mustChangePassword: true,
+            mustChangePassword,
           })),
         });
         await tx.userRole.createMany({
@@ -208,11 +198,9 @@ export async function commitUserImport(
     throw error;
   }
 
-  const created = prepared.map(({ row, id, temporaryPassword }) => ({
+  const created = prepared.map(({ row, id }) => ({
     id,
     employeeCode: row.employeeCode,
-    fullName: row.fullName,
-    temporaryPassword,
     changes: auditChanges(
       {},
       {
@@ -224,20 +212,12 @@ export async function commitUserImport(
         orgUnit: unitByCode.get(row.orgUnitCode)?.name ?? null,
         directManager: row.managerCode || null,
         roles: row.roleCodes.map((code) => roleByCode.get(code)?.name ?? code).join(', '),
+        mustChangePassword: mustChangePassword ? 'Có' : 'Không',
       },
     ),
   }));
 
-  const base64 = await buildWorkbookBase64(
-    'Mật khẩu tạm',
-    [
-      { header: 'Mã nhân viên', width: 18, value: (row: CommittedRow) => row.employeeCode },
-      { header: 'Họ tên', width: 30, value: (row: CommittedRow) => row.fullName },
-      { header: 'Mật khẩu tạm', width: 20, value: (row: CommittedRow) => row.temporaryPassword },
-    ],
-    created,
-  );
-  return { created, file: { fileName: 'mat-khau-tam.xlsx', base64 } };
+  return { created };
 }
 
 export async function buildUserImportTemplate(actor: CurrentUser): Promise<ExportedFile> {

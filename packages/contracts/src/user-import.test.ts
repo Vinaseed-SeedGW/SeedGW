@@ -25,6 +25,7 @@ function row(overrides: Partial<UserImportRaw> = {}): UserImportRaw {
     hiredAt: '',
     managerCode: '',
     roleCodes: 'sales',
+    password: 'Vinaseed2026',
     ...overrides,
   };
 }
@@ -64,6 +65,14 @@ describe('validateUserImportRows', () => {
       LOOKUPS,
     );
     expect(results.flatMap((result) => result.errors)).toEqual([]);
+  });
+
+  it('bat buoc mat khau dung quy tac va khong chua ma nhan vien', () => {
+    const [empty] = validateUserImportRows([row({ password: '' })], LOOKUPS);
+    expect(empty?.value).toBeNull();
+    expect(empty?.errors[0]).toContain('ít nhất 8 ký tự');
+    const [withCode] = validateUserImportRows([row({ password: 'nv100abcd' })], LOOKUPS);
+    expect(withCode?.errors).toEqual(['Mật khẩu không được chứa mã nhân viên']);
   });
 
   it('khong nhan ngay sai lich', () => {

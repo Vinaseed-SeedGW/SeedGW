@@ -4,13 +4,9 @@ import { useState } from 'react';
 import { formatDateTime } from '@seedgw/contracts/format';
 import type { UserDetail } from '@seedgw/contracts/users';
 import { ConfirmDialog } from '@seedgw/ui/confirm-dialog';
-import { TemporaryPasswordDialog } from '@/features/users/components/temporary-password-dialog';
+import { UserPasswordDialog } from '@/features/users/components/user-password-dialog';
 import { UserStatusBadge } from '@/features/users/components/user-status-badge';
-import {
-  resetUserPasswordAction,
-  setUsersActiveAction,
-  startImpersonationAction,
-} from '@/server/actions/users';
+import { setUsersActiveAction, startImpersonationAction } from '@/server/actions/users';
 
 type PanelDialog = 'LOCK' | 'UNLOCK' | 'RESET' | 'IMPERSONATE';
 
@@ -21,7 +17,6 @@ const DANGER_ACTION_CLASS =
 
 export function UserSecurityPanel({ user }: { user: UserDetail }) {
   const [dialog, setDialog] = useState<PanelDialog | null>(null);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
   const closeDialog = () => setDialog(null);
   const isActive = user.status === 'ACTIVE';
 
@@ -34,7 +29,7 @@ export function UserSecurityPanel({ user }: { user: UserDetail }) {
           <UserStatusBadge status={user.status} />
         </dd>
         <dt className="text-text-muted">Mật khẩu</dt>
-        <dd>{user.mustChangePassword ? 'Chờ người dùng đổi mật khẩu' : 'Đã đổi'}</dd>
+        <dd>{user.mustChangePassword ? 'Chờ người dùng đổi mật khẩu' : 'Đang dùng'}</dd>
         {user.loginLockedUntil ? (
           <>
             <dt className="text-text-muted">Đăng nhập</dt>
@@ -97,23 +92,7 @@ export function UserSecurityPanel({ user }: { user: UserDetail }) {
       ) : null}
 
       {dialog === 'RESET' ? (
-        <ConfirmDialog
-          title="Đặt lại mật khẩu"
-          confirmLabel="Đặt lại"
-          tone="danger"
-          successMessage="Đã đặt lại mật khẩu"
-          onClose={closeDialog}
-          onConfirm={async () => {
-            const result = await resetUserPasswordAction(user.id);
-            if (result.ok) setTemporaryPassword(result.data.temporaryPassword);
-            return result;
-          }}
-        >
-          <p>
-            Mật khẩu cũ của {user.fullName} hết hiệu lực, các phiên đang mở bị đăng xuất và người
-            dùng phải đổi mật khẩu ở lần đăng nhập tiếp theo.
-          </p>
-        </ConfirmDialog>
+        <UserPasswordDialog userId={user.id} fullName={user.fullName} onClose={closeDialog} />
       ) : null}
 
       {dialog === 'IMPERSONATE' ? (
@@ -130,15 +109,6 @@ export function UserSecurityPanel({ user }: { user: UserDetail }) {
             nhật ký kèm tên của bạn.
           </p>
         </ConfirmDialog>
-      ) : null}
-
-      {temporaryPassword ? (
-        <TemporaryPasswordDialog
-          title="Mật khẩu tạm mới"
-          employeeCode={user.employeeCode}
-          password={temporaryPassword}
-          onClose={() => setTemporaryPassword(null)}
-        />
       ) : null}
     </section>
   );

@@ -6,12 +6,14 @@ import { after } from 'next/server';
 import { z } from 'zod';
 import type { ActionResult, ExportedFile } from '@seedgw/contracts/common';
 import { MAX_EXPORT_ROWS } from '@seedgw/contracts/common';
+import { auditChanges } from '@seedgw/contracts/audit';
 import { formatDate } from '@seedgw/contracts/format';
 import {
   MOBILE_DEVICE_STATUS_LABEL,
   createUserInput,
   exportUsersInput,
   setMobileDeviceStatusInput,
+  setUserPasswordInput,
   setUsersActiveInput,
   updateUserInput,
   type CreatedUser,
@@ -29,7 +31,7 @@ import { buildWorkbookBase64, type ExcelColumn } from '@/server/services/excel';
 import { startImpersonation, stopImpersonation } from '@/server/services/impersonation';
 import {
   createUser,
-  resetUserPassword,
+  setUserPassword,
   setMobileDeviceStatus,
   setUsersActive,
   updateUser,
@@ -168,32 +170,35 @@ export async function setUsersActiveAction(
   }
 }
 
-export async function resetUserPasswordAction(
-  rawId: unknown,
-): Promise<ActionResult<{ temporaryPassword: string }>> {
+export async function setUserPasswordAction(raw: unknown): Promise<ActionResult<{ id: string }>> {
   try {
     const user = await requireUser();
     assertCan(user, 'admin.user.manage');
 
-    const id = z.uuid().safeParse(rawId);
-    if (!id.success) return validationError(id.error);
+    const parsed = setUserPasswordInput.safeParse(raw);
+    if (!parsed.success) return validationError(parsed.error);
+    const input = parsed.data;
 
-    const [outcome, ip] = await Promise.all([resetUserPassword(user, id.data), getClientIp()]);
+    const [outcome, ip] = await Promise.all([setUserPassword(user, input), getClientIp()]);
     if (!outcome) return NOT_FOUND_RESULT;
 
+    // Không ghi mật khẩu vào nhật ký, chỉ ghi có bắt đổi ở lần đăng nhập tới hay không.
     after(() =>
       writeAudit({
         actor: user,
         action: 'user.reset-password',
         entityType: 'User',
-        entityId: id.data,
+        entityId: input.id,
         entityLabel: outcome.employeeCode,
-        changes: {},
+        changes: auditChanges(
+          {},
+          { mustChangePassword: input.mustChangePassword ? 'Có' : 'Không' },
+        ),
         ip,
       }),
     );
     revalidateAccounts();
-    return { ok: true, data: { temporaryPassword: outcome.temporaryPassword } };
+    return { ok: true, data: { id: input.id } };
   } catch (error) {
     return toActionError(error);
   }

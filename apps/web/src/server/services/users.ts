@@ -5,20 +5,19 @@ import { roleExceedsActor } from '@seedgw/contracts/access';
 import { auditChanges, type AuditChanges } from '@seedgw/contracts/audit';
 import type { ChangePasswordInput } from '@seedgw/contracts/auth';
 import { formatDateOnly } from '@seedgw/contracts/format';
-import type {
-  CreatedUser,
-  CreateUserInput,
-  UpdateUserInput,
-  UserAllowedActions,
+import {
+  PASSWORD_HAS_EMPLOYEE_CODE,
+  passwordHasEmployeeCode,
+  type CreatedUser,
+  type CreateUserInput,
+  type SetUserPasswordInput,
+  type UpdateUserInput,
+  type UserAllowedActions,
 } from '@seedgw/contracts/users';
 import { db } from '@seedgw/db/client';
 import type { CurrentUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
-import {
-  CLEAR_LOGIN_FAILURES,
-  generateTemporaryPassword,
-  hashPassword,
-} from '@/server/services/credentials';
+import { CLEAR_LOGIN_FAILURES, hashPassword } from '@/server/services/credentials';
 import { DomainError } from '@/server/services/domain-error';
 
 const MANAGER_TREE_LOCK_KEY = 73_420_02;
@@ -181,8 +180,7 @@ export async function createUser(
   input: CreateUserInput,
 ): Promise<CreateUserOutcome> {
   const { orgUnit, roles, manager } = await resolveAssignment(actor, input, null);
-  const temporaryPassword = generateTemporaryPassword();
-  const passwordHash = await hashPassword(temporaryPassword);
+  const passwordHash = await hashPassword(input.password);
 
   try {
     const created = await db.user.create({
@@ -190,7 +188,7 @@ export async function createUser(
         ...profileData(input),
         employeeCode: input.employeeCode,
         passwordHash,
-        mustChangePassword: true,
+        mustChangePassword: input.mustChangePassword,
         roles: { create: input.roleIds.map((roleId) => ({ roleId })) },
       },
       select: { id: true },
@@ -199,7 +197,6 @@ export async function createUser(
     return {
       id: created.id,
       employeeCode: input.employeeCode,
-      temporaryPassword,
       changes: auditChanges(
         {},
         {
@@ -211,6 +208,7 @@ export async function createUser(
           orgUnit: orgUnit.name,
           directManager: managerLabel(manager),
           roles: roleNames(roles),
+          mustChangePassword: input.mustChangePassword ? 'Có' : 'Không',
         },
       ),
     };
@@ -379,12 +377,13 @@ export async function setUsersActive(
   return { changed, skipped: ids.length - changed.length };
 }
 
-type ResetPasswordOutcome = { employeeCode: string; temporaryPassword: string };
+type SetPasswordOutcome = { employeeCode: string };
 
-export async function resetUserPassword(
+export async function setUserPassword(
   actor: CurrentUser,
-  id: string,
-): Promise<ResetPasswordOutcome | null> {
+  input: SetUserPasswordInput,
+): Promise<SetPasswordOutcome | null> {
+  const { id } = input;
   if (id === actor.id) {
     throw new DomainError('CONFLICT', 'Vui lòng dùng trang Đổi mật khẩu cho tài khoản của mình');
   }
@@ -396,19 +395,23 @@ export async function resetUserPassword(
   });
   if (!target) return null;
   assertWithinActor(actor, target.roles);
+  if (passwordHasEmployeeCode(input.password, target.employeeCode)) {
+    throw new DomainError('VALIDATION', PASSWORD_HAS_EMPLOYEE_CODE, {
+      password: PASSWORD_HAS_EMPLOYEE_CODE,
+    });
+  }
 
-  const temporaryPassword = generateTemporaryPassword();
-  const passwordHash = await hashPassword(temporaryPassword);
+  const passwordHash = await hashPassword(input.password);
   await db.user.update({
     where: { id },
     data: {
       passwordHash,
-      mustChangePassword: true,
+      mustChangePassword: input.mustChangePassword,
       sessionVersion: { increment: 1 },
       ...CLEAR_LOGIN_FAILURES,
     },
   });
-  return { employeeCode: target.employeeCode, temporaryPassword };
+  return { employeeCode: target.employeeCode };
 }
 
 export async function changeOwnPassword(
@@ -425,7 +428,7 @@ export async function changeOwnPassword(
     });
   }
   if (input.newPassword.toUpperCase().includes(user.employeeCode)) {
-    throw new DomainError('VALIDATION', 'Mật khẩu không được chứa mã nhân viên', {
+    throw new DomainError('VALIDATION', PASSWORD_HAS_EMPLOYEE_CODE, {
       newPassword: 'Mật khẩu không được chứa mã nhân viên',
     });
   }

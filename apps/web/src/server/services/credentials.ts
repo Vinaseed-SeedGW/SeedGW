@@ -1,27 +1,11 @@
 import 'server-only';
-import { randomInt } from 'node:crypto';
 import { hash, verify } from 'argon2';
 import {
   LOGIN_FAILURE_WINDOW_MINUTES,
   LOGIN_LOCK_MINUTES,
   LOGIN_MAX_FAILURES,
-  passwordPolicy,
 } from '@seedgw/contracts/auth';
 import { db } from '@seedgw/db/client';
-
-// Bo cac ky tu de nham khi doc qua dien thoai: 0, O, 1, l, I.
-const TEMPORARY_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-const TEMPORARY_PASSWORD_LENGTH = 12;
-
-export function generateTemporaryPassword(): string {
-  for (;;) {
-    let password = '';
-    for (let index = 0; index < TEMPORARY_PASSWORD_LENGTH; index += 1) {
-      password += TEMPORARY_PASSWORD_ALPHABET[randomInt(TEMPORARY_PASSWORD_ALPHABET.length)];
-    }
-    if (passwordPolicy.safeParse(password).success) return password;
-  }
-}
 
 export function hashPassword(password: string): Promise<string> {
   return hash(password);

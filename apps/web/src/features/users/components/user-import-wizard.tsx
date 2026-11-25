@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useTransition, type ChangeEvent } from 'react';
-import type { ExportedFile } from '@seedgw/contracts/common';
 import {
   MAX_IMPORT_FILE_BYTES,
   MAX_IMPORT_ROWS,
@@ -19,7 +18,7 @@ import {
 type WizardStep =
   | { name: 'select' }
   | { name: 'preview'; fileName: string; preview: UserImportPreview }
-  | { name: 'done'; createdCount: number; file: ExportedFile };
+  | { name: 'done'; createdCount: number };
 
 const OUTLINE_BUTTON =
   'inline-flex h-9.5 cursor-pointer items-center rounded-md border border-brand bg-surface px-4 font-bold text-brand hover:bg-brand-soft';
@@ -85,6 +84,7 @@ function PreviewTable({ rows }: { rows: UserImportPreviewRow[] }) {
 export function UserImportWizard() {
   const [step, setStep] = useState<WizardStep>({ name: 'select' });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const sortedRows = useMemo(() => {
@@ -130,6 +130,7 @@ export function UserImportWizard() {
     startTransition(async () => {
       const result = await commitUserImportAction({
         rows: preview.rows.map(({ errors: _errors, ...row }) => row),
+        mustChangePassword,
       });
       if (result.ok) setStep({ name: 'done', ...result.data });
       else setErrorMessage(result.message);
@@ -142,18 +143,14 @@ export function UserImportWizard() {
         <div className="mt-4 rounded-md border border-border bg-surface p-4">
           <p className="text-lg font-bold text-brand">Đã tạo {step.createdCount} tài khoản</p>
           <p className="mt-1">
-            Hãy tải danh sách mật khẩu tạm và giao cho từng nhân viên. Danh sách chỉ tải được ở màn
-            hình này, sau đó phải đặt lại mật khẩu từng người.
+            Nhân viên đăng nhập bằng mã nhân viên và mật khẩu đã điền trong file.
+            {mustChangePassword ? ' Lần đầu đăng nhập phải đổi mật khẩu trên web.' : ''}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className={PRIMARY_BUTTON}
-              onClick={() => downloadFile(step.file)}
+            <Link
+              href="/quan-tri/tai-khoan"
+              className={`${PRIMARY_BUTTON} inline-flex items-center`}
             >
-              Tải danh sách mật khẩu tạm
-            </button>
-            <Link href="/quan-tri/tai-khoan" className="px-2 text-brand">
               Về danh sách
             </Link>
           </div>
@@ -161,8 +158,9 @@ export function UserImportWizard() {
       ) : (
         <>
           <p className="mt-2 text-text-muted">
-            Tải file mẫu, điền thông tin ở sheet đầu tiên rồi chọn file để xem trước. Mỗi lần nhập
-            tối đa {MAX_IMPORT_ROWS} dòng và chưa có gì được ghi cho đến khi bạn xác nhận.
+            Tải file mẫu, điền thông tin và mật khẩu của từng người ở sheet đầu tiên rồi chọn file
+            để xem trước. Mỗi lần nhập tối đa {MAX_IMPORT_ROWS} dòng và chưa có gì được ghi cho đến
+            khi bạn xác nhận. Xong nên xoá file vì trong file có mật khẩu.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
@@ -204,6 +202,18 @@ export function UserImportWizard() {
               : ''}
           </p>
           <PreviewTable rows={sortedRows} />
+          <label className="mt-4 flex w-fit cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              className="size-4 accent-brand"
+              checked={mustChangePassword}
+              onChange={(event) => setMustChangePassword(event.target.checked)}
+            />
+            Bắt đổi mật khẩu ở lần đăng nhập đầu
+          </label>
+          <p className="mt-1 text-sm text-text-muted">
+            Khi bật, nhân viên phải đổi mật khẩu trên web rồi mới đăng nhập được app.
+          </p>
           <div className="mt-4">
             <button
               type="button"

@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { parseDisplayDate } from './format';
-import { employeeCodeField, userProfileFields } from './users';
+import { passwordPolicy } from './auth';
+import {
+  employeeCodeField,
+  PASSWORD_HAS_EMPLOYEE_CODE,
+  passwordHasEmployeeCode,
+  userProfileFields,
+} from './users';
 
 export const MAX_IMPORT_ROWS = 1000;
 // Thap hon gioi han 1 MB mac dinh cua Server Action.
@@ -16,6 +22,7 @@ export const USER_IMPORT_COLUMNS = [
   { key: 'hiredAt', header: 'Ngày vào làm (dd/mm/yyyy)', width: 26 },
   { key: 'managerCode', header: 'Mã quản lý trực tiếp', width: 22 },
   { key: 'roleCodes', header: 'Mã vai trò (bắt buộc, cách nhau bằng dấu phẩy)', width: 44 },
+  { key: 'password', header: 'Mật khẩu (bắt buộc)', width: 22 },
 ] as const;
 
 type ImportColumnKey = (typeof USER_IMPORT_COLUMNS)[number]['key'];
@@ -43,10 +50,13 @@ export const commitUserImportInput = z.object({
         hiredAt: z.string().max(100),
         managerCode: z.string().max(200),
         roleCodes: z.string().max(1000),
+        password: z.string().max(200),
       }),
     )
     .min(1, 'File không có dòng dữ liệu nào')
     .max(MAX_IMPORT_ROWS, `Mỗi lần chỉ nhập tối đa ${MAX_IMPORT_ROWS} dòng`),
+  /** Áp cho mọi tài khoản trong file; bật thì phải đổi mật khẩu trên web trước khi dùng app. */
+  mustChangePassword: z.boolean(),
 });
 
 function splitRoleCodes(value: string): string[] {
@@ -66,6 +76,7 @@ const importRowFields = z.object({
     .string()
     .transform(splitRoleCodes)
     .pipe(z.array(z.string()).min(1, 'Thiếu mã vai trò')),
+  password: passwordPolicy,
 });
 
 export type ParsedUserImportRow = z.infer<typeof importRowFields>;
@@ -143,6 +154,9 @@ export function validateUserImportRows(
     }
     if (managerCode && !countByCode.has(managerCode) && !lookups.managerCodes.has(managerCode)) {
       errors.push(`Mã quản lý ${managerCode} không tồn tại`);
+    }
+    if (passwordHasEmployeeCode(raw.password, employeeCode)) {
+      errors.push(PASSWORD_HAS_EMPLOYEE_CODE);
     }
     if (cycles.has(employeeCode)) {
       errors.push('Quản lý trực tiếp tạo thành vòng lặp');
