@@ -53,7 +53,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Cần duyệt* `/kinh-doanh/can-duyet` (tab: Chờ tôi duyệt · Đã xử lý · Tất cả trong phạm vi; chi tiết: `/kinh-doanh/can-duyet/[ma]`)
   - Đối tác
     - Chỉ tiêu* `/kinh-doanh/chi-tieu`
-    - Đại lý `/kinh-doanh/dai-ly`
+    - Đại lý `/kinh-doanh/dai-ly` (nút Đại lý đề xuất mở `/kinh-doanh/dai-ly/de-xuat`)
       - Hồ sơ đại lý `/kinh-doanh/dai-ly/[id]` (tab: Thông tin · Công nợ · Viếng thăm · Phản hồi)
     - Khách hàng `/kinh-doanh/khach-hang`
       - Hồ sơ khách hàng `/kinh-doanh/khach-hang/[id]`
@@ -211,16 +211,17 @@ Quy tắc tính:
 3. Bấm ô → tới trang đích theo vai trò.
    - Từ link thông báo → bỏ qua Hub, tới thẳng đối tượng.
 
-### Đề xuất đại lý mới (M10, làm 20/11/2026)
-1. Nhân viên mở tab Tuyến → Thêm đại lý → chụp ảnh tại cửa hàng như check-in → điền tên, số điện thoại, địa chỉ (điền sẵn địa chỉ lúc chụp), chủ cửa hàng, mã số thuế, cấp gợi ý (mặc định Cấp 3), ghi chú → Gửi đề xuất.
+### Đề xuất đại lý mới (M10, làm 20/11/2026; đổi người duyệt 25/11/2026)
+1. Nhân viên bấm Check-in → chụp ảnh tại cửa hàng → chọn Điểm khác, tick Đây là đại lý mới → điền tên, số điện thoại, địa chỉ (điền sẵn địa chỉ lúc chụp), chủ cửa hàng, mã số thuế, cấp gợi ý (mặc định Cấp 3), ghi chú → Gửi đề xuất.
    - Đề xuất đi cùng một lượt check-in loại Điểm khác, nên có ảnh, toạ độ, giờ máy chủ và được tính vào km trong ngày.
    - App mất mạng → lưu trên máy, có mạng mới gửi; gửi lại không tạo trùng. Phần đề xuất sai thì máy chủ bỏ, check-in vẫn lưu.
-2. Trang Quản trị › Đại lý mới hiện đại lý có thể trùng (cùng số điện thoại của đại lý hoặc chủ đại lý, cùng mã số thuế, trong 100 m) để người duyệt xem, không chặn.
-3. Quản trị đơn vị (đơn vị và đơn vị con) hoặc Quản trị hệ thống xử lý:
-   - **Duyệt**: chỉnh tên, số điện thoại, địa chỉ, cấp, đơn vị, nhân viên phụ trách (mặc định người đề xuất) → tạo đại lý với toạ độ lúc chụp; lượt check-in thành lượt ghé thăm đại lý mới.
+2. Màn duyệt hiện đại lý có thể trùng (cùng số điện thoại của đại lý hoặc chủ đại lý, cùng mã số thuế, trong 100 m) để người duyệt xem, không chặn.
+3. Người duyệt một bước là Quản lý trực tiếp nếu đơn vị có cấp Quản lý, không thì Lãnh đạo đơn vị (chuỗi như Tuyến, Chỉ tiêu; đổi cơ cấu thì đề xuất đang chờ tự chuyển người). Duyệt ở Kinh doanh › Cần duyệt, tab Đại lý mới, hoặc trên app ở Cần duyệt (tab Tôi, chỉ Duyệt giữ nguyên thông tin hoặc Từ chối). Quản trị đơn vị chỉ xem ở Quản trị › Đại lý mới; Quản trị hệ thống duyệt thay ở đó.
+   - Người có quyền duyệt (Quản lý, Lãnh đạo đơn vị) tự đề xuất thì tạo đại lý luôn, người đề xuất phụ trách; trùng số điện thoại hoặc mã số thuế với đại lý có sẵn thì tự gắn lượt check-in vào đại lý đó.
+   - **Duyệt**: chỉnh tên, số điện thoại, địa chỉ, cấp, tỉnh, nhân viên phụ trách (mặc định người đề xuất); đơn vị là đơn vị của người đề xuất (Quản trị hệ thống duyệt thay thì chọn được) → tạo đại lý với toạ độ lúc chụp; lượt check-in thành lượt ghé thăm đại lý mới.
    - **Trùng**: chọn đại lý có sẵn → lượt check-in gắn vào đại lý đó, không tạo đại lý mới.
    - **Từ chối**: lý do 5 tới 500 ký tự.
-   - Nhân viên nhận thông báo đẩy, xem kết quả ở mục Đại lý tôi đề xuất (tab Tuyến).
+   - Người duyệt nhận thông báo đẩy khi có đề xuất mới. Nhân viên nhận thông báo kết quả, xem ở Kinh doanh › Đại lý › Đại lý đề xuất `/kinh-doanh/dai-ly/de-xuat` (theo phạm vi: nhân viên thấy của mình; tìm, lọc trạng thái, ngày chụp).
 4. Đại lý mới chưa có mã FAST. Khi nối FAST hai chiều (S10): cấp mã theo dải `DL` và tạo khách hàng trên FAST đúng mã đó.
    - FAST không cho ghi qua API → kế toán tạo tay trên FAST, lần đồng bộ sau tự ghép theo mã.
 
