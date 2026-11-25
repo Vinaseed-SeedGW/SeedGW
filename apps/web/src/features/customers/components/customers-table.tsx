@@ -11,6 +11,8 @@ import { formatDate } from '@seedgw/contracts/format';
 import { DataTable, type ColumnDef } from '@seedgw/ui/data-table';
 
 const SECONDARY_COLUMN = 'max-md:hidden';
+// Cột phụ hiện từ 1280 px, ở 1024 px có menu trái nên bảng không đủ chỗ.
+const WIDE_COLUMN = 'max-xl:hidden';
 
 const KIND_OPTIONS = [
   { value: 'nong-dan', label: CUSTOMER_KIND_LABEL.FARMER },
@@ -60,7 +62,7 @@ function columns(basePath: string): ColumnDef<CustomerSummary>[] {
     {
       id: 'crops',
       header: 'Cây trồng, diện tích',
-      meta: { label: 'Cây trồng, diện tích', className: 'whitespace-normal!' },
+      meta: { label: 'Cây trồng, diện tích', className: 'min-w-40 whitespace-normal!' },
       cell: ({ row }) => (
         <>
           {row.original.crops.length > 0 ? row.original.crops.join(', ') : muted('Chưa có')}
@@ -75,7 +77,7 @@ function columns(basePath: string): ColumnDef<CustomerSummary>[] {
     {
       id: 'dealers',
       header: 'Đại lý hay mua',
-      meta: { label: 'Đại lý hay mua', className: `${SECONDARY_COLUMN} whitespace-normal!` },
+      meta: { label: 'Đại lý hay mua', className: `${WIDE_COLUMN} min-w-48 whitespace-normal!` },
       cell: ({ row }) =>
         row.original.dealerNames.length > 0
           ? row.original.dealerNames.join(', ')
@@ -84,7 +86,7 @@ function columns(basePath: string): ColumnDef<CustomerSummary>[] {
     {
       id: 'assignee',
       header: 'Phụ trách',
-      meta: { label: 'Phụ trách', className: SECONDARY_COLUMN },
+      meta: { label: 'Phụ trách', className: WIDE_COLUMN },
       cell: ({ row }) => row.original.assignedUserName ?? muted('Chưa gán'),
     },
     {

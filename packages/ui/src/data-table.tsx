@@ -10,13 +10,21 @@ import {
   type Table,
   type VisibilityState,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ChevronsUpDown, Columns3, Download } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronsUpDown,
+  Columns3,
+  Download,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   use,
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   useTransition,
@@ -196,8 +204,46 @@ function Search({ placeholder }: { placeholder: string }) {
   );
 }
 
+// Tham số trên URL không phải bộ lọc, không tính vào số bộ lọc đang bật.
+const NON_FILTER_PARAMS = new Set(['q', 'trang', 'sap-xep', 'tab']);
+
+/**
+ * Bộ lọc của bảng. Dưới 768 px gọn lại sau nút Bộ lọc kèm số bộ lọc đang bật, để danh sách không bị
+ * đẩy xuống dưới màn hình đầu; từ 768 px hiện thẳng trên thanh công cụ.
+ */
 function Filters({ children }: { children: ReactNode }) {
-  return <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">{children}</div>;
+  const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const active = [...searchParams.keys()].filter((key) => !NON_FILTER_PARAMS.has(key)).length;
+  return (
+    <>
+      <button
+        type="button"
+        className={cn(BUTTON_CLASS, 'md:hidden')}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <SlidersHorizontal size={16} aria-hidden />
+        Bộ lọc
+        {active > 0 ? (
+          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs leading-5 text-primary-foreground tabular-nums">
+            {active}
+          </span>
+        ) : null}
+      </button>
+      <div
+        id={panelId}
+        className={cn(
+          'max-w-full min-w-0 flex-wrap items-center gap-2 max-md:w-full max-md:[&>*]:flex-1 max-md:[&>*]:basis-[calc(50%-4px)]',
+          open ? 'flex' : 'hidden md:flex',
+        )}
+      >
+        {children}
+      </div>
+    </>
+  );
 }
 
 type SelectFilterProps = {
@@ -416,34 +462,31 @@ function Body({ emptyMessage }: { emptyMessage: string }) {
           ))}
         </thead>
         <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={table.getVisibleLeafColumns().length}
-                className="px-2 py-10 text-center text-text-muted"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            rows.map((row) => (
-              <tr key={row.id} className="hover:bg-surface-subtle">
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className={cn(
-                      'border-b border-surface-subtle px-2 py-2 whitespace-nowrap',
-                      cell.column.columnDef.meta?.className,
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
+          {rows.length === 0
+            ? null
+            : rows.map((row) => (
+                <tr key={row.id} className="hover:bg-surface-subtle">
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className={cn(
+                        'border-b border-surface-subtle px-2 py-2 whitespace-nowrap',
+                        cell.column.columnDef.meta?.className,
+                      )}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
         </tbody>
       </table>
+      {/* Câu báo trống nằm ngoài vùng cuộn ngang để luôn đọc được trên điện thoại. */}
+      {rows.length === 0 ? (
+        <p className="sticky left-0 w-full px-2 py-10 text-center text-text-muted">
+          {emptyMessage}
+        </p>
+      ) : null}
     </div>
   );
 }

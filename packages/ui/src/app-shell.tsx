@@ -53,7 +53,10 @@ function Header({ children }: SlotProps) {
 
 function Breadcrumb({ children }: SlotProps) {
   return (
-    <nav aria-label="Vị trí hiện tại" className="min-w-0 flex-1 truncate text-sm text-text-muted">
+    <nav
+      aria-label="Vị trí hiện tại"
+      className="min-w-0 flex-1 truncate text-sm text-text-muted max-sm:invisible"
+    >
       {children}
     </nav>
   );

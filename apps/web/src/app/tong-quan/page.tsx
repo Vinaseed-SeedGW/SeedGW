@@ -15,6 +15,9 @@ import { AppFooter } from '@seedgw/ui/app-footer';
 import { Logo } from '@seedgw/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { GlobalSearch } from '@/features/shell/components/global-search';
+import { listSearchPages } from '@/features/shell/search-pages';
 import { can, requirePermission } from '@/server/auth/can';
 import { getExecutiveOverview } from '@/server/queries/executive';
 import { getProvinceRegions, getRegions } from '@/server/queries/regions';
@@ -69,8 +72,10 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
         <Link href="/hub" aria-label="Về Hub" className="flex-none">
           <Logo variant="color" size="m" />
         </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/hub" className="font-bold text-brand">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <GlobalSearch pages={listSearchPages(user.permissions)} />
+          <NotificationBell />
+          <Link href="/hub" className="hidden font-bold text-brand hover:underline sm:inline">
             Về Hub
           </Link>
           <LogoutButton />

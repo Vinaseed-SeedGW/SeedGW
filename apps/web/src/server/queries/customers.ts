@@ -159,8 +159,9 @@ export async function getCustomerFormOptions(): Promise<CustomerFormOptions> {
   const canCreate = can(user, 'sales.customer.create');
   const canUpdate = can(user, 'sales.customer.update');
   if (!canCreate && !canUpdate) return { users: [], canCreate, canUpdate };
+  // Bỏ chính mình vì ô Người phụ trách đã có dòng Tôi phụ trách.
   const users = await scoped.user.findMany({
-    where: { isActive: true },
+    where: { isActive: true, id: { not: user.id } },
     orderBy: { employeeCode: 'asc' },
     select: { id: true, employeeCode: true, fullName: true },
     take: 2000,

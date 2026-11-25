@@ -82,7 +82,10 @@ export function DashboardFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3" aria-busy={isPending}>
+    <div
+      className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap [&_select]:w-full sm:[&_select]:w-auto"
+      aria-busy={isPending}
+    >
       <label className="grid gap-1 text-sm">
         Kỳ
         <select
