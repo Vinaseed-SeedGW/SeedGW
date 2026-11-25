@@ -9,8 +9,7 @@ import { COLORS, FONT, SPACE } from '../theme';
 import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { DealerResults, toChoice, useDealerSearch } from './dealer-picker';
-import { TodayRouteSection, useLocalVisited, useMyRoutes } from './today-route';
-import { MyDealerProposals } from './my-dealer-proposals';
+import { BackBar } from './back-bar';
 import { APP_NAME } from '@seedgw/config/brand';
 
 const VISIBLE_RESULTS = 30;
@@ -65,20 +64,15 @@ function useCurrentPoint() {
 
 type Props = {
   onPick: (dealer: DealerChoice) => void;
-  onOpenRoutes: () => void;
-  /** M10: mở máy ảnh để đề xuất đại lý mới. null khi tài khoản không có quyền đề xuất. */
-  onAddDealer: (() => void) | null;
-  refreshKey: number;
+  onClose: () => void;
 };
 
 /**
- * Tab Tuyến (M6): đại lý mình phụ trách, gần nhất lên đầu, đánh dấu đại lý đã ghé hôm nay. Bấm một đại lý
+ * Màn Đại lý gần tôi (app tinh gọn 25/11, trước là tab Tuyến): đại lý mình phụ trách, gần nhất lên đầu, đánh dấu đại lý đã ghé hôm nay. Bấm một đại lý
  * thì mở máy ảnh với đại lý đó đã chọn sẵn (cách check-in thứ hai, M4). Đại lý chưa có toạ độ nằm cuối,
- * xếp theo tên. Phần trên là tuyến đã duyệt hôm nay và nút Chỉ đường Google Maps (S8).
+ * xếp theo tên. Tuyến hôm nay nằm ở tab Hôm nay.
  */
-export function RouteTab({ onPick, onOpenRoutes, onAddDealer, refreshKey }: Props) {
-  const routes = useMyRoutes(refreshKey, true);
-  const localVisited = useLocalVisited(refreshKey);
+export function NearbyScreen({ onPick, onClose }: Props) {
   const { point, denied, refresh } = useCurrentPoint();
   const visited = useMemo(() => {
     const dayStart = startOfVnDay(Date.now());
@@ -97,14 +91,8 @@ export function RouteTab({ onPick, onOpenRoutes, onAddDealer, refreshKey }: Prop
 
   return (
     <View style={styles.fill}>
+      <BackBar title="Đại lý gần tôi" onBack={onClose} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <TodayRouteSection
-          routes={routes}
-          visited={localVisited}
-          onPick={onPick}
-          onOpenRoutes={onOpenRoutes}
-        />
-        {onAddDealer ? <MyDealerProposals onAdd={onAddDealer} refreshKey={refreshKey} /> : null}
         <Text style={styles.title}>Đại lý tôi phụ trách</Text>
         <Text style={styles.muted}>
           Gần nhất lên đầu. Bấm vào đại lý để mở máy ảnh với đại lý đó đã chọn sẵn.

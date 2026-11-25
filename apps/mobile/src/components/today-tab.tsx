@@ -10,7 +10,7 @@ import { SUPPORT_FAB_CLEARANCE } from './support-fab';
 import { Button } from './button';
 import { distanceText, toChoice } from './dealer-picker';
 import { TargetCard } from './target-card';
-import { toDealerChoice, useMyRoutes } from './today-route';
+import { TodayRouteSection, useMyRoutes } from './today-route';
 import { Text } from './text';
 import type { SyncControl } from './use-sync';
 import type { TrackingControl } from './use-tracking';
@@ -79,7 +79,7 @@ type Props = {
   onPickDealer: (dealer: DealerChoice) => void;
   onOpenRoute: (() => void) | null;
   /** Có khi đã đăng nhập máy chủ: mở màn Chỉ tiêu của tôi (K3a). */
-  onOpenTargets: (() => void) | null;
+  showTarget: boolean;
   /** Mở Hỗ trợ điền sẵn báo lỗi gửi dữ liệu (T3). */
   onReportProblem: ((detail: string) => void) | null;
   refreshKey: number;
@@ -92,7 +92,7 @@ export function TodayTab({
   onOpenCamera,
   onPickDealer,
   onOpenRoute,
-  onOpenTargets,
+  showTarget,
   onReportProblem,
   refreshKey,
 }: Props) {
@@ -102,12 +102,6 @@ export function TodayTab({
   // Có tuyến đã duyệt hôm nay thì Điểm cần thăm là điểm kế tiếp chưa ghé trong tuyến (S8).
   const routes = useMyRoutes(refreshKey, sync !== null);
   const routeStops = routes?.today?.stops ?? [];
-  const nextStop = routeStops.find(
-    (stop) => !stop.visited && !today.visitedDealerIds.has(stop.dealerId),
-  );
-  const routeDone =
-    routeStops.length -
-    routeStops.filter((stop) => !stop.visited && !today.visitedDealerIds.has(stop.dealerId)).length;
   const next = useNextDealer(today.visitedDealerIds, sync !== null && routeStops.length === 0);
 
   useEffect(() => {
@@ -161,30 +155,10 @@ export function TodayTab({
       </View>
       {state.message ? <Text style={styles.error}>{state.message}</Text> : null}
 
-      {onOpenTargets ? <TargetCard refreshKey={refreshKey} onOpen={onOpenTargets} /> : null}
+      {showTarget ? <TargetCard refreshKey={refreshKey} /> : null}
 
       {routeStops.length > 0 ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Tuyến hôm nay, đã ghé {routeDone} trên {routeStops.length} điểm
-          </Text>
-          {nextStop ? (
-            <>
-              <Text style={styles.dealerName}>{nextStop.dealerName}</Text>
-              <Text style={styles.muted} numberOfLines={2}>
-                Điểm cần thăm tiếp theo, {nextStop.address}
-              </Text>
-              <View style={styles.actions}>
-                <Button
-                  label="Check-in đại lý này"
-                  onPress={() => onPickDealer(toDealerChoice(nextStop))}
-                />
-              </View>
-            </>
-          ) : (
-            <Text style={styles.body}>Đã ghé hết các điểm trong tuyến hôm nay.</Text>
-          )}
-        </View>
+        <TodayRouteSection routes={routes} visited={today.visitedDealerIds} onPick={onPickDealer} />
       ) : next ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Đại lý gần nhất chưa ghé hôm nay</Text>

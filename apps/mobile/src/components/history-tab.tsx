@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { CHECK_IN_FLAG_LABEL, CHECK_IN_PLACE_KIND_LABEL } from '@seedgw/contracts/check-ins';
-import { shareDayReport } from '../sync/day-report';
 import { formatVnDate, formatVnTime, startOfVnDay } from '../sync/geo';
 import {
   currentMonth,
@@ -66,8 +65,6 @@ export function HistoryTab() {
   const [data, setData] = useState<HistoryMonth | null>(null);
   const [loading, setLoading] = useState(true);
   const [photo, setPhoto] = useState<PhotoTarget>(null);
-  const [exporting, setExporting] = useState<number | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const load = useCallback(async (target: string) => {
     setLoading(true);
@@ -79,21 +76,6 @@ export function HistoryTab() {
   useEffect(() => {
     void load(month);
   }, [month, load]);
-
-  async function exportDay(dayStart: number) {
-    if (exporting !== null) return;
-    setExporting(dayStart);
-    setMessage(null);
-    const result = await shareDayReport(dayStart);
-    setExporting(null);
-    setMessage(
-      result.ok
-        ? result.missingAddress > 0
-          ? `Đã tạo file ${result.fileName}. Còn ${result.missingAddress} ảnh chưa có địa chỉ, khi có mạng xuất lại để bổ sung.`
-          : `Đã tạo file ${result.fileName}, ${result.checkIns} lượt check-in.`
-        : result.message,
-    );
-  }
 
   const thisMonth = currentMonth();
   const days = data && data.month === month ? groupByDay(data.entries) : [];
@@ -127,7 +109,6 @@ export function HistoryTab() {
         refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void load(month)} />}
       >
         {data?.notice ? <Text style={styles.notice}>{data.notice}</Text> : null}
-        {message ? <Text style={styles.muted}>{message}</Text> : null}
         {!loading && days.length === 0 ? (
           <Text style={styles.muted}>Chưa có lượt check-in nào trong tháng này.</Text>
         ) : null}
@@ -140,13 +121,6 @@ export function HistoryTab() {
                   {day.entries.length} lượt, {kmText(day.km)} km theo GPS
                 </Text>
               </View>
-              {day.hasLocal ? (
-                <Button
-                  label={exporting === day.dayStart ? 'Đang tạo file' : 'Xuất Excel'}
-                  onPress={() => void exportDay(day.dayStart)}
-                  variant="ghost"
-                />
-              ) : null}
             </View>
             {day.entries.map((entry, index) => (
               <Entry

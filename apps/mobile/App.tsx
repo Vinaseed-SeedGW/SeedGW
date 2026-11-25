@@ -23,9 +23,7 @@ import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
-import { RoutesScreen } from './src/components/routes-screen';
 import { SupportFab } from './src/components/support-fab';
-import { NotificationsScreen } from './src/components/notifications-screen';
 import { SupportScreen, type SupportPrefill } from './src/components/support-screen';
 import { readSupportBadge } from './src/api/support';
 import { countPendingSupport } from './src/sync/support-outbox';
@@ -35,15 +33,13 @@ import { onPushOpened, readPushState, registerForPush, type PushState } from './
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
 import { MeTab } from './src/components/me-tab';
-import { RouteTab } from './src/components/route-tab';
+import { NearbyScreen } from './src/components/nearby-screen';
 import { TabBar, TABS, type TabKey } from './src/components/tab-bar';
-import { TargetsScreen } from './src/components/targets-screen';
 import { TodayTab } from './src/components/today-tab';
 import { useTracking } from './src/components/use-tracking';
 import { useAutoSync, useSession } from './src/components/use-sync';
 import { WatermarkCamera, type CameraIntent } from './src/components/watermark-camera';
-import { Text } from './src/components/text';
-import { COLORS, FONT_FAMILY, SPACE } from './src/theme';
+import { COLORS, FONT_FAMILY } from './src/theme';
 
 // F9: lỗi JS chưa bắt được gửi về máy chủ.
 installErrorReporter();
@@ -88,10 +84,8 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [presetDealer, setPresetDealer] = useState<DealerChoice | null>(null);
   const [cameraIntent, setCameraIntent] = useState<CameraIntent>('check-in');
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
-  // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
-  const [overlay, setOverlay] = useState<
-    'targets' | 'approvals' | 'routes' | 'support' | 'notifications' | null
-  >(null);
+  // Màn mở chồng lên tab (app tinh gọn 25/11): Đại lý gần tôi, Cần duyệt (A10b), Hỗ trợ.
+  const [overlay, setOverlay] = useState<'nearby' | 'approvals' | 'support' | null>(null);
   const [supportPrefill, setSupportPrefill] = useState<SupportPrefill | null>(null);
   const [supportUnread, setSupportUnread] = useState(0);
   const [supportCode, setSupportCode] = useState<string | null>(null);
@@ -131,12 +125,10 @@ function Main({ signedIn }: { signedIn: boolean }) {
       setSupportCode(target.code);
       setOverlay('support');
     } else if (target.screen === 'approvals') setOverlay('approvals');
-    else if (target.screen === 'routes') setOverlay('routes');
-    else if (target.screen === 'dealer-proposals') {
-      setOverlay(null);
-      setTab('route');
+    else if (target.screen === 'nearby') setOverlay('nearby');
+    else {
+      // Tuyến được duyệt, đại lý mới được duyệt, nhắc check-in: về tab Hôm nay, tải lại tuyến.
       setRefreshKey((value) => value + 1);
-    } else {
       setOverlay(null);
       setTab('today');
     }
@@ -214,18 +206,13 @@ function Main({ signedIn }: { signedIn: boolean }) {
     setCameraOpen(true);
   }
 
-  function openNewDealer() {
-    setCameraIntent('new-dealer');
-    setPresetDealer(null);
-    setCameraOpen(true);
-  }
-
   // Máy ảnh mở toàn màn hình, che thanh tiêu đề và thanh tab.
   if (cameraOpen) {
     return (
       <WatermarkCamera
         intent={cameraIntent}
         presetDealer={presetDealer}
+        canProposeDealer={capabilities?.canProposeDealer === true}
         onClose={() => {
           setPresetDealer(null);
           setCameraOpen(false);
@@ -269,12 +256,16 @@ function Main({ signedIn }: { signedIn: boolean }) {
     return (
       <View style={styles.fill}>
         <AppHeader title={OVERLAY_TITLE[overlay]} />
-        {overlay === 'targets' ? <TargetsScreen onClose={closeOverlay} /> : null}
-        {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
-        {overlay === 'routes' ? <RoutesScreen onClose={closeOverlay} /> : null}
-        {overlay === 'notifications' ? (
-          <NotificationsScreen onClose={closeOverlay} onOpenTarget={openTarget} />
+        {overlay === 'nearby' ? (
+          <NearbyScreen
+            onClose={closeOverlay}
+            onPick={(dealer) => {
+              setOverlay(null);
+              openCamera(dealer);
+            }}
+          />
         ) : null}
+        {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
         {overlay === 'support' ? (
           <SupportScreen onClose={closeOverlay} prefill={supportPrefill} openCode={supportCode} />
         ) : null}
@@ -291,23 +282,11 @@ function Main({ signedIn }: { signedIn: boolean }) {
             sync={account ? sync : null}
             onOpenCamera={() => openCamera(null)}
             onPickDealer={openCamera}
-            onOpenRoute={account ? () => setTab('route') : null}
-            onOpenTargets={account && FEATURES.salesTargets ? () => setOverlay('targets') : null}
+            onOpenRoute={account ? () => setOverlay('nearby') : null}
+            showTarget={account !== null && FEATURES.salesTargets}
             onReportProblem={account ? reportProblem : null}
             refreshKey={refreshKey}
           />
-        ) : null}
-        {tab === 'route' ? (
-          account ? (
-            <RouteTab
-              onPick={openCamera}
-              onOpenRoutes={() => setOverlay('routes')}
-              onAddDealer={capabilities?.canProposeDealer ? openNewDealer : null}
-              refreshKey={refreshKey}
-            />
-          ) : (
-            <Text style={styles.notice}>Cần đăng nhập máy chủ để xem đại lý phụ trách.</Text>
-          )
         ) : null}
         {tab === 'history' ? <HistoryTab /> : null}
         {tab === 'me' ? (
@@ -337,13 +316,15 @@ function Main({ signedIn }: { signedIn: boolean }) {
                 ? {
                     state: pushState,
                     onRefresh: () => void readPushState().then(setPushState),
-                    onOpenList: () => setOverlay('notifications'),
                   }
                 : null
             }
           />
         ) : null}
-        {account ? <SupportFab count={supportUnread} onPress={openSupport} /> : null}
+        {/* Nút nổi Hỗ trợ chỉ ở tab Tôi (app tinh gọn 25/11), các tab khác để dành chỗ cho check-in. */}
+        {account && tab === 'me' ? (
+          <SupportFab count={supportUnread} onPress={openSupport} />
+        ) : null}
       </View>
       <TabBar active={tab} onChange={setTab} badges={{ me: supportUnread }} />
     </View>
@@ -351,11 +332,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
 }
 
 const OVERLAY_TITLE = {
-  targets: 'Chỉ tiêu',
+  nearby: 'Đại lý gần tôi',
   approvals: 'Cần duyệt',
-  routes: 'Tuyến',
   support: 'Hỗ trợ',
-  notifications: 'Thông báo',
 } as const;
 
 const styles = StyleSheet.create({
@@ -363,5 +342,4 @@ const styles = StyleSheet.create({
   body: { flex: 1, paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0 },
   loading: { marginTop: 80 },
   fill: { flex: 1 },
-  notice: { padding: SPACE.lg, fontSize: 15, color: COLORS.textMuted },
 });

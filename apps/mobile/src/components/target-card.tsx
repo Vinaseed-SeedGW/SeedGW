@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { currentVnMonth, type MyTargetMonth } from '@seedgw/contracts/sales-targets';
+import { currentVnMonth, targetPercent, type MyTargetMonth } from '@seedgw/contracts/sales-targets';
 import { loadMyTargets } from '../api/targets';
 import { COLORS, FONT, SPACE } from '../theme';
-import { Button } from './button';
-import { StatusTag, AssignedValues, TargetValues } from './target-figures';
 import { Text } from './text';
 
-/** Thẻ chỉ tiêu tháng này ở tab Hôm nay (K3a). Mất mạng thì ẩn, không ảnh hưởng check-in. */
-export function TargetCard({ refreshKey, onOpen }: { refreshKey: number; onOpen: () => void }) {
+/**
+ * Một dòng chỉ tiêu tháng ở tab Hôm nay (app tinh gọn 25/11): biết mình đang ở đâu là đủ. Đăng ký, sửa chỉ
+ * tiêu làm trên web. Mất mạng thì ẩn, không ảnh hưởng check-in.
+ */
+export function TargetCard({ refreshKey }: { refreshKey: number }) {
   const [month, setMonth] = useState<MyTargetMonth | null>(null);
 
   useEffect(() => {
@@ -24,50 +25,39 @@ export function TargetCard({ refreshKey, onOpen }: { refreshKey: number; onOpen:
   }, [refreshKey]);
 
   if (!month) return null;
-  const target = month.target;
+  // Chỉ tiêu được giao là chính; chưa giao thì lấy chỉ tiêu tự đăng ký đã duyệt.
+  const goal = month.assigned ?? month.target?.approved ?? null;
+  const visits = month.progress.visitCount;
+  const dealers = month.progress.dealerCoverage;
+  const visitPercent = targetPercent(visits, goal?.visitCountTarget);
+  const dealerPercent = targetPercent(dealers, goal?.dealerCoverageTarget);
+
   return (
-    <View style={styles.card}>
-      <View style={styles.head}>
-        <Text style={styles.title}>Chỉ tiêu {month.monthLabel.toLowerCase()}</Text>
-        {target?.approvalStatus && target.approvalStatus !== 'APPROVED' ? (
-          <StatusTag status={target.approvalStatus} />
-        ) : null}
-      </View>
-      {month.assigned ? (
-        <AssignedValues assigned={month.assigned} progress={month.progress} />
-      ) : target ? (
-        <TargetValues
-          proposed={target.proposed}
-          approved={target.approved}
-          progress={month.progress}
-        />
-      ) : (
-        <Text style={styles.muted}>
-          Chưa đăng ký chỉ tiêu tháng này. Đã ghé {month.progress.visitCount} lượt,{' '}
-          {month.progress.dealerCoverage} đại lý.
+    <View style={styles.line} accessibilityRole="summary">
+      <Text style={styles.title}>Chỉ tiêu {month.monthLabel.toLowerCase()}</Text>
+      {goal ? (
+        <Text style={styles.body}>
+          {`${visits} trên ${goal.visitCountTarget} lượt${visitPercent !== null ? ` (${visitPercent}%)` : ''}, ${dealers} trên ${goal.dealerCoverageTarget} đại lý${dealerPercent !== null ? ` (${dealerPercent}%)` : ''}`}
         </Text>
+      ) : (
+        <Text
+          style={styles.body}
+        >{`Chưa có chỉ tiêu. Đã ghé ${visits} lượt, ${dealers} đại lý.`}</Text>
       )}
-      <View style={styles.actions}>
-        <Button
-          label={target || month.assigned || !month.editable ? 'Xem chỉ tiêu' : 'Đăng ký chỉ tiêu'}
-          onPress={onOpen}
-          variant="ghost"
-        />
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  line: {
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.brand,
+    backgroundColor: COLORS.brandSoft,
     borderRadius: 8,
-    padding: SPACE.md,
-    gap: SPACE.sm,
+    paddingVertical: SPACE.sm,
+    paddingHorizontal: SPACE.md,
+    gap: 2,
   },
-  head: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm, flexWrap: 'wrap' },
-  title: { fontSize: 14, color: COLORS.textMuted, fontWeight: FONT.bold },
-  muted: { fontSize: 14, color: COLORS.textMuted },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
+  title: { fontSize: 14, fontWeight: FONT.bold, color: COLORS.brand },
+  body: { fontSize: 16, color: COLORS.text },
 });

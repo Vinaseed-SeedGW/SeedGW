@@ -109,6 +109,8 @@ type Props = {
   intent?: CameraIntent;
   /** Đại lý chọn sẵn từ màn Đại lý gần tôi (M4). Không có thì chọn sau khi chụp như cũ. */
   presetDealer?: DealerChoice | null;
+  /** App tinh gọn 25/11: check-in Điểm khác có ô Đây là đại lý mới khi tài khoản được đề xuất. */
+  canProposeDealer?: boolean;
   onClose: () => void;
   /** Gọi sau khi ảnh đã in thông tin và lưu vào máy. */
   onSaved: (sizeBytes: number) => void;
@@ -117,6 +119,7 @@ type Props = {
 export function WatermarkCamera({
   intent = 'check-in',
   presetDealer = null,
+  canProposeDealer = false,
   onClose,
   onSaved,
 }: Props) {
@@ -141,6 +144,7 @@ export function WatermarkCamera({
         shot={shot}
         intent={intent}
         presetDealer={presetDealer}
+        canProposeDealer={canProposeDealer}
         onRetake={() => setShot(null)}
         onClose={onClose}
         onSaved={onSaved}
@@ -294,6 +298,7 @@ function Review({
   shot,
   intent,
   presetDealer,
+  canProposeDealer,
   onRetake,
   onClose,
   onSaved,
@@ -301,6 +306,7 @@ function Review({
   shot: Shot;
   intent: CameraIntent;
   presetDealer: DealerChoice | null;
+  canProposeDealer: boolean;
   onRetake: () => void;
   onClose: () => void;
   onSaved: (sizeBytes: number) => void;
@@ -319,6 +325,9 @@ function Review({
     customer: null,
     farReason: '',
   });
+  // Lượt check-in Điểm khác đánh dấu là đại lý mới thì gửi kèm đề xuất (M10, gộp vào check-in 25/11).
+  const [isNewDealer, setIsNewDealer] = useState(false);
+  const proposing = intent === 'new-dealer' || (isNewDealer && place.kind === 'OTHER');
   const [newDealer, setNewDealer] = useState<NewDealerDraft>(() =>
     emptyNewDealerDraft(shot.address),
   );
@@ -456,23 +465,24 @@ function Review({
         {shot.mocked ? (
           <Banner tone="danger" text="Vị trí đến từ ứng dụng giả lập, ảnh được gắn cờ." />
         ) : null}
-        {state === 'saved' && intent === 'new-dealer' ? (
-          <NewDealerForm value={newDealer} onChange={setNewDealer} />
-        ) : null}
         {state === 'saved' && intent === 'check-in' ? (
           <PlaceForm
             value={place}
             onChange={setPlace}
+            newDealer={canProposeDealer ? { checked: isNewDealer, onChange: setIsNewDealer } : null}
             point={{ lat: shot.location.lat, lng: shot.location.lng }}
             far={isFar && dealerDistanceM !== null ? { distanceM: dealerDistanceM, radiusM } : null}
           />
+        ) : null}
+        {state === 'saved' && proposing ? (
+          <NewDealerForm value={newDealer} onChange={setNewDealer} />
         ) : null}
         {formError ? <Banner tone="danger" text={formError} /> : null}
       </ScrollView>
       <View style={styles.controls}>
         <Button label="Bỏ ảnh" onPress={discard} variant="ghost" />
-        {intent === 'new-dealer' ? (
-          <Button label="Gửi đề xuất" onPress={saveNewDealer} />
+        {proposing ? (
+          <Button label="Lưu check-in, gửi đề xuất" onPress={saveNewDealer} />
         ) : (
           <Button label="Lưu check-in" onPress={saveCheckIn} />
         )}
@@ -505,12 +515,16 @@ function PlaceForm({
   onChange,
   point,
   far,
+  newDealer,
 }: {
   value: PlaceDraft;
   onChange: (next: PlaceDraft) => void;
   point: { lat: number; lng: number };
   far: { distanceM: number; radiusM: number } | null;
+  /** Ô Đây là đại lý mới khi chọn Điểm khác; null khi không được đề xuất. */
+  newDealer: { checked: boolean; onChange: (checked: boolean) => void } | null;
 }) {
+  const proposing = newDealer !== null && newDealer.checked && value.kind === 'OTHER';
   const current = PLACE_KINDS.find((item) => item.kind === value.kind) ?? PLACE_KINDS[0];
   const usePicker = value.kind === 'DEALER' && serverEnabled();
   const useCustomerPicker = value.kind === 'CUSTOMER' && serverEnabled();
@@ -547,7 +561,20 @@ function PlaceForm({
           );
         })}
       </View>
-      <Text style={styles.formLabel}>{current?.nameLabel}</Text>
+      {newDealer && value.kind === 'OTHER' ? (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: newDealer.checked }}
+          onPress={() => newDealer.onChange(!newDealer.checked)}
+          style={({ pressed }) => [styles.toggle, pressed && styles.pressed]}
+        >
+          <View style={[styles.box, newDealer.checked && styles.boxChecked]}>
+            {newDealer.checked ? <View style={styles.boxMark} /> : null}
+          </View>
+          <Text style={styles.toggleText}>Đây là đại lý mới, gửi đề xuất thêm vào danh mục</Text>
+        </Pressable>
+      ) : null}
+      {proposing ? null : <Text style={styles.formLabel}>{current?.nameLabel}</Text>}
       {usePicker ? (
         <DealerPicker
           point={point}
@@ -578,7 +605,9 @@ function PlaceForm({
           />
         </>
       ) : null}
-      {(usePicker && selectedDealer) || (useCustomerPicker && selectedCustomer) ? null : (
+      {proposing ||
+      (usePicker && selectedDealer) ||
+      (useCustomerPicker && selectedCustomer) ? null : (
         <>
           {usePicker ? (
             <Text style={styles.formLabel}>Không có trong danh sách thì gõ tên đại lý</Text>
@@ -596,16 +625,20 @@ function PlaceForm({
           />
         </>
       )}
-      <Text style={styles.formLabel}>
-        {value.kind === 'DEALER' ? 'Ghi chú' : 'Ghi chú (bắt buộc)'}
-      </Text>
-      <TextInput
-        value={value.note}
-        onChangeText={(note) => onChange({ ...value, note })}
-        accessibilityLabel="Ghi chú"
-        style={[styles.input, styles.inputMultiline]}
-        multiline
-      />
+      {proposing ? null : (
+        <>
+          <Text style={styles.formLabel}>
+            {value.kind === 'DEALER' ? 'Ghi chú' : 'Ghi chú (bắt buộc)'}
+          </Text>
+          <TextInput
+            value={value.note}
+            onChangeText={(note) => onChange({ ...value, note })}
+            accessibilityLabel="Ghi chú"
+            style={[styles.input, styles.inputMultiline]}
+            multiline
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -652,6 +685,25 @@ const styles = StyleSheet.create({
   form: { padding: SPACE.lg, gap: SPACE.sm },
   formLabel: { fontSize: 14, color: COLORS.textMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.sm },
+  toggle: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACE.md,
+    paddingVertical: SPACE.sm,
+  },
+  toggleText: { flex: 1, fontSize: 15, color: COLORS.text },
+  box: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: COLORS.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boxChecked: { backgroundColor: COLORS.brand },
+  boxMark: { width: 10, height: 10, borderRadius: 2, backgroundColor: COLORS.onBrand },
   chip: {
     minHeight: 44,
     paddingHorizontal: SPACE.lg,

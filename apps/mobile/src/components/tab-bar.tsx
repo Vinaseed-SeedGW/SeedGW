@@ -1,21 +1,20 @@
 import { Image, Pressable, StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import tabHistory from '../../assets/images/tab-history.png';
 import tabMe from '../../assets/images/tab-me.png';
-import tabRoute from '../../assets/images/tab-route.png';
 import tabToday from '../../assets/images/tab-today.png';
 import { COLORS, FONT, FONT_SCALE, SPACE } from '../theme';
 import { Text } from './text';
 
-export type TabKey = 'today' | 'route' | 'history' | 'me';
+// App tinh gọn (25/11/2026): 3 tab, tuyến hôm nay và Đại lý gần tôi nằm trong tab Hôm nay.
+export type TabKey = 'today' | 'history' | 'me';
 
 export const TABS: { key: TabKey; label: string; icon: ImageSourcePropType }[] = [
   { key: 'today', label: 'Hôm nay', icon: tabToday },
-  { key: 'route', label: 'Tuyến', icon: tabRoute },
   { key: 'history', label: 'Lịch sử', icon: tabHistory },
   { key: 'me', label: 'Tôi', icon: tabMe },
 ];
 
-/** 4 tab ở đáy màn hình theo IA. Icon vẽ màu đen, tô lại theo tab đang chọn. */
+/** 3 tab ở đáy màn hình. Icon vẽ màu đen, tô lại theo tab đang chọn. */
 /** Số đỏ trên tab, ví dụ tab Tôi khi có trả lời Hỗ trợ chưa đọc (T3). */
 export type TabBadges = Partial<Record<TabKey, number>>;
 

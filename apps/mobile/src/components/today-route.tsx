@@ -53,12 +53,10 @@ export function TodayRouteSection({
   routes,
   visited,
   onPick,
-  onOpenRoutes,
 }: {
   routes: MyRoutesResult | null;
   visited: ReadonlySet<string>;
   onPick: (dealer: DealerChoice) => void;
-  onOpenRoutes: () => void;
 }) {
   const today = routes?.today ?? null;
   const links = today ? mapsDirectionLinks(today.stops) : [];
@@ -120,16 +118,9 @@ export function TodayRouteSection({
         <Text style={styles.muted}>
           {routes === null
             ? 'Chưa tải được tuyến, kiểm tra mạng.'
-            : 'Hôm nay chưa có tuyến đã duyệt.'}
+            : 'Hôm nay chưa có tuyến đã duyệt. Đăng ký tuyến trên web, mục Tuyến viếng thăm.'}
         </Text>
       )}
-      <View style={styles.actions}>
-        <Button
-          label={routes?.canRegister ? 'Đăng ký, xem tuyến' : 'Xem tuyến'}
-          onPress={onOpenRoutes}
-          variant="ghost"
-        />
-      </View>
     </View>
   );
 }
