@@ -44,6 +44,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 - **Hub** `/hub`
 - **Tổng quan điều hành*** `/tong-quan`
 - Thông báo* `/thong-bao`
+- Đồng ý của tôi* `/dong-y-cua-toi` (25/11/2026: tình trạng, đồng ý hoặc rút lại, sổ đồng ý của chính mình; giấy xác nhận in được `/giay-xac-nhan-dong-y/[id]`; kiểm chứng mã `/kiem-chung-dong-y?ma=`; mở được cả khi đã rút lại)
 - Tài khoản của tôi* `/toi`
 - Không có quyền* `/403`
 
@@ -71,6 +72,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
     - Tài khoản `/quan-tri/tai-khoan`, chi tiết: `/quan-tri/tai-khoan/[id]`
     - Vai trò và quyền `/quan-tri/vai-tro`
     - Cơ cấu tổ chức `/quan-tri/co-cau-to-chuc`
+    - Đồng ý dữ liệu `/quan-tri/dong-y` (25/11/2026: tình trạng đồng ý chia sẻ vị trí của từng tài khoản trong phạm vi, lọc `?trang-thai=da-dong-y|da-rut|chua-tra-loi ?q=`, xuất Excel, mở giấy xác nhận)
   - Danh mục
     - Đại lý `/quan-tri/dai-ly`, hồ sơ: `/quan-tri/dai-ly/[id]`, nhập từ hệ thống cũ: `/quan-tri/dai-ly/nhap-excel`, đồng bộ: `/quan-tri/dai-ly/dong-bo-fast` (nút Đồng bộ FAST, lịch sử, dòng lỗi, gửi lại)
     - Đại lý trùng `/quan-tri/dai-ly/trung` (tab: Nghi trùng số điện thoại, Số dùng chung, Trùng mã số thuế; A7b)
