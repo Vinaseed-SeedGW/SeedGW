@@ -343,8 +343,9 @@ model CheckIn {
   @@map("check_ins")
 }
 
+// D5: bảng chia theo tháng của recorded_at (PostgreSQL partition), tạo tháng mới và bỏ tháng cũ ở worker.
 model TrackPoint {
-  id           String   @id @default(uuid()) @db.Uuid
+  id           String   @default(uuid()) @db.Uuid
   userId       String   @map("user_id") @db.Uuid
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   recordedAt   DateTime @map("recorded_at")
@@ -356,6 +357,7 @@ model TrackPoint {
   isBackground Boolean  @map("is_background")
   receivedAt   DateTime @default(now()) @map("received_at")
 
+  @@id([id, recordedAt])
   @@unique([userId, recordedAt])
   @@map("track_points")
 }
@@ -1188,4 +1190,34 @@ model CustomerDealer {
   @@id([customerId, dealerId])
   @@index([dealerId])
   @@map("customer_dealers")
+}
+
+enum ErrorSource {
+  WEB_SERVER
+  WEB_CLIENT
+  MOBILE
+  WORKER
+
+  @@map("error_source")
+}
+
+// F9 (25/11/2026): lỗi tự ghi của web, app, worker, thay cho Sentry. Lỗi giống nhau gộp một dòng theo dấu vân tay
+// (nguồn, nội dung, dòng đầu ngăn xếp) và tăng số lần. Giữ 90 ngày.
+model ErrorLog {
+  id          String      @id @default(uuid()) @db.Uuid
+  fingerprint String      @unique
+  source      ErrorSource
+  message     String
+  stack       String?
+  path        String?
+  appVersion  String?     @map("app_version")
+  context     Json        @default("{}")
+  userId      String?     @map("user_id") @db.Uuid
+  count       Int         @default(1)
+  firstSeenAt DateTime    @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime    @default(now()) @map("last_seen_at")
+  resolvedAt  DateTime?   @map("resolved_at")
+
+  @@index([resolvedAt, lastSeenAt(sort: Desc)])
+  @@map("error_logs")
 }
