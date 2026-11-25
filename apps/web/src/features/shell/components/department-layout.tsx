@@ -6,11 +6,14 @@ import { AppFooter } from '@seedgw/ui/app-footer';
 import { AppShell } from '@seedgw/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
+import { GlobalSearch } from '@/features/shell/components/global-search';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
+import { listSearchPages } from '@/features/shell/search-pages';
 import { DEPARTMENT_NAV } from '@/features/shell/navigation';
 import { SupportLauncher } from '@/features/support/components/support-launcher';
 import { requireDepartmentAccess } from '@/server/auth/can';
 import { getPendingApprovalCount } from '@/server/queries/approvals';
+import { getLocationProposalPendingCount } from '@/server/queries/dealer-locations';
 import { getDealerProposalPendingCount } from '@/server/queries/dealer-proposals';
 import { getSupportPendingCount } from '@/server/queries/support';
 
@@ -19,6 +22,7 @@ const NAV_COUNTS: Partial<Record<string, () => Promise<number>>> = {
   '/kinh-doanh/can-duyet': getPendingApprovalCount,
   '/quan-tri/ho-tro': getSupportPendingCount,
   '/quan-tri/dai-ly/dai-ly-moi': getDealerProposalPendingCount,
+  '/quan-tri/dai-ly/duyet-toa-do': getLocationProposalPendingCount,
 };
 
 type DepartmentLayoutProps = {
@@ -88,6 +92,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
               </Link>
             ))}
           </AppShell.DeptSwitcher>
+          <GlobalSearch pages={listSearchPages(user.permissions)} />
           <span className="hidden flex-none sm:inline">{user.fullName}</span>
           <LogoutButton />
         </AppShell.Header>

@@ -1,31 +1,76 @@
 import 'server-only';
-import { canAccessDepartment } from '@seedgw/contracts/access';
+import { canAccessDepartment, type PermissionCode } from '@seedgw/contracts/access';
 import { DEPARTMENTS, type DepartmentSlug } from '@seedgw/contracts/departments';
-import type { HubSummary } from '@seedgw/contracts/hub';
+import type { HubSummary, HubTodo } from '@seedgw/contracts/hub';
+import { can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getPendingApprovalCount } from '@/server/queries/approvals';
+import { getLocationProposalPendingCount } from '@/server/queries/dealer-locations';
+import { getDealerProposalPendingCount } from '@/server/queries/dealer-proposals';
 import { getSupportOverdueCount, getSupportPendingCount } from '@/server/queries/support';
 
-// Số việc chờ của từng bộ phận: phiếu chờ tôi duyệt (Kinh doanh), yêu cầu hỗ trợ cần xử lý (Quản trị).
-const PENDING: Record<DepartmentSlug, () => Promise<number>> = {
-  'kinh-doanh': getPendingApprovalCount,
-  'quan-tri': getSupportPendingCount,
-};
+// D3: việc đang chờ theo quyền. Mỗi loại việc thuộc một bộ phận để cộng số trên ô bộ phận.
+const TODOS: ReadonlyArray<{
+  key: HubTodo['key'];
+  label: string;
+  href: string;
+  department: DepartmentSlug;
+  permission: PermissionCode;
+  count: () => Promise<number>;
+}> = [
+  {
+    key: 'approvals',
+    label: 'Phiếu tuyến, chỉ tiêu chờ tôi duyệt',
+    href: '/kinh-doanh/can-duyet',
+    department: 'kinh-doanh',
+    permission: 'sales.approval.review',
+    count: getPendingApprovalCount,
+  },
+  {
+    key: 'support',
+    label: 'Yêu cầu hỗ trợ cần xử lý',
+    href: '/quan-tri/ho-tro?xem=can-xu-ly',
+    department: 'quan-tri',
+    permission: 'support.request.manage',
+    count: getSupportPendingCount,
+  },
+  {
+    key: 'dealer-proposals',
+    label: 'Đại lý mới chờ duyệt',
+    href: '/quan-tri/dai-ly/dai-ly-moi',
+    department: 'quan-tri',
+    permission: 'admin.dealer-proposal.approve',
+    count: getDealerProposalPendingCount,
+  },
+  {
+    key: 'locations',
+    label: 'Toạ độ đại lý chờ duyệt',
+    href: '/quan-tri/dai-ly/duyet-toa-do',
+    department: 'quan-tri',
+    permission: 'admin.dealer-location.approve',
+    count: getLocationProposalPendingCount,
+  },
+];
 
 export async function getHubSummary(): Promise<HubSummary> {
   const user = await requireUser();
   const departments = DEPARTMENTS.filter((department) =>
     canAccessDepartment(user.permissions, department.slug),
   );
+  const allowed = TODOS.filter((todo) => can(user, todo.permission));
   const [counts, supportOverdue] = await Promise.all([
-    Promise.all(departments.map((department) => PENDING[department.slug]())),
+    Promise.all(allowed.map((todo) => todo.count())),
     getSupportOverdueCount(),
   ]);
+  const todos = allowed.map((todo, index) => ({ ...todo, count: counts[index] ?? 0 }));
   return {
-    departments: departments.map((department, index) => ({
+    departments: departments.map((department) => ({
       ...department,
-      pendingCount: counts[index] ?? 0,
+      pendingCount: todos
+        .filter((todo) => todo.department === department.slug)
+        .reduce((sum, todo) => sum + todo.count, 0),
     })),
+    todos: todos.map(({ key, label, count, href }) => ({ key, label, count, href })),
     notifications: [],
     supportOverdue,
   };

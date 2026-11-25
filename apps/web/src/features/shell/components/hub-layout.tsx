@@ -4,15 +4,18 @@ import { AppFooter } from '@seedgw/ui/app-footer';
 import { Logo } from '@seedgw/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { GlobalSearch } from '@/features/shell/components/global-search';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
+import type { SearchPage } from '@seedgw/contracts/search';
 import { SupportLauncher } from '@/features/support/components/support-launcher';
 
 type HubLayoutProps = {
   userName: string;
+  searchPages: SearchPage[];
   children: ReactNode;
 };
 
-export function HubLayout({ userName, children }: HubLayoutProps) {
+export function HubLayout({ userName, searchPages, children }: HubLayoutProps) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
@@ -22,6 +25,7 @@ export function HubLayout({ userName, children }: HubLayoutProps) {
           <Logo variant="color" size="m" />
         </Link>
         <div className="flex min-w-0 items-center gap-4">
+          <GlobalSearch pages={searchPages} />
           <span className="hidden truncate sm:inline">{userName}</span>
           <LogoutButton />
         </div>
