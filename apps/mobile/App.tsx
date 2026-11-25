@@ -23,6 +23,7 @@ import { stopTracking } from './src/sync/background-tracking';
 import { serverEnabled } from './src/api/session';
 import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
+import { ConsentRecordsScreen } from './src/components/consent-records-screen';
 import { SupportFab } from './src/components/support-fab';
 import { SupportScreen, type SupportPrefill } from './src/components/support-screen';
 import { readSupportBadge } from './src/api/support';
@@ -85,7 +86,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [cameraIntent, setCameraIntent] = useState<CameraIntent>('check-in');
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
   // Màn mở chồng lên tab (app tinh gọn 25/11): Đại lý gần tôi, Cần duyệt (A10b), Hỗ trợ.
-  const [overlay, setOverlay] = useState<'nearby' | 'approvals' | 'support' | null>(null);
+  const [overlay, setOverlay] = useState<'nearby' | 'approvals' | 'support' | 'consents' | null>(
+    null,
+  );
   const [supportPrefill, setSupportPrefill] = useState<SupportPrefill | null>(null);
   const [supportUnread, setSupportUnread] = useState(0);
   const [supportCode, setSupportCode] = useState<string | null>(null);
@@ -266,6 +269,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
           />
         ) : null}
         {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
+        {overlay === 'consents' ? <ConsentRecordsScreen onClose={closeOverlay} /> : null}
         {overlay === 'support' ? (
           <SupportScreen onClose={closeOverlay} prefill={supportPrefill} openCode={supportCode} />
         ) : null}
@@ -294,6 +298,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
             control={control}
             account={account}
             onWithdrawConsent={withdrawConsent}
+            onOpenConsents={account ? () => setOverlay('consents') : null}
             approvals={
               capabilities?.canReviewApprovals
                 ? {
@@ -333,6 +338,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
 
 const OVERLAY_TITLE = {
   nearby: 'Đại lý gần tôi',
+  consents: 'Đồng ý của tôi',
   approvals: 'Cần duyệt',
   support: 'Hỗ trợ',
 } as const;

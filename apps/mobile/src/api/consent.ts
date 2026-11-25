@@ -1,4 +1,8 @@
-import { LOCATION_CONSENT_VERSION, type MobileConsentStatus } from '@seedgw/contracts/consents';
+import {
+  LOCATION_CONSENT_VERSION,
+  type ConsentRecordView,
+  type MobileConsentStatus,
+} from '@seedgw/contracts/consents';
 import {
   clearConsent,
   getConsentAt,
@@ -54,4 +58,16 @@ export async function syncPendingConsent(): Promise<string | null> {
     return null;
   }
   return 'Chưa gửi được lời đồng ý chia sẻ vị trí';
+}
+
+/** Sổ đồng ý của chính người dùng (25/11/2026), để xem và chia sẻ giấy xác nhận. */
+export async function loadConsentRecords(): Promise<
+  { ok: true; items: ConsentRecordView[] } | { ok: false; message: string }
+> {
+  const result = await apiCall<{ items: ConsentRecordView[] }>('/api/mobile/consent/records', {
+    method: 'GET',
+  });
+  return result.ok
+    ? { ok: true, items: result.data.items }
+    : { ok: false, message: result.message };
 }

@@ -35,6 +35,8 @@ type Props = {
   /** Có khi app nối máy chủ và đã đăng nhập. Null là bản thử, dữ liệu chỉ trên máy. */
   account: { user: MobileProfile; sync: SyncControl } | null;
   onWithdrawConsent: () => void;
+  /** Sổ đồng ý, giấy xác nhận (25/11/2026); null ở bản thử chưa nối máy chủ. */
+  onOpenConsents: (() => void) | null;
   /** Quản lý và Lãnh đạo đơn vị có mục Cần duyệt (A10b). */
   approvals: { pendingCount: number; onOpen: () => void } | null;
   /** Màn hình Hỗ trợ (T3); null ở bản thử chưa nối máy chủ. */
@@ -56,6 +58,7 @@ export function MeTab({
   control,
   account,
   onWithdrawConsent,
+  onOpenConsents,
   approvals,
   support,
   notifications,
@@ -185,6 +188,11 @@ export function MeTab({
       ) : (
         <ProfileForm />
       )}
+      {onOpenConsents ? (
+        <Pressable accessibilityRole="button" onPress={onOpenConsents} style={styles.link}>
+          <Text style={styles.linkText}>Đồng ý của tôi, giấy xác nhận</Text>
+        </Pressable>
+      ) : null}
       <Pressable accessibilityRole="button" onPress={onWithdrawConsent} style={styles.link}>
         <Text style={styles.linkText}>Rút lại đồng ý chia sẻ vị trí</Text>
       </Pressable>
