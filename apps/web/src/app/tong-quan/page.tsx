@@ -3,19 +3,18 @@ import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
 import {
   changePercent,
-  DASHBOARD_PERIOD_LABEL,
   dashboardUrlParams,
   periodTitle,
   type DashboardInput,
-  type DashboardPeriod,
 } from '@seedgw/contracts/dashboard';
-import { formatDateTime, formatNumber, isoDateToDisplay } from '@seedgw/contracts/format';
+import { formatDateTime, formatNumber, vietnamToday } from '@seedgw/contracts/format';
 import { targetPercent } from '@seedgw/contracts/sales-targets';
 import { AppFooter } from '@seedgw/ui/app-footer';
 import { Delta } from '@seedgw/ui/delta';
 import { Logo } from '@seedgw/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { DateRangeFilter } from '@/features/shell/components/date-range-filter';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { GlobalSearch } from '@/features/shell/components/global-search';
 import { listSearchPages } from '@/features/shell/search-pages';
@@ -28,9 +27,15 @@ export const metadata: Metadata = { title: 'Tổng quan điều hành' };
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Tổng quan điều hành (K6): chọn nhanh vài kỳ, không lọc đơn vị, nhân viên (xem chi tiết ở Dashboard, Báo cáo).
-const PERIODS: DashboardPeriod[] = ['thang-nay', 'thang-truoc', 'quy-nay', 'vu', 'nam-nay'];
+// Tổng quan điều hành (K6): chọn khoảng ngày (25/11/2026 thay các nút kỳ), không lọc đơn vị, nhân viên
+// (xem chi tiết ở Dashboard, Báo cáo).
 const LOW_COVERAGE_UNITS = 5;
+
+/** Dashboard hôm nay, cho các ô về check-in hôm nay. */
+function todayDashboardHref(): string {
+  const today = vietnamToday();
+  return `/kinh-doanh/dashboard?tu-ngay=${today}&den-ngay=${today}`;
+}
 
 /** Độ phủ rất nhỏ (ví dụ 1 trên 15.753 đại lý) giữ 2 số lẻ để không hiện thành 0%, như Dashboard. */
 function coverageOf(part: number, whole: number): number | null {
@@ -63,8 +68,12 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
     ky: raw.ky,
     vu: raw.vu,
     vung: raw.vung,
+    'tu-ngay': raw['tu-ngay'],
+    'den-ngay': raw['den-ngay'],
   });
-  const areaQuery = input.regionId ? `&vung=${input.regionId}` : '';
+  // Khoảng ngày đi theo mọi link sang Dashboard, Báo cáo và khi đổi vùng.
+  const rangeQuery = `tu-ngay=${input.from}&den-ngay=${input.to}`;
+  const areaQuery = `${rangeQuery}${input.regionId ? `&vung=${input.regionId}` : ''}`;
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -83,20 +92,9 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
         </div>
       </header>
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 px-4 py-6 outline-none sm:px-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="text-2xl font-bold text-brand">Tổng quan điều hành</h1>
-          <nav aria-label="Kỳ" className="flex flex-wrap gap-2">
-            {PERIODS.map((period) => (
-              <Link
-                key={period}
-                href={`/tong-quan?ky=${period}${areaQuery}`}
-                aria-current={period === input.period ? 'page' : undefined}
-                className={`rounded-md border px-3 py-1.5 text-sm ${period === input.period ? 'border-brand bg-brand-soft font-bold text-brand' : 'border-border hover:bg-brand-soft'}`}
-              >
-                {DASHBOARD_PERIOD_LABEL[period]}
-              </Link>
-            ))}
-          </nav>
+          <DateRangeFilter from={input.from} to={input.to} hint="Tối đa 366 ngày." />
         </div>
         <nav aria-label="Vùng" className="mt-3 flex flex-wrap gap-2">
           {[{ id: null, name: 'Tất cả vùng' }, ...regions].map((region) => {
@@ -104,7 +102,7 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
             return (
               <Link
                 key={region.id ?? 'tat-ca'}
-                href={`/tong-quan?ky=${input.period}${region.id ? `&vung=${region.id}` : ''}`}
+                href={`/tong-quan?${rangeQuery}${region.id ? `&vung=${region.id}` : ''}`}
                 aria-current={active ? 'page' : undefined}
                 className={`rounded-md border px-3 py-1.5 text-sm ${active ? 'border-brand bg-brand-soft font-bold text-brand' : 'border-border hover:bg-brand-soft'}`}
               >
@@ -114,8 +112,7 @@ export default async function ExecutivePage({ searchParams }: PageProps) {
           })}
         </nav>
         <p className="mt-1 text-sm text-text-muted">
-          {periodTitle(input, seasons)}, {isoDateToDisplay(input.from)} tới{' '}
-          {isoDateToDisplay(input.to)}, trong phạm vi bạn được xem
+          {periodTitle(input, seasons)}, trong phạm vi bạn được xem
           {input.regionId ? ', tính theo tỉnh của đại lý' : ''}. Thực bán và công nợ có khi nối
           FAST.
         </p>
@@ -170,7 +167,7 @@ async function Overview({
     .sort((a, b) => a.coverage - b.coverage)
     .slice(0, LOW_COVERAGE_UNITS);
   const ranked = [...units].sort((a, b) => b.visits - a.visits);
-  const reportHref = `/kinh-doanh/bao-cao?theo=don-vi&ky=${input.period}${areaQuery}`;
+  const reportHref = `/kinh-doanh/bao-cao?theo=don-vi&${areaQuery}`;
   const noTarget = input.regionId ? 'Không chia chỉ tiêu theo vùng' : 'Chưa có chỉ tiêu trong kỳ';
 
   return (
@@ -182,14 +179,14 @@ async function Overview({
         <Card
           label="Độ phủ đại lý"
           value={percentText(coverage)}
-          href={`/kinh-doanh/dashboard?ky=${input.period}${areaQuery}`}
+          href={`/kinh-doanh/dashboard?${areaQuery}`}
         >
           {formatNumber(kpi.coverage.covered)} trên {formatNumber(kpi.coverage.active)} đại lý
         </Card>
         <Card
           label="Lượt ghé thăm"
           value={formatNumber(kpi.visits)}
-          href={`/kinh-doanh/dashboard?ky=${input.period}${areaQuery}`}
+          href={`/kinh-doanh/dashboard?${areaQuery}`}
         >
           <Delta change={changePercent(kpi.visits, dashboard.compare.previous.visits)}>
             {changeText(kpi.visits, dashboard.compare.previous.visits)}
@@ -214,7 +211,7 @@ async function Overview({
         <Card
           label="Nhân viên đã check-in hôm nay"
           value={`${formatNumber(kpi.staffCheckedInToday)}/${formatNumber(kpi.staffTotal)}`}
-          href="/kinh-doanh/dashboard?ky=hom-nay"
+          href={todayDashboardHref()}
         >
           Trên tổng số NVKD đang hoạt động
         </Card>
@@ -295,7 +292,7 @@ async function Overview({
               {formatNumber(dashboard.dealers.unassigned)} đại lý chưa gán nhân viên.
             </Attention>
             <Attention
-              href="/kinh-doanh/dashboard?ky=hom-nay"
+              href={todayDashboardHref()}
               title={`${formatNumber(Math.max(kpi.staffTotal - kpi.staffCheckedInToday, 0))} nhân viên chưa check-in hôm nay`}
             >
               Xem danh sách ở Dashboard, phần Nhân viên.

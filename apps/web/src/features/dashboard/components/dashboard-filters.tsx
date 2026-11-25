@@ -3,15 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import type { DayMapFilterOptions } from '@seedgw/contracts/check-ins';
-import {
-  DASHBOARD_PERIOD_LABEL,
-  DASHBOARD_PERIODS,
-  seasonsForRegion,
-  type DashboardInput,
-  type SeasonRange,
-} from '@seedgw/contracts/dashboard';
+import type { DashboardInput } from '@seedgw/contracts/dashboard';
 import { DEALER_LEVEL_LABEL } from '@seedgw/contracts/dealers';
-import { isoDateToDisplay, vietnamToday } from '@seedgw/contracts/format';
 import type { ProvinceName } from '@seedgw/contracts/provinces';
 import {
   provinceSlug,
@@ -19,35 +12,24 @@ import {
   shortProvinceName,
   type GeoFilterOptions,
 } from '@seedgw/contracts/regions';
-import { seasonYearLabel, seasonYearOptions } from '@seedgw/contracts/seasons';
-import { DateInput } from '@seedgw/ui/date-input';
+import { DateRangeFilter } from '@/features/shell/components/date-range-filter';
 
 const CONTROL = 'h-9.5 rounded-md border border-border bg-surface px-2.5';
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Bộ lọc dashboard nằm trên URL để gửi link được (IA §3.1). */
 export function DashboardFilters({
   input,
   options,
-  seasons,
   geo,
 }: {
   input: DashboardInput;
   options: DayMapFilterOptions;
-  seasons: readonly SeasonRange[];
   geo: GeoFilterOptions;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const selectedSeason = seasons.find((season) => season.id === input.seasonId) ?? null;
-  const regionOf = (name: ProvinceName) =>
-    geo.provinces.find((row) => row.name === name)?.regionId ?? null;
-  const seasonChoices = seasonsForRegion(
-    seasons,
-    input.regionId ?? (input.provinceName ? regionOf(input.provinceName) : null),
-  );
   const provinceChoices = input.regionId
     ? geo.provinces.filter((row) => row.regionId === input.regionId)
     : geo.provinces;
@@ -86,86 +68,9 @@ export function DashboardFilters({
       className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap [&_select]:w-full sm:[&_select]:w-auto"
       aria-busy={isPending}
     >
-      <label className="grid gap-1 text-sm">
-        Kỳ
-        <select
-          className={CONTROL}
-          value={input.period}
-          onChange={(event) =>
-            setParams({
-              ky: event.target.value,
-              'tu-ngay': null,
-              'den-ngay': null,
-              vu: null,
-              'nien-vu': null,
-            })
-          }
-        >
-          {DASHBOARD_PERIODS.map((period) => (
-            <option key={period} value={period}>
-              {DASHBOARD_PERIOD_LABEL[period]}
-            </option>
-          ))}
-        </select>
-      </label>
-      {input.period === 'vu' ? (
-        <label className="grid gap-1 text-sm">
-          Vụ
-          <select
-            className={CONTROL}
-            value={input.seasonId ?? ''}
-            onChange={(event) => setParams({ vu: event.target.value || null, 'nien-vu': null })}
-          >
-            {seasonChoices.map((season) => (
-              <option key={season.id} value={season.id}>
-                {season.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-      {input.period === 'vu' && selectedSeason && input.seasonYear !== null ? (
-        <label className="grid gap-1 text-sm">
-          Niên vụ
-          <select
-            className={CONTROL}
-            value={input.seasonYear}
-            onChange={(event) => setParams({ 'nien-vu': event.target.value })}
-          >
-            {seasonYearOptions(selectedSeason, vietnamToday()).map((year) => (
-              <option key={year} value={year}>
-                {seasonYearLabel(selectedSeason, year)}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-      {input.period === 'tuy-chon' ? (
-        <>
-          <label className="grid gap-1 text-sm">
-            Từ ngày
-            <DateInput
-              className="w-40"
-              inputClassName={CONTROL}
-              value={input.from}
-              onValueChange={(value) => {
-                if (ISO_DATE.test(value)) setParams({ 'tu-ngay': isoDateToDisplay(value) });
-              }}
-            />
-          </label>
-          <label className="grid gap-1 text-sm">
-            Đến ngày
-            <DateInput
-              className="w-40"
-              inputClassName={CONTROL}
-              value={input.to}
-              onValueChange={(value) => {
-                if (ISO_DATE.test(value)) setParams({ 'den-ngay': isoDateToDisplay(value) });
-              }}
-            />
-          </label>
-        </>
-      ) : null}
+      <div className="col-span-2 sm:col-span-1">
+        <DateRangeFilter from={input.from} to={input.to} hint="Tối đa 366 ngày." />
+      </div>
       {geo.regions.length > 0 ? (
         <label className="grid gap-1 text-sm">
           Vùng

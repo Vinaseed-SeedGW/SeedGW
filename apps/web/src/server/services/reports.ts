@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
-import { MONTHLY_PERIODS, monthsInRange } from '@seedgw/contracts/dashboard';
+import { coversWholeMonths, monthsInRange } from '@seedgw/contracts/dashboard';
 import type { DealerLevel } from '@seedgw/contracts/dealers';
 import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
 import { collectDescendantIds } from '@seedgw/contracts/org-tree';
@@ -60,7 +60,9 @@ async function contextOf(input: ReportInput): Promise<Context> {
     capturedAt: { gte: vietnamDayStart(input.from), lt: vietnamNextDayStart(input.to) },
     // Chỉ tiêu giao theo đơn vị, nhân viên, không chia được theo tỉnh.
     months:
-      MONTHLY_PERIODS.includes(input.period) && !geo ? monthsInRange(input.from, input.to) : null,
+      coversWholeMonths(input.from, input.to, vietnamToday()) && !geo
+        ? monthsInRange(input.from, input.to)
+        : null,
     geo,
     dealerGeo: geo ? { provinceName: { in: geo.provinces } } : {},
   };

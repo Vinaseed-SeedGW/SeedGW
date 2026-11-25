@@ -5,7 +5,7 @@ import type {
   SupportDetail,
   SupportListResult,
   SupportStats,
-  SupportStatsPeriod,
+  SupportStatsRange,
 } from '@seedgw/contracts/support';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
@@ -63,8 +63,8 @@ export async function getSupportOverdueCount(): Promise<number | null> {
   return countSupportOverdue(user, await getScopedDb());
 }
 
-export async function getSupportStats(period: SupportStatsPeriod): Promise<SupportStats> {
+export async function getSupportStats(range: SupportStatsRange): Promise<SupportStats> {
   const user = await requireUser();
   assertCan(user, 'support.request.manage');
-  return readSupportStats(user, await getScopedDb(), period);
+  return readSupportStats(user, await getScopedDb(), range);
 }

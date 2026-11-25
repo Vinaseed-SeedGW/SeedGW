@@ -9,7 +9,6 @@ import {
   OPEN_SUPPORT_STATUSES,
   SUPPORT_LEVEL_LABEL,
   SUPPORT_SEVERITY_LABEL,
-  SUPPORT_STATS_PERIOD_DAYS,
   SUPPORT_STATUS_LABEL,
   SUPPORT_TYPE_LABEL,
   supportContext,
@@ -27,7 +26,7 @@ import {
   type SupportSeverity,
   type SupportStats,
   type SupportStatsGroup,
-  type SupportStatsPeriod,
+  type SupportStatsRange,
   type SupportStatus,
   type SupportSummary,
   type SupportType,
@@ -41,6 +40,7 @@ import {
 } from '@seedgw/contracts/support-files';
 import { supportDueDates, supportDueOf } from '@seedgw/contracts/support-sla';
 import type { Prisma } from '@prisma/client';
+import { vietnamDayStart, vietnamNextDayStart } from '@seedgw/contracts/format';
 import { db } from '@seedgw/db/client';
 import { getOrgUnitAncestorIds, getOrgUnitTreeIds } from '@seedgw/db/org-units';
 import type { ScopedDb } from '@seedgw/db/scoped-client';
@@ -1185,13 +1185,14 @@ function groupStats(
 export async function readSupportStats(
   actor: SupportActor,
   scoped: ScopedDb,
-  period: SupportStatsPeriod,
+  range: SupportStatsRange,
   now = new Date(),
 ): Promise<SupportStats> {
   assertManage(actor);
-  const from = new Date(now.getTime() - SUPPORT_STATS_PERIOD_DAYS[period] * 86_400_000);
   const rows: StatsRow[] = await scoped.supportRequest.findMany({
-    where: { createdAt: { gte: from } },
+    where: {
+      createdAt: { gte: vietnamDayStart(range.from), lt: vietnamNextDayStart(range.to) },
+    },
     orderBy: { createdAt: 'desc' },
     take: STATS_LIMIT + 1,
     select: {
@@ -1211,8 +1212,8 @@ export async function readSupportStats(
   const responded = items.filter((row) => row.firstResponseAt);
   const resolved = items.filter((row) => row.resolvedAt);
   return {
-    period,
-    from: from.toISOString(),
+    from: range.from,
+    to: range.to,
     total: items.length,
     open: items.filter((row) => OPEN_SUPPORT_STATUSES.includes(row.status)).length,
     overdue: items.filter((row) => isOverdue(row, now)).length,

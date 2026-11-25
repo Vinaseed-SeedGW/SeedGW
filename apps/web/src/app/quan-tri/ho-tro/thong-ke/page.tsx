@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { formatDateTime, formatNumber } from '@seedgw/contracts/format';
+import { formatNumber, isoDateToDisplay } from '@seedgw/contracts/format';
 import {
-  SUPPORT_STATS_PERIOD_LABEL,
-  supportStatsPeriod,
+  SUPPORT_STATS_MAX_DAYS,
   supportStatsUrlParams,
   type SupportStatsGroup,
 } from '@seedgw/contracts/support';
+import { DateRangeFilter } from '@/features/shell/components/date-range-filter';
 import { SupportInboxTabs } from '@/features/support/components/support-inbox-tabs';
 import { requirePermission } from '@/server/auth/can';
 import { getSupportStats } from '@/server/queries/support';
@@ -72,27 +71,23 @@ function GroupTable({ title, rows }: { title: string; rows: SupportStatsGroup[] 
 
 export default async function SupportStatsPage({ searchParams }: PageProps) {
   await requirePermission('support.request.manage');
-  const { ky } = supportStatsUrlParams.parse(await searchParams);
-  const stats = await getSupportStats(ky);
+  const range = supportStatsUrlParams().parse(await searchParams);
+  const stats = await getSupportStats(range);
 
   return (
     <>
       <h1 className="text-2xl font-bold text-brand">Hỗ trợ</h1>
       <SupportInboxTabs active="STATS" />
-      <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Kỳ thống kê">
-        {supportStatsPeriod.options.map((period) => (
-          <Link
-            key={period}
-            href={`/quan-tri/ho-tro/thong-ke?ky=${period}`}
-            aria-current={period === ky ? 'page' : undefined}
-            className={`rounded-md border px-3 py-1.5 font-bold ${period === ky ? 'border-brand bg-brand-soft text-brand' : 'border-border hover:bg-brand-soft'}`}
-          >
-            {SUPPORT_STATS_PERIOD_LABEL[period]}
-          </Link>
-        ))}
-        <span className="text-sm text-text-muted">
-          Yêu cầu gửi từ {formatDateTime(stats.from)}, trong phạm vi của bạn.
-        </span>
+      <div className="mt-4 grid gap-2">
+        <DateRangeFilter
+          from={range.from}
+          to={range.to}
+          hint={`Mặc định 30 ngày gần nhất, tối đa ${SUPPORT_STATS_MAX_DAYS} ngày.`}
+        />
+        <p className="text-sm text-text-muted">
+          Yêu cầu gửi từ {isoDateToDisplay(stats.from)} tới {isoDateToDisplay(stats.to)}, trong phạm
+          vi của bạn.
+        </p>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">

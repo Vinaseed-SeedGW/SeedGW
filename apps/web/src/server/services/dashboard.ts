@@ -5,7 +5,7 @@ import {
   bucketSeries,
   lastYearRange,
   monthsInRange,
-  MONTHLY_PERIODS,
+  coversWholeMonths,
   previousRange,
   type DashboardInput,
   type DashboardRanking,
@@ -211,7 +211,7 @@ export async function readDashboard(
     figuresOf(previousRange(input.from, input.to)),
     figuresOf(lastYearRange(input.from, input.to)),
     // Chỉ tiêu giao theo đơn vị, nhân viên, không chia được theo tỉnh.
-    MONTHLY_PERIODS.includes(input.period) && !geo
+    coversWholeMonths(input.from, input.to, today) && !geo
       ? readTarget(scoped, input, unitIds, monthsInRange(input.from, input.to))
       : Promise.resolve(null),
     readRouteCompletion(scoped, input, unitIds, today, geo),

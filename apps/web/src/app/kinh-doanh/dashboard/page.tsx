@@ -53,7 +53,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         Số liệu check-in, đại lý và chỉ tiêu trong phạm vi bạn được xem. Thực bán có khi nối FAST.
       </p>
       <Suspense fallback={<div className="mt-4 h-10 animate-pulse rounded-md bg-surface-subtle" />}>
-        <Filters input={input} seasons={seasons} />
+        <Filters input={input} />
       </Suspense>
       <Suspense key={JSON.stringify(input)} fallback={<DashboardSkeleton />}>
         <DashboardBody input={input} seasons={seasons} />
@@ -62,12 +62,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   );
 }
 
-async function Filters({ input, seasons }: { input: DashboardInput; seasons: SeasonRange[] }) {
+async function Filters({ input }: { input: DashboardInput }) {
   const options = await getDashboardFilterOptions(input.orgUnitId);
   const geo = await getGeoFilterOptions(options, 'sales.dashboard.read');
   return (
     <div className="mt-4">
-      <DashboardFilters input={input} options={options} seasons={seasons} geo={geo} />
+      <DashboardFilters input={input} options={options} geo={geo} />
     </div>
   );
 }
@@ -124,17 +124,13 @@ async function DashboardBody({
 }) {
   const data = await getDashboard(input);
   const updated = `Cập nhật lúc ${formatDateTime(data.updatedAt).slice(-5)}`;
-  const periodText =
-    input.from === input.to
-      ? isoDateToDisplay(input.from)
-      : `${isoDateToDisplay(input.from)} tới ${isoDateToDisplay(input.to)}`;
 
   return (
     <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8">
       <section aria-labelledby="so-chinh" className="grid grid-cols-[minmax(0,1fr)] gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="so-chinh" className="text-lg font-bold">
-            {periodTitle(input, seasons)}, {periodText}
+            {periodTitle(input, seasons)}
           </h2>
           <span className="text-sm text-text-muted">{updated}</span>
         </div>

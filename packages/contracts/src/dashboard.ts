@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { CheckInPlaceKind } from './check-ins';
 import type { DealerLevel } from './dealers';
-import { parseDisplayDate, vietnamToday } from './format';
+import { isoDateToDisplay, parseDisplayDate, vietnamToday } from './format';
 import type { ProvinceName } from './provinces';
 import { provinceFromSlug } from './regions';
 import {
@@ -110,8 +110,11 @@ export function periodRange(
       return { from: `${lastDay.slice(0, 7)}-01`, to: lastDay };
     }
     case 'tuy-chon': {
-      const to = custom.to && custom.to <= today ? custom.to : today;
+      // 25/11/2026: Đến ngày để trống thì tính tới hôm nay; nhập ngược thì đổi chỗ hai ngày.
       let from = custom.from ?? monthStart;
+      let to = custom.to ?? today;
+      if (from > to) [from, to] = [to, from];
+      if (to > today) to = today;
       if (from > to) from = to;
       const earliest = shiftDays(to, -(MAX_DASHBOARD_DAYS - 1));
       return { from: from < earliest ? earliest : from, to };
@@ -158,7 +161,16 @@ export function lastYearRange(from: string, to: string): { from: string; to: str
   return { from: minusYear(from), to: minusYear(to) };
 }
 
-/** Kỳ tính theo tháng thì so được với chỉ tiêu tháng (cộng chỉ tiêu các tháng trong kỳ). */
+/**
+ * Kỳ trọn tháng thì so được với chỉ tiêu tháng (cộng chỉ tiêu các tháng trong kỳ): bắt đầu ngày 1 và
+ * kết thúc ở cuối tháng hoặc hôm nay. Dùng cho cả khoảng ngày tự nhập (25/11/2026).
+ */
+export function coversWholeMonths(from: string, to: string, today: string): boolean {
+  if (!from.endsWith('-01')) return false;
+  return to === today || shiftDays(to, 1).endsWith('-01');
+}
+
+/** Kỳ tính theo tháng (giữ cho link cũ có tham số ky). */
 export const MONTHLY_PERIODS: readonly DashboardPeriod[] = [
   'thang-nay',
   'thang-truoc',
@@ -242,7 +254,10 @@ export function dashboardUrlParams(
             ? url['nien-vu']
             : latest
           : null;
-      const period = url.ky === 'vu' && !season ? 'thang-nay' : url.ky;
+      // 25/11/2026: trên giao diện chỉ còn ô Từ ngày, Đến ngày; có một trong hai là khoảng tự nhập.
+      // Tham số ky giữ cho link cũ.
+      const custom = url['tu-ngay'] !== undefined || url['den-ngay'] !== undefined;
+      const period = custom ? 'tuy-chon' : url.ky === 'vu' && !season ? 'thang-nay' : url.ky;
       const range = periodRange(
         period,
         today,
@@ -408,11 +423,18 @@ export type DashboardResult = {
   } | null;
 };
 
-/** Tên kỳ trên tiêu đề: kỳ Vụ ghi tên vụ và niên vụ, ví dụ "Vụ Đông Xuân, ĐBSCL 2026-2027". */
+/**
+ * Dòng kỳ trên tiêu đề: khoảng ngày đang xem, ví dụ "01/11/2026 tới 25/11/2026". Link cũ kỳ Vụ thì ghi
+ * thêm tên vụ và niên vụ phía trước.
+ */
 export function periodTitle(input: DashboardInput, seasons: readonly SeasonRange[]): string {
+  const range =
+    input.from === input.to
+      ? isoDateToDisplay(input.from)
+      : `${isoDateToDisplay(input.from)} tới ${isoDateToDisplay(input.to)}`;
   if (input.period === 'vu' && input.seasonId && input.seasonYear !== null) {
     const season = seasons.find((item) => item.id === input.seasonId);
-    if (season) return `Vụ ${season.name} ${seasonYearLabel(season, input.seasonYear)}`;
+    if (season) return `Vụ ${season.name} ${seasonYearLabel(season, input.seasonYear)}, ${range}`;
   }
-  return DASHBOARD_PERIOD_LABEL[input.period];
+  return range;
 }

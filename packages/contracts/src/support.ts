@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MAX_PAGE_SIZE, pageResult } from './common';
+import { parseDisplayDate, vietnamToday } from './format';
 
 // Hỗ trợ (T1 tới T5, quyết định 29, 30): CBNV gửi yêu cầu cho Quản trị đơn vị, chuyển lên Quản trị hệ thống.
 
@@ -351,21 +352,40 @@ export type SupportRequestForm = z.infer<typeof supportRequestForm>;
 
 // ---------- Thống kê (T4) ----------
 
-export const supportStatsPeriod = z.enum(['30-ngay', '90-ngay', '12-thang']);
-export type SupportStatsPeriod = z.infer<typeof supportStatsPeriod>;
-export const SUPPORT_STATS_PERIOD_LABEL: Record<SupportStatsPeriod, string> = {
-  '30-ngay': '30 ngày',
-  '90-ngay': '90 ngày',
-  '12-thang': '12 tháng',
-};
-export const SUPPORT_STATS_PERIOD_DAYS: Record<SupportStatsPeriod, number> = {
-  '30-ngay': 30,
-  '90-ngay': 90,
-  '12-thang': 365,
-};
-export const supportStatsUrlParams = z.object({
-  ky: supportStatsPeriod.catch('30-ngay').default('30-ngay'),
-});
+// 25/11/2026: chọn Từ ngày, Đến ngày thay các nút 30 ngày, 90 ngày, 12 tháng. Mặc định 30 ngày gần nhất,
+// Đến ngày trống thì tính tới hôm nay, nhập ngược thì đổi chỗ, dài nhất 366 ngày.
+export const SUPPORT_STATS_DEFAULT_DAYS = 30;
+export const SUPPORT_STATS_MAX_DAYS = 366;
+
+/** Khoảng ngày thống kê, dạng yyyy-mm-dd theo giờ Việt Nam. */
+export type SupportStatsRange = { from: string; to: string };
+
+function shiftDate(date: string, days: number): string {
+  const value = new Date(`${date}T00:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+const statsDateParam = z
+  .string()
+  .transform((value) => parseDisplayDate(value) ?? undefined)
+  .optional()
+  .catch(undefined);
+
+export function supportStatsUrlParams(now: Date = new Date()) {
+  return z
+    .object({ 'tu-ngay': statsDateParam, 'den-ngay': statsDateParam })
+    .transform((url): SupportStatsRange => {
+      const today = vietnamToday(now);
+      let from = url['tu-ngay'] ?? shiftDate(today, -(SUPPORT_STATS_DEFAULT_DAYS - 1));
+      let to = url['den-ngay'] ?? today;
+      if (from > to) [from, to] = [to, from];
+      if (to > today) to = today;
+      if (from > to) from = to;
+      const earliest = shiftDate(to, -(SUPPORT_STATS_MAX_DAYS - 1));
+      return { from: from < earliest ? earliest : from, to };
+    });
+}
 
 export type SupportStatsGroup = {
   label: string;
@@ -377,8 +397,8 @@ export type SupportStatsGroup = {
 };
 
 export type SupportStats = {
-  period: SupportStatsPeriod;
   from: string;
+  to: string;
   total: number;
   open: number;
   overdue: number;

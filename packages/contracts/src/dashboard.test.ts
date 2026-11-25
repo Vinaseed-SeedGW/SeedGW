@@ -5,6 +5,7 @@ import {
   bucketStart,
   chartBucket,
   changePercent,
+  coversWholeMonths,
   dashboardUrlParams,
   lastYearRange,
   monthsInRange,
@@ -39,8 +40,13 @@ describe('periodRange', () => {
       periodRange('tuy-chon', '2026-11-17', { from: '2020-01-01', to: '2026-11-17' }).from,
     ).toBe('2025-11-17');
     expect(periodRange('tuy-chon', '2026-11-17', { from: '2026-11-15', to: '2026-11-12' })).toEqual(
-      { from: '2026-11-12', to: '2026-11-12' },
+      { from: '2026-11-12', to: '2026-11-15' },
     );
+    // Đến ngày để trống thì tính tới hôm nay.
+    expect(periodRange('tuy-chon', '2026-11-17', { from: '2026-10-01' })).toEqual({
+      from: '2026-10-01',
+      to: '2026-11-17',
+    });
   });
 });
 
@@ -247,5 +253,21 @@ describe('kỳ mới và so sánh (K4)', () => {
     expect(year.bucket).toBe('week');
     expect(year.series[0]).toEqual({ start: '2026-01-01', visits: 0 });
     expect(year.series[1]).toEqual({ start: '2026-01-05', visits: 4 });
+  });
+});
+
+describe('khoảng ngày tự nhập (25/11/2026)', () => {
+  const now = new Date('2026-11-17T03:00:00Z');
+  it('có Từ ngày hoặc Đến ngày thì là khoảng tự nhập, Đến ngày trống tính tới hôm nay', () => {
+    const input = dashboardUrlParams(now).parse({ 'tu-ngay': '01/10/2026' });
+    expect(input.period).toBe('tuy-chon');
+    expect(input.from).toBe('2026-10-01');
+    expect(input.to).toBe('2026-11-17');
+  });
+  it('kỳ trọn tháng vẫn so được với chỉ tiêu', () => {
+    expect(coversWholeMonths('2026-10-01', '2026-11-17', '2026-11-17')).toBe(true);
+    expect(coversWholeMonths('2026-09-01', '2026-10-31', '2026-11-17')).toBe(true);
+    expect(coversWholeMonths('2026-10-05', '2026-10-31', '2026-11-17')).toBe(false);
+    expect(coversWholeMonths('2026-10-01', '2026-10-20', '2026-11-17')).toBe(false);
   });
 });

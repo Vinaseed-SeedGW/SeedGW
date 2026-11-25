@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { periodTitle, type SeasonRange } from '@seedgw/contracts/dashboard';
-import { isoDateToDisplay } from '@seedgw/contracts/format';
+import { periodTitle } from '@seedgw/contracts/dashboard';
 import {
   REPORT_GROUP_LABEL,
   REPORT_GROUPS,
@@ -40,10 +39,6 @@ export default async function ReportPage({ searchParams }: PageProps) {
     getProvinceRegions(),
   ]);
   const input = reportUrlParams(new Date(), seasons, provinces).parse(raw);
-  const periodText =
-    input.from === input.to
-      ? isoDateToDisplay(input.from)
-      : `${isoDateToDisplay(input.from)} tới ${isoDateToDisplay(input.to)}`;
 
   return (
     <>
@@ -58,7 +53,7 @@ export default async function ReportPage({ searchParams }: PageProps) {
         <ExportReportButton />
       </div>
       <Suspense fallback={<div className="mt-4 h-10 animate-pulse rounded-md bg-surface-subtle" />}>
-        <Filters input={input} seasons={seasons} />
+        <Filters input={input} />
       </Suspense>
       <nav aria-label="Xem theo" className="mt-4 flex flex-wrap gap-2 border-b border-border">
         {REPORT_GROUPS.map((group) => {
@@ -75,9 +70,7 @@ export default async function ReportPage({ searchParams }: PageProps) {
           );
         })}
       </nav>
-      <p className="mt-3 font-bold">
-        {periodTitle(input, seasons)}, {periodText}
-      </p>
+      <p className="mt-3 font-bold">{periodTitle(input, seasons)}</p>
       <Suspense key={JSON.stringify(input)} fallback={<DataTableSkeleton columns={5} rows={8} />}>
         <ReportResults input={input} />
       </Suspense>
@@ -85,12 +78,12 @@ export default async function ReportPage({ searchParams }: PageProps) {
   );
 }
 
-async function Filters({ input, seasons }: { input: ReportInput; seasons: SeasonRange[] }) {
+async function Filters({ input }: { input: ReportInput }) {
   const options = await getDashboardFilterOptions(input.orgUnitId);
   const geo = await getGeoFilterOptions(options, 'sales.report.read');
   return (
     <div className="mt-4">
-      <DashboardFilters input={input} options={options} seasons={seasons} geo={geo} />
+      <DashboardFilters input={input} options={options} geo={geo} />
     </div>
   );
 }

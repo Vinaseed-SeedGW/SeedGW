@@ -373,7 +373,8 @@ export function checkInsUrlParams(now: Date = new Date()) {
       const clamp = (value: string) =>
         value < earliest ? earliest : value > today ? today : value;
       const start = clamp(url['tu-ngay'] ?? today);
-      const end = clamp(url['den-ngay'] ?? url['tu-ngay'] ?? today);
+      // 25/11/2026: Đến ngày trống thì tính tới hôm nay.
+      const end = clamp(url['den-ngay'] ?? today);
       return {
         q: url.q || undefined,
         from: start <= end ? start : end,
