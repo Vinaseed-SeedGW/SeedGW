@@ -28,6 +28,7 @@ export async function listSalesTargets(
 export async function getOnBehalfEmployees(): Promise<Array<{ value: string; label: string }>> {
   const user = await requireUser();
   assertCan(user, 'sales.approval.override');
+  // pham-vi-toan-bo: chỉ Quản trị hệ thống (sales.approval.override) đăng ký thay nhân viên bất kỳ.
   const rows = await db.user.findMany({
     where: { isActive: true },
     orderBy: { employeeCode: 'asc' },

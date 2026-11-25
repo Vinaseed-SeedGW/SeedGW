@@ -11,6 +11,7 @@ import {
 } from '@/server/auth/mobile';
 import { writeAudit } from '@/server/services/audit';
 import { checkCredentials } from '@/server/services/credentials';
+import { isIpBlocked, recordIpFailure } from '@/server/services/login-rate-limit';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
@@ -100,7 +101,11 @@ export async function loginMobile(
   input: MobileLoginInput,
   ip: string | null,
 ): Promise<MobileSession> {
+  if (await isIpBlocked(ip)) {
+    throw new MobileAuthError('LOCKED', 'Máy này nhập sai quá nhiều lần, thử lại sau 15 phút');
+  }
   const result = await checkCredentials(input.employeeCode, input.password);
+  if (result.status === 'invalid') await recordIpFailure(ip);
   if (result.status === 'locked') {
     throw new MobileAuthError('LOCKED', 'Tài khoản tạm khoá do nhập sai nhiều lần, thử lại sau');
   }

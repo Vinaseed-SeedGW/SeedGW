@@ -11,3 +11,8 @@ allowBuilds:
   msgpackr-extract: false
   prisma: true
   sharp: true
+
+# D6 (25/11/2026): nâng bản vá lỗ hổng cho thư viện gián tiếp, chỉ trong cùng đời phiên bản.
+overrides:
+  postcss@<8.5.23: ^8.5.23
+  effect@<3.22.1: ^3.22.1

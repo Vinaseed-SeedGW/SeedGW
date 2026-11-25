@@ -54,6 +54,7 @@ export async function getRouteEditorContext(
     };
   }
   if (!can(user, 'sales.approval.override')) return null;
+  // pham-vi-toan-bo: chỉ Quản trị hệ thống (sales.approval.override) đăng ký thay nhân viên bất kỳ.
   const owner = await db.user.findFirst({
     where: { employeeCode, isActive: true },
     select: { id: true, employeeCode: true, fullName: true },

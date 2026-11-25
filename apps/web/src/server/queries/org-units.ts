@@ -59,6 +59,7 @@ export async function listManagerOptions(): Promise<ManagerOption[]> {
   const user = await requireUser();
   assertCan(user, 'admin.org-unit.manage');
 
+  // pham-vi-toan-bo: chỉ người có quyền admin.org-unit.manage (Quản trị hệ thống) chọn Trưởng đơn vị.
   const rows = await db.user.findMany({
     where: { isActive: true },
     orderBy: { employeeCode: 'asc' },
