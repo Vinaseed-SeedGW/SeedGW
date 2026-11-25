@@ -3,11 +3,15 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./check-in-followup": "./src/check-in-followup.ts",
     "./client": "./src/client.ts",
     "./daily-visit-stats": "./src/daily-visit-stats.ts",
+    "./data-retention": "./src/data-retention.ts",
+    "./error-log": "./src/error-log.ts",
     "./integration-settings": "./src/integration-settings.ts",
     "./org-units": "./src/org-units.ts",
-    "./scoped-client": "./src/scoped-client.ts"
+    "./scoped-client": "./src/scoped-client.ts",
+    "./vietmap": "./src/vietmap.ts"
   },
   "scripts": {
     "generate": "prisma generate",

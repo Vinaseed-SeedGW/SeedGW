@@ -4,6 +4,7 @@ import type { ActionResult } from '@seedgw/contracts/common';
 import type { z } from 'zod';
 import { DomainError } from '@/server/services/domain-error';
 import { ForbiddenError } from './can';
+import { recordError } from '@seedgw/db/error-log';
 
 export function validationError(error: z.ZodError): ActionResult<never> {
   const fieldErrors: Record<string, string> = {};
@@ -36,5 +37,6 @@ export function toActionError(error: unknown): ActionResult<never> {
     return { ok: false, code: 'FORBIDDEN', message: 'Bạn không có quyền thực hiện thao tác này' };
   }
   console.error(error);
+  void recordError({ source: 'WEB_SERVER', error, context: { kind: 'server-action' } });
   return { ok: false, code: 'INTERNAL', message: 'Đã xảy ra lỗi, vui lòng thử lại' };
 }

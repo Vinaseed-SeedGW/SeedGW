@@ -1,5 +1,7 @@
 import { Queue, Worker, type Job } from 'bullmq';
 import { recomputeDailyVisitStats, touchedVisitDays } from '@seedgw/db/daily-visit-stats';
+import { ensureTrackPointPartitions, purgeExpiredTrackingData } from '@seedgw/db/data-retention';
+import { purgeOldErrors, recordError } from '@seedgw/db/error-log';
 import { FAST_SYNC_QUEUE } from '@seedgw/contracts/fast';
 import {
   PUSH_QUEUE,
@@ -7,19 +9,32 @@ import {
   type PushReceiptJob,
   type PushSendJob,
 } from '@seedgw/contracts/push';
-import { ROAD_DISTANCE_QUEUE, type RoadDistanceJob } from '@seedgw/contracts/road-distance';
+import {
+  CHECK_IN_FOLLOWUP_QUEUE,
+  ROAD_DISTANCE_DEBOUNCE_MS,
+  ROAD_DISTANCE_QUEUE,
+  roadDistanceJobId,
+  type CheckInFollowupJob,
+  type RoadDistanceJob,
+} from '@seedgw/contracts/road-distance';
+import {
+  fillMissingAddresses,
+  recomputeDayDistances,
+  usersMissingAddresses,
+} from '@seedgw/db/check-in-followup';
 import { runFastCustomerSync } from './fast-sync';
 import { checkPushReceipts, createCheckInReminders, sendPushMessages } from './push';
 import { roadDistanceProvider } from './osrm';
 import { computeRoadDay, userDaysWithCheckIns } from './road-distance';
 import { autoCloseDone, purgeExpired } from './support';
 
-// Worker chạy nền (F8): km theo đường đi (V1b), việc định kỳ của Hỗ trợ (T5), đồng bộ FAST (A8), bảng gộp lượt
+// Worker chạy nền (F8): km theo GPS và địa chỉ sau check-in, km theo đường đi (V1b), việc định kỳ của Hỗ trợ (T5), đồng bộ FAST (A8), bảng gộp lượt
 // ghé thăm theo ngày (K1).
 const REDIS_URL = process.env.REDIS_URL?.trim();
 const DAY_MS = 86_400_000;
 const SUPPORT_QUEUE = 'support';
 const DAILY_STATS_QUEUE = 'daily-visit-stats';
+const DATA_RETENTION_QUEUE = 'data-retention';
 // Mỗi lần chạy xét check-in tạo hoặc sửa trong 30 phút qua (lịch 15 phút, chồng lên nhau để không sót).
 const DAILY_STATS_LOOKBACK_MS = 30 * 60_000;
 const DAILY_STATS_NIGHTLY_DAYS = 7;
@@ -188,13 +203,97 @@ async function startPush(connection: Connection): Promise<Array<Queue | Worker>>
   return [queue, worker];
 }
 
+/**
+ * F8: việc sau khi nhận check-in, điểm GPS. Web xếp việc theo người và ngày (gộp lần gửi sát nhau), worker tính
+ * km theo GPS, cờ tốc độ, lấy địa chỉ, rồi hẹn tính km theo đường. Lỗi thì thử lại 5 lần, giãn dần.
+ */
+async function startCheckInFollowup(connection: Connection): Promise<Array<Queue | Worker>> {
+  const queue = new Queue(CHECK_IN_FOLLOWUP_QUEUE, { connection });
+  const roadQueue = roadDistanceProvider() ? new Queue(ROAD_DISTANCE_QUEUE, { connection }) : null;
+  // Quét 10 phút một lần các check-in còn thiếu địa chỉ do Vietmap lỗi lúc nhận.
+  await queue.upsertJobScheduler(
+    'address-sweep',
+    { every: 10 * 60_000 },
+    {
+      name: 'address-sweep',
+      data: {},
+      opts: { attempts: 1, removeOnComplete: 100, removeOnFail: 100 },
+    },
+  );
+  const worker = new Worker(
+    CHECK_IN_FOLLOWUP_QUEUE,
+    async (job: Job) => {
+      if (job.name === 'address-sweep') {
+        const users = await usersMissingAddresses();
+        for (const userId of users) await fillMissingAddresses(userId);
+        return { users: users.length };
+      }
+      const data = job.data as CheckInFollowupJob;
+      await recomputeDayDistances(data.userId, data.day);
+      await fillMissingAddresses(data.userId);
+      if (roadQueue) {
+        const id = roadDistanceJobId(data);
+        await roadQueue.add('day', data satisfies RoadDistanceJob, {
+          delay: ROAD_DISTANCE_DEBOUNCE_MS,
+          deduplication: { id, ttl: ROAD_DISTANCE_DEBOUNCE_MS, extend: true, replace: true },
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 30_000 },
+          removeOnComplete: 1000,
+          removeOnFail: 1000,
+        });
+      }
+      return { userId: data.userId, day: data.day };
+    },
+    { connection, concurrency: 4 },
+  );
+  logJobs(worker, 'Việc sau check-in');
+  return roadQueue ? [queue, roadQueue, worker] : [queue, worker];
+}
+
+/** D5: mỗi đêm 02:00 tạo bảng tháng sắp tới cho điểm GPS, bỏ điểm quá 45 ngày, dòng check-in quá 18 tháng. */
+async function startDataRetention(connection: Connection): Promise<Array<Queue | Worker>> {
+  // Lúc khởi động cũng tạo sẵn bảng tháng, để worker mới bật vào ngày đầu tháng vẫn có chỗ ghi.
+  await ensureTrackPointPartitions();
+  const queue = new Queue(DATA_RETENTION_QUEUE, { connection });
+  await queue.upsertJobScheduler(
+    'data-retention-nightly',
+    { pattern: '0 2 * * *', tz: 'Asia/Ho_Chi_Minh' },
+    {
+      name: 'nightly',
+      data: {},
+      opts: { attempts: 3, backoff: { type: 'exponential', delay: 300_000 } },
+    },
+  );
+  const worker = new Worker(
+    DATA_RETENTION_QUEUE,
+    async () => {
+      const partitions = await ensureTrackPointPartitions();
+      const purged = await purgeExpiredTrackingData();
+      const errors = await purgeOldErrors();
+      return { partitions: partitions.length, ...purged, deletedErrors: errors };
+    },
+    { connection, concurrency: 1 },
+  );
+  logJobs(worker, 'Giữ dữ liệu');
+  return [queue, worker];
+}
+
 function logJobs(worker: Worker, label: string) {
   worker.on('completed', (job, result) =>
     console.log(`${label}: xong ${job.name} ${job.id}`, JSON.stringify(result ?? null)),
   );
-  worker.on('failed', (job, error) =>
-    console.error(`${label}: lỗi ${job?.name} ${job?.id}, lần ${job?.attemptsMade}`, error.message),
-  );
+  worker.on('failed', (job, error) => {
+    console.error(`${label}: lỗi ${job?.name} ${job?.id}, lần ${job?.attemptsMade}`, error.message);
+    // F9: chỉ ghi vào bảng lỗi khi đã hết lượt thử lại.
+    if (job && job.attemptsMade >= (job.opts.attempts ?? 1)) {
+      void recordError({
+        source: 'WORKER',
+        error,
+        path: `${worker.name}/${job.name}`,
+        context: { label, attempts: job.attemptsMade },
+      });
+    }
+  });
 }
 
 async function main() {
@@ -206,10 +305,12 @@ async function main() {
   const connection: Connection = { url: REDIS_URL, maxRetriesPerRequest: null };
   const parts = [
     ...(await startRoadDistance(connection)),
+    ...(await startCheckInFollowup(connection)),
     ...(await startSupport(connection)),
     ...(await startDailyStats(connection)),
     ...(await startFastSync(connection)),
     ...(await startPush(connection)),
+    ...(await startDataRetention(connection)),
   ];
   console.log('Worker đã sẵn sàng.');
 

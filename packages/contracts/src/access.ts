@@ -51,6 +51,7 @@ export const PERMISSIONS = [
   { code: 'admin.connection.read', name: 'Xem Kết nối' },
   { code: 'admin.connection.manage', name: 'Sửa Kết nối' },
   { code: 'admin.audit-log.read', name: 'Xem Nhật ký' },
+  { code: 'admin.error-log.read', name: 'Xem Lỗi hệ thống' },
 ] as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[number]['code'];
@@ -137,6 +138,7 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/quan-tri/tham-so', permission: 'admin.setting.read', department: 'quan-tri' },
   { path: '/quan-tri/ket-noi', permission: 'admin.connection.read', department: 'quan-tri' },
   { path: '/quan-tri/nhat-ky', permission: 'admin.audit-log.read', department: 'quan-tri' },
+  { path: '/quan-tri/loi-he-thong', permission: 'admin.error-log.read', department: 'quan-tri' },
 ];
 
 type PermissionSet = ReadonlySet<string>;

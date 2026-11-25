@@ -2,6 +2,12 @@
 
 import { SectionError } from '@/features/shell/components/section-error';
 
-export default function QuanTriError({ reset }: { reset: () => void }) {
-  return <SectionError reset={reset} />;
+export default function QuanTriError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return <SectionError error={error} reset={reset} />;
 }

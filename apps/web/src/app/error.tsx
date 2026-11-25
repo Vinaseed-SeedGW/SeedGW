@@ -2,8 +2,16 @@
 
 import { AppFooter } from '@seedgw/ui/app-footer';
 import { Logo } from '@seedgw/ui/logo';
+import { useReportError } from '@/features/shell/components/use-report-error';
 
-export default function ErrorPage({ reset }: { reset: () => void }) {
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useReportError(error);
   return (
     <div className="flex min-h-dvh flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">

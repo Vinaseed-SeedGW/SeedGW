@@ -1,4 +1,5 @@
 import 'server-only';
+import { recordError } from '@seedgw/db/error-log';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { widestDataScope, type DataScope, type PermissionCode } from '@seedgw/contracts/access';
@@ -177,6 +178,12 @@ export function mobileRoute<TContext>(
       }
       if (error instanceof DomainError) return mobileError(error.code, error.message);
       console.error('Lỗi API app', error);
+      void recordError({
+        source: 'WEB_SERVER',
+        error,
+        path: new URL(request.url).pathname,
+        context: { kind: 'mobile-api', method: request.method },
+      });
       return mobileError('INTERNAL', 'Máy chủ đang lỗi, app sẽ tự gửi lại sau');
     }
   };

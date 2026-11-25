@@ -30,6 +30,7 @@ import { SupportScreen, type SupportPrefill } from './src/components/support-scr
 import { readSupportBadge } from './src/api/support';
 import { countPendingSupport } from './src/sync/support-outbox';
 import { rememberScreen } from './src/sync/support-screenshot';
+import { installErrorReporter } from './src/sync/error-report';
 import { onPushOpened, readPushState, registerForPush, type PushState } from './src/sync/push';
 import { HistoryTab } from './src/components/history-tab';
 import { LoginScreen } from './src/components/login-screen';
@@ -43,6 +44,9 @@ import { useAutoSync, useSession } from './src/components/use-sync';
 import { WatermarkCamera, type CameraIntent } from './src/components/watermark-camera';
 import { Text } from './src/components/text';
 import { COLORS, FONT_FAMILY, SPACE } from './src/theme';
+
+// F9: lỗi JS chưa bắt được gửi về máy chủ.
+installErrorReporter();
 
 // Có địa chỉ máy chủ thì phải đăng nhập (M1) và dữ liệu được gửi lên (M3, M12).
 // Chưa có máy chủ thì chạy như bản thử R3, dữ liệu chỉ nằm trên máy.

@@ -1,4 +1,5 @@
 import {
+  Bug,
   CalendarDays,
   ClipboardCheck,
   Combine,
@@ -92,6 +93,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
       items: [
         { label: 'Kết nối', href: '/quan-tri/ket-noi', icon: Plug },
         { label: 'Nhật ký', href: '/quan-tri/nhat-ky', icon: ScrollText },
+        { label: 'Lỗi hệ thống', href: '/quan-tri/loi-he-thong', icon: Bug },
       ],
     },
   ],

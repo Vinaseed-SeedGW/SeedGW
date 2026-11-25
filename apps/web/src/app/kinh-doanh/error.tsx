@@ -2,6 +2,12 @@
 
 import { SectionError } from '@/features/shell/components/section-error';
 
-export default function KinhDoanhError({ reset }: { reset: () => void }) {
-  return <SectionError reset={reset} />;
+export default function KinhDoanhError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return <SectionError error={error} reset={reset} />;
 }

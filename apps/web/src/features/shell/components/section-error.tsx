@@ -1,6 +1,11 @@
 'use client';
 
-export function SectionError({ reset }: { reset: () => void }) {
+import { useReportError } from './use-report-error';
+
+type Props = { error: Error & { digest?: string }; reset: () => void };
+
+export function SectionError({ error, reset }: Props) {
+  useReportError(error);
   return (
     <div role="alert" className="py-10 text-center">
       <h2 className="text-lg font-bold text-brand">Không tải được dữ liệu</h2>
