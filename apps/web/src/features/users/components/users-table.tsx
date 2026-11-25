@@ -11,6 +11,8 @@ const STATUS_OPTIONS = (Object.keys(USER_STATUS_LABEL) as UserStatus[]).map((val
   label: USER_STATUS_LABEL[value],
 }));
 
+const DEVICE_OPTIONS = [{ value: 'cho-duyet', label: 'Có máy chờ duyệt' }];
+
 const SECONDARY_COLUMN = 'max-md:hidden';
 
 export const SELECT_COLUMN = selectionColumn<UserSummary>();
@@ -88,6 +90,12 @@ export function UsersTableView({ columns, data, bulkActions, children }: UsersTa
             label="Lọc theo trạng thái"
             allLabel="Tất cả trạng thái"
             options={STATUS_OPTIONS}
+          />
+          <DataTable.SelectFilter
+            param="thiet-bi"
+            label="Lọc theo thiết bị"
+            allLabel="Mọi thiết bị"
+            options={DEVICE_OPTIONS}
           />
         </DataTable.Filters>
         <DataTable.Columns />

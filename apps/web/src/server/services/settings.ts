@@ -8,6 +8,8 @@ import {
   type CodeSequenceView,
   type SaveCodeSequenceInput,
   type SaveSystemSettingsInput,
+  type SettingKey,
+  type SystemSettings,
   type SystemSettingsView,
 } from '@seedgw/contracts/settings';
 import { db } from '@seedgw/db/client';
@@ -47,6 +49,15 @@ function readDealerSequenceRow() {
     where: { key: DEALER_CODE_SEQUENCE_KEY },
     select: CODE_SEQUENCE_SELECT,
   });
+}
+
+/** Đọc một tham số cho luồng nghiệp vụ; thiếu dòng cài đặt thì dùng giá trị mặc định. */
+export async function readSettingValue<K extends SettingKey>(key: K): Promise<SystemSettings[K]> {
+  const row = await db.systemSetting.findUnique({
+    where: { key: GENERAL_SETTINGS_KEY },
+    select: { value: true },
+  });
+  return resolveSystemSettings(row?.value)[key];
 }
 
 export async function readSystemSettings(): Promise<SystemSettingsView> {

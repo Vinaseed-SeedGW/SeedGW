@@ -16,7 +16,7 @@ export const hubNotification = z.object({
 
 /** D3: việc đang chờ người dùng, chỉ gồm loại việc người đó có quyền xử lý. */
 export const hubTodo = z.object({
-  key: z.enum(['approvals', 'support', 'locations', 'dealer-proposals']),
+  key: z.enum(['approvals', 'support', 'locations', 'dealer-proposals', 'devices']),
   label: z.string(),
   count: z.number().int().nonnegative(),
   href: z.string(),

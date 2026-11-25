@@ -12,6 +12,7 @@ import {
 import { writeAudit } from '@/server/services/audit';
 import { checkCredentials } from '@/server/services/credentials';
 import { isIpBlocked, recordIpFailure } from '@/server/services/login-rate-limit';
+import { readSettingValue } from '@/server/services/settings';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
 
@@ -51,13 +52,15 @@ async function issueSession(
 type DeviceOutcome = { deviceId: string; status: 'ACTIVE' | 'PENDING'; registered: boolean };
 
 /**
- * Máy đầu tiên của nhân viên dùng được ngay. Máy khác phải chờ quản trị duyệt ở trang Tài khoản,
- * duyệt máy mới thì máy cũ tự bị thu hồi (quyết định 13/11/2026).
+ * Mặc định (25/11/2026) đăng nhập đúng mật khẩu trên máy nào cũng dùng được ngay, không giới hạn
+ * số máy; máy bị thu hồi đăng nhập lại cũng dùng được. Khi bật tham số Duyệt máy mới thì theo
+ * quyết định 13/11/2026: máy đầu tiên dùng ngay, máy khác chờ quản trị duyệt ở trang Tài khoản.
  */
 async function resolveDevice(
   userId: string,
   device: MobileLoginInput['device'],
 ): Promise<DeviceOutcome> {
+  const approvalRequired = (await readSettingValue('mobileDeviceApprovalRequired')) === 1;
   return db.$transaction(async (tx) => {
     // Khoá dòng nhân viên để hai lần đăng nhập cùng lúc không cùng thành máy đầu tiên.
     await tx.$queryRaw`SELECT 1 FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
@@ -68,7 +71,9 @@ async function resolveDevice(
     if (existing?.status === 'ACTIVE') {
       return { deviceId: existing.id, status: 'ACTIVE', registered: false };
     }
-    const hasActive = (await tx.mobileDevice.count({ where: { userId, status: 'ACTIVE' } })) > 0;
+    const hasActive =
+      approvalRequired &&
+      (await tx.mobileDevice.count({ where: { userId, status: 'ACTIVE' } })) > 0;
     const now = new Date();
     const data = hasActive
       ? { status: 'PENDING' as const, revokedAt: null }
@@ -134,7 +139,7 @@ export async function loginMobile(
       changes: auditChanges(
         {},
         {
-          device: `${input.device.name}: ${device.status === 'ACTIVE' ? 'dùng ngay (máy đầu tiên)' : 'chờ duyệt'}`,
+          device: `${input.device.name}: ${device.status === 'ACTIVE' ? 'dùng ngay' : 'chờ duyệt'}`,
         },
       ),
       ip,
@@ -143,7 +148,7 @@ export async function loginMobile(
   if (device.status === 'PENDING') {
     throw new MobileAuthError(
       'DEVICE_PENDING',
-      'Tài khoản đang dùng trên một máy khác. Nhờ quản trị duyệt máy này ở mục Tài khoản trên web, máy cũ sẽ tự bị thu hồi.',
+      'Tài khoản đang dùng trên một máy khác. Nhờ quản trị duyệt máy này ở Quản trị, Tài khoản, mục Thiết bị trên web; máy cũ sẽ tự bị thu hồi.',
     );
   }
   return issueSession(result.user, device.deviceId);

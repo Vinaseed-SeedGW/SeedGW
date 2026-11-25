@@ -240,12 +240,25 @@ const NOTIFICATION_SETTINGS = [
   },
 ] as const satisfies readonly SettingDefinition[];
 
+// 25/11/2026: mặc định đăng nhập máy nào cũng dùng được ngay, không giới hạn số máy.
+const DEVICE_SETTINGS = [
+  {
+    key: 'mobileDeviceApprovalRequired',
+    label: 'Duyệt máy mới trước khi dùng app (1 bật, 0 tắt)',
+    min: 0,
+    max: 1,
+    defaultValue: 0,
+    hint: 'Tắt: đăng nhập đúng mật khẩu trên máy nào cũng dùng được ngay, không giới hạn số máy. Bật: từ máy thứ hai phải chờ quản trị duyệt ở trang Tài khoản, duyệt máy mới thì máy cũ bị thu hồi.',
+  },
+] as const satisfies readonly SettingDefinition[];
+
 const ALL_SETTING_GROUPS = [
   { title: 'Kinh doanh', settings: SALES_SETTINGS },
   { title: 'Tuyến viếng thăm', settings: ROUTE_SETTINGS },
   { title: 'Ghi hành trình và km theo GPS', settings: TRACKING_SETTINGS },
   { title: 'Thời hạn xử lý yêu cầu hỗ trợ', settings: SUPPORT_SETTINGS },
   { title: 'Thông báo trên app', settings: NOTIFICATION_SETTINGS },
+  { title: 'Thiết bị di động', settings: DEVICE_SETTINGS },
   { title: 'Chu kỳ đồng bộ FAST', settings: FAST_SYNC_SETTINGS },
 ] as const;
 
@@ -261,6 +274,7 @@ const ALL_SETTINGS = [
   ...TRACKING_SETTINGS,
   ...SUPPORT_SETTINGS,
   ...NOTIFICATION_SETTINGS,
+  ...DEVICE_SETTINGS,
   ...FAST_SYNC_SETTINGS,
 ];
 

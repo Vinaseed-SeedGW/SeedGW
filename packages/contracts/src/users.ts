@@ -31,6 +31,8 @@ const USERS_PAGE_SIZE = 20;
 export const listUsersInput = z.object({
   q: z.string().trim().max(100).optional(),
   status: userStatus.optional(),
+  /** Chỉ tài khoản có máy đang chờ duyệt (khi bật tham số Duyệt máy mới). */
+  devicePending: z.boolean().optional(),
   sort: userSort.default(DEFAULT_USER_SORT),
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(MAX_PAGE_SIZE).default(USERS_PAGE_SIZE),
@@ -45,12 +47,14 @@ export const usersUrlParams = z
   .object({
     q: z.string().trim().max(100).optional().catch(undefined),
     'trang-thai': userStatus.optional().catch(undefined),
+    'thiet-bi': z.enum(['cho-duyet']).optional().catch(undefined),
     'sap-xep': userSort.catch(DEFAULT_USER_SORT),
     trang: z.coerce.number().int().positive().max(1_000_000).catch(1),
   })
   .transform((url): ListUsersInput => ({
     q: url.q || undefined,
     status: url['trang-thai'],
+    devicePending: url['thiet-bi'] === 'cho-duyet' || undefined,
     sort: url['sap-xep'],
     page: url.trang,
     pageSize: USERS_PAGE_SIZE,

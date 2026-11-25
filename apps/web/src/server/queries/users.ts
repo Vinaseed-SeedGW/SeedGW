@@ -11,7 +11,7 @@ import type {
 } from '@seedgw/contracts/users';
 import { db } from '@seedgw/db/client';
 import { z } from 'zod';
-import { assertCan } from '@/server/auth/can';
+import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
 import {
@@ -21,6 +21,7 @@ import {
   ROLE_PERMISSIONS_SELECT,
   USER_ROLES_SELECT,
 } from '@/server/services/users';
+import { readSettingValue } from '@/server/services/settings';
 
 export const USER_SUMMARY_SELECT = {
   id: true,
@@ -48,11 +49,16 @@ export function toUserSummary(row: UserSummaryRow): UserSummary {
   };
 }
 
-export function userWhere({ q, status }: Pick<ListUsersInput, 'q' | 'status'>) {
+export function userWhere({
+  q,
+  status,
+  devicePending,
+}: Pick<ListUsersInput, 'q' | 'status' | 'devicePending'>) {
   const search = q ? normalizeSearchText(q) : '';
   return {
     ...(search ? { searchText: { contains: escapeLikePattern(search) } } : {}),
     ...(status ? { isActive: status === 'ACTIVE' } : {}),
+    ...(devicePending ? { mobileDevices: { some: { status: 'PENDING' as const } } } : {}),
   } satisfies Prisma.UserWhereInput;
 }
 
@@ -60,6 +66,15 @@ export function userOrderBy(sort: ListUsersInput['sort']): Prisma.UserOrderByWit
   const direction = sort.startsWith('-') ? 'desc' : 'asc';
   const field = sort.replace('-', '') as 'employeeCode' | 'fullName' | 'createdAt';
   return [{ [field]: direction }, { id: 'asc' }];
+}
+
+/** Số tài khoản có máy chờ duyệt; chỉ đếm khi đang bật tham số Duyệt máy mới. */
+export async function getPendingDeviceUserCount(): Promise<number> {
+  const user = await requireUser();
+  if (!can(user, 'admin.user.manage')) return 0;
+  if ((await readSettingValue('mobileDeviceApprovalRequired')) !== 1) return 0;
+  const scoped = await getScopedDb();
+  return scoped.user.count({ where: userWhere({ devicePending: true }) });
 }
 
 export async function getUserDetail(id: string): Promise<UserDetail | null> {

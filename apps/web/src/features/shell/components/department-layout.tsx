@@ -17,6 +17,7 @@ import { getPendingApprovalCount } from '@/server/queries/approvals';
 import { getLocationProposalPendingCount } from '@/server/queries/dealer-locations';
 import { getDealerProposalPendingCount } from '@/server/queries/dealer-proposals';
 import { getSupportPendingCount } from '@/server/queries/support';
+import { getPendingDeviceUserCount } from '@/server/queries/users';
 
 // Mục có số việc đang chờ cạnh tên (A10b).
 const NAV_COUNTS: Partial<Record<string, () => Promise<number>>> = {
@@ -24,6 +25,7 @@ const NAV_COUNTS: Partial<Record<string, () => Promise<number>>> = {
   '/quan-tri/ho-tro': getSupportPendingCount,
   '/quan-tri/dai-ly/dai-ly-moi': getDealerProposalPendingCount,
   '/quan-tri/dai-ly/duyet-toa-do': getLocationProposalPendingCount,
+  '/quan-tri/tai-khoan': getPendingDeviceUserCount,
 };
 
 type DepartmentLayoutProps = {

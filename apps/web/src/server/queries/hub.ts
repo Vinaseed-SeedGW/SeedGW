@@ -8,6 +8,7 @@ import { getPendingApprovalCount } from '@/server/queries/approvals';
 import { getLocationProposalPendingCount } from '@/server/queries/dealer-locations';
 import { getDealerProposalPendingCount } from '@/server/queries/dealer-proposals';
 import { getSupportOverdueCount, getSupportPendingCount } from '@/server/queries/support';
+import { getPendingDeviceUserCount } from '@/server/queries/users';
 
 // D3: việc đang chờ theo quyền. Mỗi loại việc thuộc một bộ phận để cộng số trên ô bộ phận.
 const TODOS: ReadonlyArray<{
@@ -49,6 +50,14 @@ const TODOS: ReadonlyArray<{
     department: 'quan-tri',
     permission: 'admin.dealer-location.approve',
     count: getLocationProposalPendingCount,
+  },
+  {
+    key: 'devices',
+    label: 'Tài khoản có máy mới chờ duyệt',
+    href: '/quan-tri/tai-khoan?thiet-bi=cho-duyet',
+    department: 'quan-tri',
+    permission: 'admin.user.manage',
+    count: getPendingDeviceUserCount,
   },
 ];
 
