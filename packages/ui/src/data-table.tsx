@@ -16,6 +16,7 @@ import {
   ChevronsUpDown,
   Columns3,
   Download,
+  Inbox,
   SlidersHorizontal,
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -483,9 +484,10 @@ function Body({ emptyMessage }: { emptyMessage: string }) {
       </table>
       {/* Câu báo trống nằm ngoài vùng cuộn ngang để luôn đọc được trên điện thoại. */}
       {rows.length === 0 ? (
-        <p className="sticky left-0 w-full px-2 py-10 text-center text-text-muted">
-          {emptyMessage}
-        </p>
+        <div className="sticky left-0 flex w-full flex-col items-center gap-2 px-2 py-10 text-center text-text-muted">
+          <Inbox size={32} aria-hidden />
+          <p>{emptyMessage}</p>
+        </div>
       ) : null}
     </div>
   );

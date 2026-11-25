@@ -12,6 +12,7 @@ import {
 import { formatDateTime, formatNumber, isoDateToDisplay } from '@seedgw/contracts/format';
 import { targetPercent } from '@seedgw/contracts/sales-targets';
 import { AppFooter } from '@seedgw/ui/app-footer';
+import { Delta } from '@seedgw/ui/delta';
 import { Logo } from '@seedgw/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
@@ -190,7 +191,9 @@ async function Overview({
           value={formatNumber(kpi.visits)}
           href={`/kinh-doanh/dashboard?ky=${input.period}${areaQuery}`}
         >
-          {changeText(kpi.visits, dashboard.compare.previous.visits)}
+          <Delta change={changePercent(kpi.visits, dashboard.compare.previous.visits)}>
+            {changeText(kpi.visits, dashboard.compare.previous.visits)}
+          </Delta>
         </Card>
         <Card
           label="% chỉ tiêu lượt ghé thăm"

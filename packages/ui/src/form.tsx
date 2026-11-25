@@ -350,11 +350,21 @@ function CheckboxGroup({ name, label, hint, options }: CheckboxGroupProps) {
   );
 }
 
+// Gửi form có từ 2 ô sai trở lên thì báo tóm tắt ở cuối form; ô sai đầu tiên được đưa con trỏ tới (D7).
 function FormError() {
   const { state } = useFormShell();
-  return state.formError ? (
+  const { formState } = useFormContext();
+  const invalidCount = Object.keys(formState.errors).length;
+  if (state.formError) {
+    return (
+      <p role="alert" className="mt-3.5 rounded-md bg-danger-soft px-2.5 py-2 text-danger">
+        {state.formError}
+      </p>
+    );
+  }
+  return formState.isSubmitted && invalidCount >= 2 ? (
     <p role="alert" className="mt-3.5 rounded-md bg-danger-soft px-2.5 py-2 text-danger">
-      {state.formError}
+      Có {invalidCount} ô chưa đúng, xem chữ đỏ dưới từng ô rồi gửi lại.
     </p>
   ) : null;
 }

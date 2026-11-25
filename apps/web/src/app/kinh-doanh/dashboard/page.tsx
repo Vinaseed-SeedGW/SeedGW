@@ -24,6 +24,7 @@ import {
   isoDateToDisplay,
   vietnamToday,
 } from '@seedgw/contracts/format';
+import { Delta } from '@seedgw/ui/delta';
 import { DashboardFilters } from '@/features/dashboard/components/dashboard-filters';
 import { RankingSort } from '@/features/dashboard/components/ranking-sort';
 import { VisitsChartLazy } from '@/features/dashboard/components/visits-chart-lazy';
@@ -497,18 +498,29 @@ function targetNote(
   return `Chỉ tiêu ${formatNumber(target)} ${unit}${done !== null ? `, đạt ${done}%` : ''}`;
 }
 
-function changeText(
-  label: string,
-  current: number,
-  base: PeriodFigures,
-  pick: (figures: PeriodFigures) => number,
-) {
+function CompareLine({
+  label,
+  current,
+  base,
+  pick,
+}: {
+  label: string;
+  current: number;
+  base: PeriodFigures;
+  pick: (figures: PeriodFigures) => number;
+}) {
   const value = pick(base);
   const change = changePercent(current, value);
   const range = `${isoDateToDisplay(base.from)} tới ${isoDateToDisplay(base.to)}`;
-  if (change === null) return `${label}: ${formatNumber(value)} (${range})`;
+  if (change === null) {
+    return <Delta change={null}>{`${label}: ${formatNumber(value)} (${range})`}</Delta>;
+  }
   const sign = change > 0 ? 'tăng' : change < 0 ? 'giảm' : 'bằng';
-  return `${label}: ${formatNumber(value)}, ${sign}${change === 0 ? '' : ` ${Math.abs(change)}%`}`;
+  return (
+    <Delta change={change}>
+      {`${label}: ${formatNumber(value)}, ${sign}${change === 0 ? '' : ` ${Math.abs(change)}%`}`}
+    </Delta>
+  );
 }
 
 /** So với kỳ trước và cùng kỳ năm trước (K4). */
@@ -523,8 +535,13 @@ function CompareLines({
 }) {
   return (
     <span className="grid text-sm text-text-muted">
-      <span>{changeText('Kỳ trước', current, data.compare.previous, pick)}</span>
-      <span>{changeText('Cùng kỳ năm trước', current, data.compare.lastYear, pick)}</span>
+      <CompareLine label="Kỳ trước" current={current} base={data.compare.previous} pick={pick} />
+      <CompareLine
+        label="Cùng kỳ năm trước"
+        current={current}
+        base={data.compare.lastYear}
+        pick={pick}
+      />
     </span>
   );
 }
