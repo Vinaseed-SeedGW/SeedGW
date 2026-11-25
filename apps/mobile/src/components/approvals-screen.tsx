@@ -16,12 +16,17 @@ import {
 import { formatVnDate, formatVnTime } from '../sync/geo';
 import { COLORS, FONT, SPACE } from '../theme';
 import { BackBar } from './back-bar';
+import { ProposalReviewList } from './proposal-review-list';
 import { Button } from './button';
 import { StatusTag, TargetValues } from './target-figures';
 import { Text, TextInput } from './text';
 
-const TABS: { key: MobileApprovalTab; label: string }[] = [
+// 25/11/2026: thêm mục Đại lý mới, đề xuất đại lý chờ mình duyệt một bước.
+type ScreenTab = MobileApprovalTab | 'dai-ly-moi';
+
+const TABS: { key: ScreenTab; label: string }[] = [
   { key: 'cho-toi-duyet', label: 'Chờ tôi duyệt' },
+  { key: 'dai-ly-moi', label: 'Đại lý mới' },
   { key: 'da-xu-ly', label: 'Đã xử lý' },
 ];
 
@@ -214,12 +219,13 @@ function Detail({ code, onBack }: { code: string; onBack: () => void }) {
 
 /** Cần duyệt trên app cho Quản lý và Lãnh đạo đơn vị (A10b). Duyệt nhiều phiếu làm trên web. */
 export function ApprovalsScreen({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<MobileApprovalTab>('cho-toi-duyet');
+  const [tab, setTab] = useState<ScreenTab>('cho-toi-duyet');
   const [rows, setRows] = useState<ApprovalRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [openCode, setOpenCode] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
+    if (tab === 'dai-ly-moi') return;
     setRows(null);
     const result = await listMyApprovals(tab);
     if (result.ok) {
@@ -254,23 +260,29 @@ export function ApprovalsScreen({ onClose }: { onClose: () => void }) {
         ))}
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        {error ? (
-          <View style={styles.card}>
-            <Text style={styles.error}>{error}</Text>
-            <Button label="Thử lại" onPress={() => void reload()} variant="ghost" />
-          </View>
-        ) : null}
-        {rows === null && !error ? <ActivityIndicator color={COLORS.brand} /> : null}
-        {rows?.length === 0 ? (
-          <Text style={styles.muted}>
-            {tab === 'cho-toi-duyet'
-              ? 'Không có phiếu nào chờ bạn duyệt.'
-              : 'Bạn chưa duyệt hoặc trả lại phiếu nào.'}
-          </Text>
-        ) : null}
-        {rows?.map((row) => (
-          <RowItem key={row.code} row={row} onOpen={() => setOpenCode(row.code)} />
-        ))}
+        {tab === 'dai-ly-moi' ? (
+          <ProposalReviewList />
+        ) : (
+          <>
+            {error ? (
+              <View style={styles.card}>
+                <Text style={styles.error}>{error}</Text>
+                <Button label="Thử lại" onPress={() => void reload()} variant="ghost" />
+              </View>
+            ) : null}
+            {rows === null && !error ? <ActivityIndicator color={COLORS.brand} /> : null}
+            {rows?.length === 0 ? (
+              <Text style={styles.muted}>
+                {tab === 'cho-toi-duyet'
+                  ? 'Không có phiếu nào chờ bạn duyệt.'
+                  : 'Bạn chưa duyệt hoặc trả lại phiếu nào.'}
+              </Text>
+            ) : null}
+            {rows?.map((row) => (
+              <RowItem key={row.code} row={row} onOpen={() => setOpenCode(row.code)} />
+            ))}
+          </>
+        )}
       </ScrollView>
     </View>
   );

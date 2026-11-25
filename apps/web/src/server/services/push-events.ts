@@ -140,7 +140,7 @@ const PROPOSAL_RESULT_TEXT = {
   DUPLICATE: 'trùng một đại lý có sẵn',
 } as const;
 
-/** M10: báo người đề xuất kết quả duyệt đại lý mới. Bấm thông báo mở mục Đại lý tôi đề xuất. */
+/** M10: báo người đề xuất kết quả duyệt đại lý mới. Trên web mở trang Đại lý đề xuất. */
 export function notifyDealerProposalReview(
   proposerId: string,
   proposalId: string,
@@ -156,6 +156,27 @@ export function notifyDealerProposalReview(
         body: `Đề xuất ${dealerName} ${PROPOSAL_RESULT_TEXT[result]}`,
         target: { screen: 'dealer-proposals' },
         key: `dealer-proposal-review:${proposalId}`,
+      },
+    ]),
+  );
+}
+
+/** 25/11/2026: báo Quản lý hoặc Lãnh đạo đơn vị có đề xuất đại lý mới chờ duyệt. Bấm mở mục Cần duyệt. */
+export function notifyDealerProposalPending(
+  approverId: string,
+  proposalId: string,
+  dealerName: string,
+  proposerName: string,
+): void {
+  fireAndForget(
+    notifyUsers([
+      {
+        userId: approverId,
+        kind: 'DEALER_PROPOSAL_PENDING',
+        title: 'Đại lý mới chờ duyệt',
+        body: `${proposerName} đề xuất đại lý ${dealerName}`,
+        target: { screen: 'approvals' },
+        key: `dealer-proposal-pending:${proposalId}:${approverId}`,
       },
     ]),
   );

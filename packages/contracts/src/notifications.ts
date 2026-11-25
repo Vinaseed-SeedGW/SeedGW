@@ -14,6 +14,7 @@ export const NOTIFICATION_KIND_LABEL: Record<PushKind, string> = {
   LOCATION_REJECTED: 'Toạ độ',
   CHECK_IN_REMINDER: 'Nhắc việc',
   DEALER_PROPOSAL_REVIEWED: 'Đại lý mới',
+  DEALER_PROPOSAL_PENDING: 'Đại lý mới',
 };
 
 export type NotificationItem = {
@@ -75,7 +76,7 @@ export function notificationWebHref(
       case 'nearby':
         return '/kinh-doanh/check-in';
       case 'dealer-proposals':
-        return '/quan-tri/dai-ly/dai-ly-moi';
+        return '/kinh-doanh/dai-ly/de-xuat';
     }
   })();
   return canAccessPath(permissions, href.split('?')[0] ?? href) ? href : null;

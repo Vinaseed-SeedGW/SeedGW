@@ -3,6 +3,12 @@ import { DEPARTMENTS } from '@seedgw/contracts/departments';
 import type { SearchPage } from '@seedgw/contracts/search';
 import { DEPARTMENT_NAV } from './navigation';
 
+const PROPOSALS_PAGE: SearchPage = {
+  href: '/kinh-doanh/dai-ly/de-xuat',
+  label: 'Đại lý đề xuất',
+  section: 'Kinh doanh',
+};
+
 /** Các trang người dùng mở được, để ô tìm nhanh gợi ý cả trang lẫn dữ liệu (D3). */
 export function listSearchPages(permissions: ReadonlySet<string>): SearchPage[] {
   const pages: SearchPage[] = [{ href: '/hub', label: 'Hub', section: 'Chung' }];
@@ -18,5 +24,7 @@ export function listSearchPages(permissions: ReadonlySet<string>): SearchPage[] 
       }
     }
   }
+  // Trang con không có trên menu nhưng hay cần mở nhanh.
+  if (canAccessPath(permissions, PROPOSALS_PAGE.href)) pages.push(PROPOSALS_PAGE);
   return pages;
 }

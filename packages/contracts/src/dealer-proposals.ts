@@ -1,10 +1,13 @@
 import { z } from 'zod';
 import { pageResult } from './common';
+import { parseDisplayDate } from './format';
 import { dealerLevel, normalizeVnPhone, type DealerLevel, type DealerUserOption } from './dealers';
 import { PROVINCES, type ProvinceName } from './provinces';
 
 // Đề xuất đại lý mới trên app (M10, 20/11/2026). Đề xuất đi kèm một lượt check-in tại cửa hàng nên có sẵn
-// ảnh, toạ độ, giờ máy chủ và địa chỉ lúc chụp. Quản trị đơn vị duyệt thì tạo đại lý, chưa có mã FAST (S10).
+// ảnh, toạ độ, giờ máy chủ và địa chỉ lúc chụp. Duyệt thì tạo đại lý, chưa có mã FAST (S10).
+// 25/11/2026: Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt một bước; người có quyền duyệt tự đề xuất thì
+// tạo luôn; Quản trị đơn vị chỉ xem, Quản trị hệ thống duyệt thay.
 
 /** Mặc định khi nhân viên không chọn cấp, người duyệt chốt lại. */
 export const DEFAULT_PROPOSED_LEVEL: DealerLevel = 3;
@@ -121,6 +124,7 @@ export const dealerProposalRow = z.object({
   reviewedByName: z.string().nullable(),
   reviewedAt: z.iso.datetime().nullable(),
   reviewNote: z.string(),
+  currentApproverName: z.string().nullable(),
   // Đại lý đã tạo khi duyệt, hoặc đại lý có sẵn khi đánh dấu trùng.
   dealer: z.object({ id: z.uuid(), name: z.string() }).nullable(),
   duplicates: z.array(duplicateCandidate),
@@ -207,3 +211,72 @@ export type MyDealerProposalsResult = z.infer<typeof myDealerProposalsResult>;
 
 /** App hiện các đề xuất trong khoảng này. */
 export const MY_PROPOSALS_DAYS = 90;
+
+// ---------- Web: Đại lý đề xuất (theo phạm vi) ----------
+
+export const PROPOSAL_STATUS_PARAM = {
+  'cho-duyet': 'PENDING',
+  'da-duyet': 'APPROVED',
+  trung: 'DUPLICATE',
+  'tu-choi': 'REJECTED',
+} as const satisfies Record<string, DealerProposalStatus>;
+
+export type ScopedProposalsInput = {
+  q?: string;
+  status?: DealerProposalStatus;
+  from?: string;
+  to?: string;
+  page: number;
+  pageSize: number;
+};
+
+const dateParam = z
+  .string()
+  .transform((value) => parseDisplayDate(value) ?? undefined)
+  .optional()
+  .catch(undefined);
+
+export const scopedProposalsUrlParams = z
+  .object({
+    q: z.string().trim().max(100).optional().catch(undefined),
+    'trang-thai': z.enum(['cho-duyet', 'da-duyet', 'trung', 'tu-choi']).optional().catch(undefined),
+    'tu-ngay': dateParam,
+    'den-ngay': dateParam,
+    trang: z.coerce.number().int().positive().max(1_000_000).catch(1),
+  })
+  .transform((url): ScopedProposalsInput => ({
+    q: url.q || undefined,
+    status: url['trang-thai'] ? PROPOSAL_STATUS_PARAM[url['trang-thai']] : undefined,
+    from: url['tu-ngay'],
+    to: url['den-ngay'],
+    page: url.trang,
+    pageSize: PROPOSAL_PAGE_SIZE,
+  }));
+
+// ---------- App: duyệt nhanh ở tab Tôi ----------
+
+/** Duyệt trên app giữ nguyên thông tin như đề xuất; muốn sửa hoặc chọn Trùng thì làm trên web. */
+export const mobileProposalDecision = z.discriminatedUnion('decision', [
+  z.object({ decision: z.literal('APPROVE') }),
+  z.object({
+    decision: z.literal('REJECT'),
+    note: z.string().trim().min(5, 'Lý do từ 5 ký tự').max(500, 'Lý do tối đa 500 ký tự'),
+  }),
+]);
+export type MobileProposalDecision = z.infer<typeof mobileProposalDecision>;
+
+export type MobileProposalReviewItem = {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  ownerName: string | null;
+  taxCode: string | null;
+  levelLabel: string;
+  proposedByName: string;
+  capturedAt: string;
+  checkInAddress: string | null;
+  duplicates: { name: string; reasons: string }[];
+};
+
+export type MobileProposalReviewList = { items: MobileProposalReviewItem[] };

@@ -13,6 +13,12 @@ import { distanceMeters } from '@seedgw/contracts/track-distance';
 import { db } from '@seedgw/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
+import { writeAudit } from './audit';
+import {
+  autoApproveOwnProposal,
+  notifyProposalApprover,
+  resolveProposalApprover,
+} from './dealer-proposals';
 import { DomainError } from './domain-error';
 import { markCustomerVisited, resolveCheckInCustomer } from './mobile-customers';
 import { resolveCheckInDealer, type CheckInDealer } from './mobile-dealers';
@@ -116,6 +122,13 @@ export async function saveCheckIn(
     });
   }
 
+  // 25/11/2026: đề xuất chờ Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt; người có quyền duyệt tự đề xuất
+  // thì tạo đại lý luôn. Tài khoản không có quyền đề xuất thì vẫn lưu check-in, bỏ phần đề xuất.
+  const proposing = Boolean(input.newDealer) && user.permissions.has('sales.dealer.propose');
+  const canReview = user.permissions.has('sales.approval.review');
+  const approverId = proposing && !canReview ? await resolveProposalApprover(user.id) : null;
+  const autoApprove = proposing && (canReview || approverId === user.id);
+
   const saved = await db.checkIn
     .create({
       data: {
@@ -138,8 +151,7 @@ export async function saveCheckIn(
         farReason: input.farReason || null,
         flags: [...checkInFlags(input, clockSkewMs), ...check.flags],
         // M10: đề xuất đại lý mới ghi cùng câu lệnh với check-in nên không có check-in nào mất đề xuất.
-        // Tài khoản không có quyền đề xuất thì vẫn lưu check-in, bỏ phần đề xuất.
-        ...(input.newDealer && user.permissions.has('sales.dealer.propose')
+        ...(input.newDealer && proposing
           ? {
               dealerProposal: {
                 create: {
@@ -151,6 +163,7 @@ export async function saveCheckIn(
                   ownerName: input.newDealer.ownerName,
                   taxCode: input.newDealer.taxCode,
                   level: input.newDealer.level,
+                  currentApproverId: autoApprove ? null : approverId,
                 },
               },
             }
@@ -207,11 +220,48 @@ export async function saveCheckIn(
       });
   }
 
+  if (!('duplicate' in saved) && proposing) {
+    await settleNewProposal(user, saved.id, autoApprove, approverId);
+  }
+
   return {
     receipt: { id: saved.id, serverTime: new Date().toISOString(), hasPhoto: false },
     created: true,
     id: saved.id,
   };
+}
+
+/** Check-in đã lưu xong; lỗi ở bước đề xuất chỉ ghi log, không làm hỏng lượt check-in. */
+async function settleNewProposal(
+  user: MobileUser,
+  checkInId: string,
+  autoApprove: boolean,
+  approverId: string | null,
+): Promise<void> {
+  try {
+    if (autoApprove) {
+      const result = await autoApproveOwnProposal(checkInId);
+      if (!result) return;
+      await writeAudit({
+        actor: { id: user.id, impersonator: null },
+        action: result.action,
+        entityType: result.outcome.dealerId ? 'Dealer' : 'DealerProposal',
+        entityId: result.outcome.dealerId ?? result.outcome.proposalId,
+        entityLabel: result.outcome.dealerName,
+        changes: result.outcome.changes,
+        ip: null,
+      });
+      return;
+    }
+    if (!approverId) return;
+    const proposal = await db.dealerProposal.findUnique({
+      where: { checkInId },
+      select: { id: true },
+    });
+    if (proposal) notifyProposalApprover(approverId, proposal.id);
+  } catch (error) {
+    console.error('Khong xu ly duoc de xuat dai ly moi sau check-in', error);
+  }
 }
 
 function isUniqueViolation(error: unknown): boolean {

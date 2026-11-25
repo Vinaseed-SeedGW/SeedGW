@@ -21,7 +21,7 @@ const TODOS: ReadonlyArray<{
 }> = [
   {
     key: 'approvals',
-    label: 'Phiếu tuyến, chỉ tiêu chờ tôi duyệt',
+    label: 'Tuyến, chỉ tiêu, đại lý mới chờ tôi duyệt',
     href: '/kinh-doanh/can-duyet',
     department: 'kinh-doanh',
     permission: 'sales.approval.review',
@@ -37,10 +37,10 @@ const TODOS: ReadonlyArray<{
   },
   {
     key: 'dealer-proposals',
-    label: 'Đại lý mới chờ duyệt',
+    label: 'Đại lý mới đang chờ duyệt',
     href: '/quan-tri/dai-ly/dai-ly-moi',
     department: 'quan-tri',
-    permission: 'admin.dealer-proposal.approve',
+    permission: 'sales.approval.override',
     count: getDealerProposalPendingCount,
   },
   {

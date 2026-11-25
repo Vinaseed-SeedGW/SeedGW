@@ -11,7 +11,7 @@ import {
   rejectDealerProposalInput,
 } from '@seedgw/contracts/dealer-proposals';
 import { toActionError, validationError } from '@/server/auth/action-error';
-import { assertCan } from '@/server/auth/can';
+import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import {
@@ -22,6 +22,11 @@ import {
 } from '@/server/services/dealer-proposals';
 
 type Reviewer = Awaited<ReturnType<typeof requireUser>>;
+
+/** Có quyền duyệt (Quản lý, Lãnh đạo đơn vị) hoặc duyệt thay; service kiểm tiếp có đúng người được giao. */
+function assertCanDecide(user: Reviewer): void {
+  if (!can(user, 'sales.approval.review')) assertCan(user, 'sales.approval.override');
+}
 
 /** Hộp thoại xác nhận chỉ hiện message, không hiện lỗi từng trường: đưa lỗi đầu tiên lên message. */
 function dialogValidationError(error: z.ZodError): ActionResult<never> {
@@ -49,6 +54,7 @@ function finish(
   );
   revalidatePath('/quan-tri/dai-ly', 'layout');
   revalidatePath('/kinh-doanh/dai-ly', 'layout');
+  revalidatePath('/kinh-doanh/can-duyet', 'layout');
   return { ok: true, data: { dealerId: outcome.dealerId } };
 }
 
@@ -57,10 +63,10 @@ export async function approveDealerProposalAction(
 ): Promise<ActionResult<{ dealerId: string | null }>> {
   try {
     const user = await requireUser();
-    assertCan(user, 'admin.dealer-proposal.approve');
+    assertCanDecide(user);
     const parsed = approveDealerProposalInput.safeParse(raw);
     if (!parsed.success) return validationError(parsed.error);
-    const [outcome, ip] = await Promise.all([approveProposal(user.id, parsed.data), getClientIp()]);
+    const [outcome, ip] = await Promise.all([approveProposal(user, parsed.data), getClientIp()]);
     return finish(user, 'dealer.proposal.approve', outcome, ip);
   } catch (error) {
     return toActionError(error);
@@ -72,10 +78,10 @@ export async function rejectDealerProposalAction(
 ): Promise<ActionResult<{ dealerId: string | null }>> {
   try {
     const user = await requireUser();
-    assertCan(user, 'admin.dealer-proposal.approve');
+    assertCanDecide(user);
     const parsed = rejectDealerProposalInput.safeParse(raw);
     if (!parsed.success) return dialogValidationError(parsed.error);
-    const [outcome, ip] = await Promise.all([rejectProposal(user.id, parsed.data), getClientIp()]);
+    const [outcome, ip] = await Promise.all([rejectProposal(user, parsed.data), getClientIp()]);
     return finish(user, 'dealer.proposal.reject', outcome, ip);
   } catch (error) {
     return toActionError(error);
@@ -87,11 +93,11 @@ export async function markDuplicateDealerProposalAction(
 ): Promise<ActionResult<{ dealerId: string | null }>> {
   try {
     const user = await requireUser();
-    assertCan(user, 'admin.dealer-proposal.approve');
+    assertCanDecide(user);
     const parsed = markDuplicateDealerProposalInput.safeParse(raw);
     if (!parsed.success) return dialogValidationError(parsed.error);
     const [outcome, ip] = await Promise.all([
-      markProposalDuplicate(user.id, parsed.data),
+      markProposalDuplicate(user, parsed.data),
       getClientIp(),
     ]);
     return finish(user, 'dealer.proposal.duplicate', outcome, ip);

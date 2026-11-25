@@ -58,66 +58,67 @@ enum MobileDeviceStatus {
 }
 
 model User {
-  id                     String                   @id @default(uuid()) @db.Uuid
-  employeeCode           String                   @unique @map("employee_code")
-  fullName               String                   @map("full_name")
-  passwordHash           String                   @map("password_hash")
-  isActive               Boolean                  @default(true) @map("is_active")
+  id                       String                   @id @default(uuid()) @db.Uuid
+  employeeCode             String                   @unique @map("employee_code")
+  fullName                 String                   @map("full_name")
+  passwordHash             String                   @map("password_hash")
+  isActive                 Boolean                  @default(true) @map("is_active")
   // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
-  searchText             String?                  @default(dbgenerated()) @map("search_text")
-  phone                  String?
-  email                  String?
-  jobTitle               String?                  @map("job_title")
-  hiredAt                DateTime?                @map("hired_at") @db.Date
-  orgUnitId              String?                  @map("org_unit_id") @db.Uuid
-  orgUnit                OrgUnit?                 @relation("org_unit_members", fields: [orgUnitId], references: [id])
-  managerId              String?                  @map("manager_id") @db.Uuid
-  manager                User?                    @relation("user_manager", fields: [managerId], references: [id], onDelete: SetNull)
-  directReports          User[]                   @relation("user_manager")
-  mustChangePassword     Boolean                  @default(false) @map("must_change_password")
-  failedLoginCount       Int                      @default(0) @map("failed_login_count")
-  failedLoginStartedAt   DateTime?                @map("failed_login_started_at")
-  loginLockedUntil       DateTime?                @map("login_locked_until")
+  searchText               String?                  @default(dbgenerated()) @map("search_text")
+  phone                    String?
+  email                    String?
+  jobTitle                 String?                  @map("job_title")
+  hiredAt                  DateTime?                @map("hired_at") @db.Date
+  orgUnitId                String?                  @map("org_unit_id") @db.Uuid
+  orgUnit                  OrgUnit?                 @relation("org_unit_members", fields: [orgUnitId], references: [id])
+  managerId                String?                  @map("manager_id") @db.Uuid
+  manager                  User?                    @relation("user_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports            User[]                   @relation("user_manager")
+  mustChangePassword       Boolean                  @default(false) @map("must_change_password")
+  failedLoginCount         Int                      @default(0) @map("failed_login_count")
+  failedLoginStartedAt     DateTime?                @map("failed_login_started_at")
+  loginLockedUntil         DateTime?                @map("login_locked_until")
   // Tang len de thu hoi moi phien da cap, ke ca phien tren dien thoai.
-  sessionVersion         Int                      @default(0) @map("session_version")
-  managedUnits           OrgUnit[]                @relation("org_unit_manager")
-  roles                  UserRole[]
-  auditLogs              AuditLog[]               @relation("audit_actor")
-  impersonatedAuditLogs  AuditLog[]               @relation("audit_impersonator")
-  mobileDevices          MobileDevice[]
-  impersonationsStarted  ImpersonationSession[]   @relation("impersonation_actor")
-  impersonationsReceived ImpersonationSession[]   @relation("impersonation_target")
-  mobileRefreshTokens    MobileRefreshToken[]
-  checkIns               CheckIn[]
-  dailyVisitStats        DailyVisitStat[]
-  trackPoints            TrackPoint[]
-  trackSessions          TrackSession[]
-  assignedDealers        Dealer[]                 @relation("dealer_assignee")
-  assignedCustomers      Customer[]               @relation("customer_assignee")
-  createdCustomers       Customer[]               @relation("customer_creator")
-  locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
-  locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
-  dealerProposals        DealerProposal[]         @relation("dealer_proposer")
-  dealerProposalReviews  DealerProposal[]         @relation("dealer_proposal_reviewer")
-  consents               UserConsent[]
-  submittedApprovals     ApprovalRequest[]        @relation("approval_submitter")
-  pendingApprovals       ApprovalRequest[]        @relation("approval_current_approver")
-  managerApprovals       ApprovalRequest[]        @relation("approval_manager_approver")
-  leaderApprovals        ApprovalRequest[]        @relation("approval_leader_approver")
-  approvalActions        ApprovalAction[]         @relation("approval_actor")
-  monthlySalesTargets    MonthlySalesTarget[]
-  assignedSalesTargets   AssignedSalesTarget[]    @relation("target_assignee")
-  givenSalesTargets      AssignedSalesTarget[]    @relation("target_assigner")
-  routePlans             RoutePlan[]
-  supportRequests        SupportRequest[]         @relation("support_requester")
-  assignedSupport        SupportRequest[]         @relation("support_assignee")
-  supportMessages        SupportMessage[]
-  supportEvents          SupportEvent[]
-  supportReads           SupportRead[]
-  pushTokens             PushToken[]
-  pushMessages           PushMessage[]
-  createdAt              DateTime                 @default(now()) @map("created_at")
-  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  sessionVersion           Int                      @default(0) @map("session_version")
+  managedUnits             OrgUnit[]                @relation("org_unit_manager")
+  roles                    UserRole[]
+  auditLogs                AuditLog[]               @relation("audit_actor")
+  impersonatedAuditLogs    AuditLog[]               @relation("audit_impersonator")
+  mobileDevices            MobileDevice[]
+  impersonationsStarted    ImpersonationSession[]   @relation("impersonation_actor")
+  impersonationsReceived   ImpersonationSession[]   @relation("impersonation_target")
+  mobileRefreshTokens      MobileRefreshToken[]
+  checkIns                 CheckIn[]
+  dailyVisitStats          DailyVisitStat[]
+  trackPoints              TrackPoint[]
+  trackSessions            TrackSession[]
+  assignedDealers          Dealer[]                 @relation("dealer_assignee")
+  assignedCustomers        Customer[]               @relation("customer_assignee")
+  createdCustomers         Customer[]               @relation("customer_creator")
+  locationProposals        DealerLocationProposal[] @relation("dealer_location_proposer")
+  locationReviews          DealerLocationProposal[] @relation("dealer_location_reviewer")
+  dealerProposals          DealerProposal[]         @relation("dealer_proposer")
+  dealerProposalReviews    DealerProposal[]         @relation("dealer_proposal_reviewer")
+  dealerProposalsToApprove DealerProposal[]         @relation("dealer_proposal_approver")
+  consents                 UserConsent[]
+  submittedApprovals       ApprovalRequest[]        @relation("approval_submitter")
+  pendingApprovals         ApprovalRequest[]        @relation("approval_current_approver")
+  managerApprovals         ApprovalRequest[]        @relation("approval_manager_approver")
+  leaderApprovals          ApprovalRequest[]        @relation("approval_leader_approver")
+  approvalActions          ApprovalAction[]         @relation("approval_actor")
+  monthlySalesTargets      MonthlySalesTarget[]
+  assignedSalesTargets     AssignedSalesTarget[]    @relation("target_assignee")
+  givenSalesTargets        AssignedSalesTarget[]    @relation("target_assigner")
+  routePlans               RoutePlan[]
+  supportRequests          SupportRequest[]         @relation("support_requester")
+  assignedSupport          SupportRequest[]         @relation("support_assignee")
+  supportMessages          SupportMessage[]
+  supportEvents            SupportEvent[]
+  supportReads             SupportRead[]
+  pushTokens               PushToken[]
+  pushMessages             PushMessage[]
+  createdAt                DateTime                 @default(now()) @map("created_at")
+  updatedAt                DateTime                 @updatedAt @map("updated_at")
 
   @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "users_search_text_trgm_idx")
   @@index([managerId])
@@ -501,34 +502,38 @@ enum DealerProposalStatus {
 }
 
 model DealerProposal {
-  id           String               @id @default(uuid()) @db.Uuid
+  id                String               @id @default(uuid()) @db.Uuid
   // Lượt check-in mang ảnh, toạ độ, giờ và địa chỉ lúc chụp. Một check-in chỉ có một đề xuất.
-  checkInId    String               @unique @map("check_in_id") @db.Uuid
-  checkIn      CheckIn              @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  checkInId         String               @unique @map("check_in_id") @db.Uuid
+  checkIn           CheckIn              @relation(fields: [checkInId], references: [id], onDelete: Cascade)
   // Đơn vị của nhân viên lúc đề xuất, để Quản trị đơn vị thấy đề xuất trong phạm vi của mình.
-  orgUnitId    String?              @map("org_unit_id") @db.Uuid
-  orgUnit      OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  proposedById String               @map("proposed_by_id") @db.Uuid
-  proposedBy   User                 @relation("dealer_proposer", fields: [proposedById], references: [id], onDelete: Cascade)
-  name         String
-  phone        String
-  address      String
-  ownerName    String?              @map("owner_name")
-  taxCode      String?              @map("tax_code")
-  level        Int
-  status       DealerProposalStatus @default(PENDING)
+  orgUnitId         String?              @map("org_unit_id") @db.Uuid
+  orgUnit           OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  proposedById      String               @map("proposed_by_id") @db.Uuid
+  proposedBy        User                 @relation("dealer_proposer", fields: [proposedById], references: [id], onDelete: Cascade)
+  name              String
+  phone             String
+  address           String
+  ownerName         String?              @map("owner_name")
+  taxCode           String?              @map("tax_code")
+  level             Int
+  status            DealerProposalStatus @default(PENDING)
   // Đại lý tạo khi duyệt, hoặc đại lý có sẵn khi đánh dấu trùng.
-  dealerId     String?              @map("dealer_id") @db.Uuid
-  dealer       Dealer?              @relation(fields: [dealerId], references: [id], onDelete: SetNull)
-  reviewedById String?              @map("reviewed_by_id") @db.Uuid
-  reviewedBy   User?                @relation("dealer_proposal_reviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedAt   DateTime?            @map("reviewed_at")
-  reviewNote   String               @default("") @map("review_note")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
+  dealerId          String?              @map("dealer_id") @db.Uuid
+  dealer            Dealer?              @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  reviewedById      String?              @map("reviewed_by_id") @db.Uuid
+  reviewedBy        User?                @relation("dealer_proposal_reviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt        DateTime?            @map("reviewed_at")
+  reviewNote        String               @default("") @map("review_note")
+  // 25/11/2026: người đang chờ duyệt, theo chuỗi Quản lý trực tiếp rồi Lãnh đạo đơn vị, duyệt một bước.
+  currentApproverId String?              @map("current_approver_id") @db.Uuid
+  currentApprover   User?                @relation("dealer_proposal_approver", fields: [currentApproverId], references: [id], onDelete: SetNull)
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
 
   @@index([status, orgUnitId, createdAt(sort: Desc)])
   @@index([proposedById, createdAt(sort: Desc)])
+  @@index([currentApproverId, status])
   @@index([phone])
   @@map("dealer_proposals")
 }

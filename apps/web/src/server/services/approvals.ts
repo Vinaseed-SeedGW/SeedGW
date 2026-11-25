@@ -767,14 +767,19 @@ export async function listApprovals(
   return { items: rows.map(toRow), total, page: input.page, pageSize: input.pageSize };
 }
 
+/** Số việc chờ người này duyệt: phiếu Tuyến, Chỉ tiêu và đề xuất đại lý mới (25/11/2026). */
 export async function countPendingForApprover(approverId: string): Promise<number> {
-  return db.approvalRequest.count({
-    where: {
-      currentApproverId: approverId,
-      status: { in: PENDING },
-      kind: { in: [...ACTIVE_APPROVAL_KINDS] },
-    },
-  });
+  const [requests, proposals] = await Promise.all([
+    db.approvalRequest.count({
+      where: {
+        currentApproverId: approverId,
+        status: { in: PENDING },
+        kind: { in: [...ACTIVE_APPROVAL_KINDS] },
+      },
+    }),
+    db.dealerProposal.count({ where: { currentApproverId: approverId, status: 'PENDING' } }),
+  ]);
+  return requests + proposals;
 }
 
 /**

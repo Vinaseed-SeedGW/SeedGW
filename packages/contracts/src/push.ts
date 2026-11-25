@@ -14,6 +14,7 @@ export const pushKind = z.enum([
   'CHECK_IN_REMINDER',
   // M10: đề xuất đại lý mới được duyệt, từ chối hoặc đánh dấu trùng.
   'DEALER_PROPOSAL_REVIEWED',
+  'DEALER_PROPOSAL_PENDING',
 ]);
 export type PushKind = z.infer<typeof pushKind>;
 
