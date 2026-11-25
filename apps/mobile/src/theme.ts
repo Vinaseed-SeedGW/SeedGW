@@ -21,6 +21,10 @@ export const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 } as const;
 
 export const FONT = { regular: '400', bold: '700' } as const;
 
+// Chữ phóng theo cỡ chữ của máy tới tối đa 1,6 lần: đủ to cho người lớn tuổi, bố cục vẫn giữ được mọi nút.
+// Nhãn trên thanh tab, nút nổi, số đỏ phóng ít hơn vì nằm trong khung cố định.
+export const FONT_SCALE = { max: 1.6, compact: 1.3, badge: 1.2 } as const;
+
 // Tên nạp font bằng expo-font ở App.tsx; component chữ trong ./components/text tự chọn theo độ đậm.
 export const FONT_FAMILY = {
   regular: 'UTMNeoSansIntel-Regular',

@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   monthBar: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACE.sm,

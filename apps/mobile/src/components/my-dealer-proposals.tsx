@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     padding: SPACE.md,
     gap: 2,
   },
-  itemHead: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
+  itemHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: SPACE.sm },
   flex: { flex: 1 },
   name: { fontSize: 16, fontWeight: FONT.bold, color: COLORS.text },
   status: {

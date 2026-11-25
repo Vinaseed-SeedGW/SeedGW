@@ -7,7 +7,7 @@ import {
   type TextProps,
   type TextStyle,
 } from 'react-native';
-import { FONT_FAMILY } from '../theme';
+import { FONT_FAMILY, FONT_SCALE } from '../theme';
 
 // Mọi chữ trong app dùng UTM Neo Sans Intel, chỉ 400 và 700 (BRAND.md §2). Font tự nạp mỗi độ đậm là
 // một tệp riêng, nên đổi fontWeight 700 thành tệp Bold thay vì để máy tự làm đậm giả.
@@ -17,10 +17,26 @@ function brandFont(style: StyleProp<TextStyle>): TextStyle {
   return { fontFamily: bold ? FONT_FAMILY.bold : FONT_FAMILY.regular, fontWeight: 'normal' };
 }
 
-export function Text({ style, ...props }: TextProps) {
-  return <NativeText {...props} style={[style, brandFont(style)]} />;
+export function Text({ style, maxFontSizeMultiplier = FONT_SCALE.max, ...props }: TextProps) {
+  return (
+    <NativeText
+      {...props}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
+      style={[style, brandFont(style)]}
+    />
+  );
 }
 
-export function TextInput({ style, ...props }: TextInputProps) {
-  return <NativeTextInput {...props} style={[style, brandFont(style)]} />;
+export function TextInput({
+  style,
+  maxFontSizeMultiplier = FONT_SCALE.max,
+  ...props
+}: TextInputProps) {
+  return (
+    <NativeTextInput
+      {...props}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
+      style={[style, brandFont(style)]}
+    />
+  );
 }

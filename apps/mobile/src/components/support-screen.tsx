@@ -695,7 +695,13 @@ const styles = StyleSheet.create({
   choiceSelected: { borderColor: COLORS.brand, backgroundColor: COLORS.brandSoft },
   choiceText: { fontSize: 15, color: COLORS.text },
   choiceTextSelected: { color: COLORS.brand, fontWeight: FONT.bold },
-  shotRow: { flexDirection: 'row', alignItems: 'center', gap: SPACE.md, marginTop: SPACE.sm },
+  shotRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: SPACE.md,
+    marginTop: SPACE.sm,
+  },
   shotThumb: {
     width: 56,
     height: 100,

@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   statusHead: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm },
   statusText: { flex: 1, gap: 2 },
   statusTitle: { fontSize: 17, fontWeight: FONT.bold, color: COLORS.text },
-  figures: { flexDirection: 'row', gap: SPACE.lg },
+  figures: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACE.lg },
   figure: { gap: 0 },
   figureValue: { fontSize: 22, fontWeight: FONT.bold, color: COLORS.brand },
   card: {

@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   itemText: { flex: 1, fontSize: 15, lineHeight: 22, color: COLORS.text },
   controls: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: SPACE.md,
     padding: SPACE.lg,

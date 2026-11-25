@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { COLORS, FONT, SPACE } from '../theme';
+import { COLORS, FONT, FONT_SCALE, SPACE } from '../theme';
 import { Text } from './text';
 
 /**
@@ -17,8 +17,14 @@ export function SupportFab({ count, onPress }: { count: number; onPress: () => v
       <View style={styles.ring}>
         <View style={styles.hole} />
       </View>
-      <Text style={styles.label}>Hỗ trợ</Text>
-      {count > 0 ? <Text style={styles.badge}>{count > 99 ? '99+' : String(count)}</Text> : null}
+      <Text style={styles.label} maxFontSizeMultiplier={FONT_SCALE.compact}>
+        Hỗ trợ
+      </Text>
+      {count > 0 ? (
+        <Text style={styles.badge} maxFontSizeMultiplier={FONT_SCALE.badge}>
+          {count > 99 ? '99+' : String(count)}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }

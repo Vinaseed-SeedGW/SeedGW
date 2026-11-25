@@ -281,6 +281,7 @@ const styles = StyleSheet.create({
   content: { padding: SPACE.lg, gap: SPACE.md },
   tabs: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: SPACE.sm,
     paddingHorizontal: SPACE.lg,
     paddingTop: SPACE.sm,

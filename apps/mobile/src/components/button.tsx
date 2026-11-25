@@ -34,12 +34,14 @@ const styles = StyleSheet.create({
   button: {
     minHeight: 48,
     minWidth: 88,
+    maxWidth: '100%',
     paddingHorizontal: SPACE.lg,
+    paddingVertical: SPACE.sm,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pressed: { opacity: 0.7 },
-  text: { color: COLORS.onBrand, fontSize: 16, fontWeight: FONT.bold },
+  text: { color: COLORS.onBrand, fontSize: 16, fontWeight: FONT.bold, textAlign: 'center' },
   textGhost: { color: COLORS.text },
 });

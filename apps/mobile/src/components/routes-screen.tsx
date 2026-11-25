@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.border,
   },
-  index: { width: 22, fontSize: 15, fontWeight: FONT.bold, color: COLORS.textMuted },
+  index: { minWidth: 22, fontSize: 15, fontWeight: FONT.bold, color: COLORS.textMuted },
   flex: { flex: 1 },
   name: { fontSize: 15, fontWeight: FONT.bold, color: COLORS.text },
   small: {

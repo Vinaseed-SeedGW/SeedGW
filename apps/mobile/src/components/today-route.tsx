@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.border,
   },
-  index: { width: 24, fontSize: 15, fontWeight: FONT.bold, color: COLORS.textMuted },
+  index: { minWidth: 24, fontSize: 15, fontWeight: FONT.bold, color: COLORS.textMuted },
   flex: { flex: 1 },
   name: { fontSize: 15, fontWeight: FONT.bold, color: COLORS.text },
   visited: { fontSize: 13, color: COLORS.brand, fontWeight: FONT.bold },

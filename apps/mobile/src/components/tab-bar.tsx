@@ -3,7 +3,7 @@ import tabHistory from '../../assets/images/tab-history.png';
 import tabMe from '../../assets/images/tab-me.png';
 import tabRoute from '../../assets/images/tab-route.png';
 import tabToday from '../../assets/images/tab-today.png';
-import { COLORS, FONT, SPACE } from '../theme';
+import { COLORS, FONT, FONT_SCALE, SPACE } from '../theme';
 import { Text } from './text';
 
 export type TabKey = 'today' | 'route' | 'history' | 'me';
@@ -46,10 +46,16 @@ export function TabBar({
             <View>
               <Image source={tab.icon} style={[styles.icon, { tintColor: color }]} />
               {badge > 0 ? (
-                <Text style={styles.badge}>{badge > 9 ? '9+' : String(badge)}</Text>
+                <Text style={styles.badge} maxFontSizeMultiplier={FONT_SCALE.badge}>
+                  {badge > 9 ? '9+' : String(badge)}
+                </Text>
               ) : null}
             </View>
-            <Text style={[styles.label, { color }, selected && styles.labelSelected]}>
+            <Text
+              style={[styles.label, { color }, selected && styles.labelSelected]}
+              maxFontSizeMultiplier={FONT_SCALE.compact}
+              numberOfLines={1}
+            >
               {tab.label}
             </Text>
           </Pressable>

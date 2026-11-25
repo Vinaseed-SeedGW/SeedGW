@@ -20,6 +20,8 @@ type Props = {
  * Dải thông tin hiện trên khung ngắm và được in lên ảnh.
  * Bản thử R3 dùng giờ trên máy và gọi thẳng Vietmap; M2 đổi sang giờ máy chủ, địa chỉ qua V3, thêm tên nhân viên.
  */
+// Chữ trên dải in vào ảnh theo cỡ khung hình, không phóng theo cỡ chữ của máy, để ảnh check-in của mọi
+// người giống nhau và dải thông tin không tràn khung.
 export function WatermarkStrip({ at, location, address, width }: Props) {
   const base = Math.max(12, Math.round(width / 26));
   const textStyle = { fontSize: base, lineHeight: Math.round(base * 1.35) };
@@ -29,6 +31,7 @@ export function WatermarkStrip({ at, location, address, width }: Props) {
   return (
     <View style={[styles.strip, { padding: Math.round(base * 0.7) }]}>
       <Text
+        allowFontScaling={false}
         style={[
           styles.text,
           styles.time,
@@ -36,16 +39,24 @@ export function WatermarkStrip({ at, location, address, width }: Props) {
         ]}
       >
         {formatVnTime(at)}
-        <Text style={[styles.text, textStyle]}>{`   ${formatVnDate(at)}`}</Text>
+        <Text
+          allowFontScaling={false}
+          style={[styles.text, textStyle]}
+        >{`   ${formatVnDate(at)}`}</Text>
       </Text>
-      <Text style={[styles.text, styles.address, textStyle]}>{address}</Text>
-      <Text style={[styles.text, small]}>
+      <Text allowFontScaling={false} style={[styles.text, styles.address, textStyle]}>
+        {address}
+      </Text>
+      <Text allowFontScaling={false} style={[styles.text, small]}>
         {location
           ? `Toạ độ ${formatCoord(location.lat)}, ${formatCoord(location.lng)}`
           : 'Đang lấy vị trí'}
         {accuracy != null ? `   Sai số ${Math.round(accuracy)} m` : ''}
       </Text>
-      <Text style={[styles.text, styles.brand, small]}>{`${APP_NAME}, bản thử R3`}</Text>
+      <Text
+        allowFontScaling={false}
+        style={[styles.text, styles.brand, small]}
+      >{`${APP_NAME}, bản thử R3`}</Text>
     </View>
   );
 }
