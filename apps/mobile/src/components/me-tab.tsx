@@ -40,7 +40,7 @@ type Props = {
   /** Màn hình Hỗ trợ (T3); null ở bản thử chưa nối máy chủ. */
   support: { unreadCount: number; pendingCount: number; onOpen: () => void } | null;
   /** Trạng thái thông báo đẩy (M7); null ở bản thử chưa nối máy chủ. */
-  notifications: { state: PushState | null; onRefresh: () => void } | null;
+  notifications: { state: PushState | null; onRefresh: () => void; onOpenList: () => void } | null;
 };
 
 const PUSH_LABEL: Record<PushState, string> = {
@@ -144,10 +144,19 @@ export function MeTab({
         )}
       </View>
 
-      {notifications?.state ? (
+      {notifications ? (
         <View style={styles.card}>
           <Text style={styles.section}>Thông báo</Text>
-          <Text style={styles.body}>{PUSH_LABEL[notifications.state]}</Text>
+          <View style={styles.actions}>
+            <Button
+              label="Xem thông báo đã nhận"
+              onPress={notifications.onOpenList}
+              variant="ghost"
+            />
+          </View>
+          {notifications.state ? (
+            <Text style={styles.body}>{PUSH_LABEL[notifications.state]}</Text>
+          ) : null}
           {notifications.state === 'GRANTED' && getPushRegistrationError() ? (
             <Text style={styles.muted}>{getPushRegistrationError()}</Text>
           ) : null}

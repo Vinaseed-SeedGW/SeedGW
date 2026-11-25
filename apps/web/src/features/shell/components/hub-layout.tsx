@@ -4,6 +4,7 @@ import { AppFooter } from '@seedgw/ui/app-footer';
 import { Logo } from '@seedgw/ui/logo';
 import { MAIN_CONTENT_ID, SkipLink } from '@seedgw/ui/skip-link';
 import { LogoutButton } from '@/features/auth/components/logout-button';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { GlobalSearch } from '@/features/shell/components/global-search';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
 import type { SearchPage } from '@seedgw/contracts/search';
@@ -26,6 +27,7 @@ export function HubLayout({ userName, searchPages, children }: HubLayoutProps) {
         </Link>
         <div className="flex min-w-0 items-center gap-4">
           <GlobalSearch pages={searchPages} />
+          <NotificationBell />
           <span className="hidden truncate sm:inline">{userName}</span>
           <LogoutButton />
         </div>

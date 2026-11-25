@@ -6,6 +6,7 @@ import { AppFooter } from '@seedgw/ui/app-footer';
 import { AppShell } from '@seedgw/ui/app-shell';
 import { LogoutButton } from '@/features/auth/components/logout-button';
 import { DepartmentBreadcrumb } from '@/features/shell/components/department-breadcrumb';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { GlobalSearch } from '@/features/shell/components/global-search';
 import { ImpersonationBanner } from '@/features/shell/components/impersonation-banner';
 import { listSearchPages } from '@/features/shell/search-pages';
@@ -93,6 +94,7 @@ export async function DepartmentLayout({ slug, children }: DepartmentLayoutProps
             ))}
           </AppShell.DeptSwitcher>
           <GlobalSearch pages={listSearchPages(user.permissions)} />
+          <NotificationBell />
           <span className="hidden flex-none sm:inline">{user.fullName}</span>
           <LogoutButton />
         </AppShell.Header>

@@ -15,6 +15,7 @@ import { HubLayout } from '@/features/shell/components/hub-layout';
 import { listSearchPages } from '@/features/shell/search-pages';
 import { requireUser } from '@/server/auth/current-user';
 import { getHubSummary } from '@/server/queries/hub';
+import { getRecentNotifications } from '@/server/queries/notifications';
 
 export const metadata: Metadata = { title: 'Hub' };
 
@@ -27,7 +28,11 @@ const TILE_CLASS =
   'group flex flex-col rounded-lg border border-border bg-surface p-5 transition-colors duration-150 hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
 
 export default async function HubPage() {
-  const [user, summary] = await Promise.all([requireUser(), getHubSummary()]);
+  const [user, summary, notifications] = await Promise.all([
+    requireUser(),
+    getHubSummary(),
+    getRecentNotifications(5),
+  ]);
   const waiting = summary.todos.filter((todo) => todo.count > 0);
 
   return (
@@ -131,18 +136,26 @@ export default async function HubPage() {
         ) : null}
 
         <section className="rounded-lg border border-border bg-surface p-5">
-          <h2 className="text-lg font-bold">Thông báo gần đây</h2>
-          {summary.notifications.length === 0 ? (
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-bold">Thông báo gần đây</h2>
+            <Link href="/thong-bao" className="text-sm font-bold text-brand hover:underline">
+              Xem tất cả
+            </Link>
+          </div>
+          {notifications.length === 0 ? (
             <p className="mt-3 text-text-muted">Chưa có thông báo nào.</p>
           ) : (
             <ul className="mt-2 divide-y divide-border">
-              {summary.notifications.map((notification) => (
-                <li key={notification.id}>
+              {notifications.map((notification) => (
+                <li key={notification.id} className="py-2.5">
                   <Link
-                    href={notification.href}
-                    className="block py-2.5 hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+                    href={notification.href ?? '/thong-bao'}
+                    className="block hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
                   >
-                    {notification.title}
+                    <span className={notification.read ? '' : 'font-bold'}>
+                      {notification.title}
+                    </span>
+                    <span className="block text-sm text-text-muted">{notification.body}</span>
                   </Link>
                 </li>
               ))}

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { PushTarget } from '@seedgw/contracts/push';
 import { useFonts } from 'expo-font';
 import brandBold from './assets/fonts/UTMNeoSansIntel-Bold.ttf';
 import brandRegular from './assets/fonts/UTMNeoSansIntel-Regular.ttf';
@@ -24,6 +25,7 @@ import { AppHeader } from './src/components/app-header';
 import { ApprovalsScreen } from './src/components/approvals-screen';
 import { RoutesScreen } from './src/components/routes-screen';
 import { SupportFab } from './src/components/support-fab';
+import { NotificationsScreen } from './src/components/notifications-screen';
 import { SupportScreen, type SupportPrefill } from './src/components/support-screen';
 import { readSupportBadge } from './src/api/support';
 import { countPendingSupport } from './src/sync/support-outbox';
@@ -83,9 +85,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
   const [cameraIntent, setCameraIntent] = useState<CameraIntent>('check-in');
   const [consent, setConsent] = useState<ConsentState | 'checking'>('checking');
   // Màn mở chồng lên tab: Chỉ tiêu của tôi (K3a), Cần duyệt (A10b).
-  const [overlay, setOverlay] = useState<'targets' | 'approvals' | 'routes' | 'support' | null>(
-    null,
-  );
+  const [overlay, setOverlay] = useState<
+    'targets' | 'approvals' | 'routes' | 'support' | 'notifications' | null
+  >(null);
   const [supportPrefill, setSupportPrefill] = useState<SupportPrefill | null>(null);
   const [supportUnread, setSupportUnread] = useState(0);
   const [supportCode, setSupportCode] = useState<string | null>(null);
@@ -117,27 +119,30 @@ function Main({ signedIn }: { signedIn: boolean }) {
     };
   }, [session, consent]);
 
+  // Mở màn tương ứng một thông báo: bấm thông báo đẩy hoặc bấm trong màn Thông báo (D4).
+  const openTarget = useCallback((target: PushTarget) => {
+    setSupportPrefill(null);
+    setSupportCode(null);
+    if (target.screen === 'support') {
+      setSupportCode(target.code);
+      setOverlay('support');
+    } else if (target.screen === 'approvals') setOverlay('approvals');
+    else if (target.screen === 'routes') setOverlay('routes');
+    else if (target.screen === 'dealer-proposals') {
+      setOverlay(null);
+      setTab('route');
+      setRefreshKey((value) => value + 1);
+    } else {
+      setOverlay(null);
+      setTab('today');
+    }
+  }, []);
+
   // Bấm thông báo thì mở đúng màn.
   useEffect(() => {
     if (!session) return;
-    return onPushOpened((target) => {
-      setSupportPrefill(null);
-      setSupportCode(null);
-      if (target.screen === 'support') {
-        setSupportCode(target.code);
-        setOverlay('support');
-      } else if (target.screen === 'approvals') setOverlay('approvals');
-      else if (target.screen === 'routes') setOverlay('routes');
-      else if (target.screen === 'dealer-proposals') {
-        setOverlay(null);
-        setTab('route');
-        setRefreshKey((value) => value + 1);
-      } else {
-        setOverlay(null);
-        setTab('today');
-      }
-    });
-  }, [session]);
+    return onPushOpened(openTarget);
+  }, [session, openTarget]);
 
   // Số đỏ Hỗ trợ: hỏi khi mở app và mỗi 60 giây khi app đang mở.
   useEffect(() => {
@@ -263,6 +268,9 @@ function Main({ signedIn }: { signedIn: boolean }) {
         {overlay === 'targets' ? <TargetsScreen onClose={closeOverlay} /> : null}
         {overlay === 'approvals' ? <ApprovalsScreen onClose={closeOverlay} /> : null}
         {overlay === 'routes' ? <RoutesScreen onClose={closeOverlay} /> : null}
+        {overlay === 'notifications' ? (
+          <NotificationsScreen onClose={closeOverlay} onOpenTarget={openTarget} />
+        ) : null}
         {overlay === 'support' ? (
           <SupportScreen onClose={closeOverlay} prefill={supportPrefill} openCode={supportCode} />
         ) : null}
@@ -325,6 +333,7 @@ function Main({ signedIn }: { signedIn: boolean }) {
                 ? {
                     state: pushState,
                     onRefresh: () => void readPushState().then(setPushState),
+                    onOpenList: () => setOverlay('notifications'),
                   }
                 : null
             }
@@ -342,6 +351,7 @@ const OVERLAY_TITLE = {
   approvals: 'Cần duyệt',
   routes: 'Tuyến',
   support: 'Hỗ trợ',
+  notifications: 'Thông báo',
 } as const;
 
 const styles = StyleSheet.create({
