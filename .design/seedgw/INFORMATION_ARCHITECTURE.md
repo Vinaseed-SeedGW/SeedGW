@@ -66,7 +66,7 @@ Trang có dấu `*` là bổ sung so với plan trước.
 
 - **Quản trị** `/quan-tri` (Quản trị đơn vị vào Hỗ trợ, Quản trị hệ thống vào Tài khoản)
   - Tiếp nhận
-    - Hỗ trợ `/quan-tri/ho-tro` (nhóm `?xem=can-xu-ly|toi-nhan|dang-mo|tat-ca`, lọc `?trang-thai= ?loai= ?muc-do= ?cap=don-vi|he-thong ?han=qua-han ?q=`), chi tiết: `/quan-tri/ho-tro/[ma]` (danh sách bên trái từ 1024 px), Thống kê `/quan-tri/ho-tro/thong-ke?ky=30-ngay|90-ngay|12-thang` (T1 tới T5, 18/11/2026)
+    - Hỗ trợ `/quan-tri/ho-tro` (nhóm `?xem=can-xu-ly|toi-nhan|dang-mo|tat-ca`, lọc `?trang-thai= ?loai= ?muc-do= ?cap=don-vi|he-thong ?han=qua-han ?q=`), chi tiết: `/quan-tri/ho-tro/[ma]` (danh sách bên trái từ 1024 px), Thống kê `/quan-tri/ho-tro/thong-ke?tu-ngay=&den-ngay=` (T1 tới T5, 18/11/2026; mặc định 30 ngày gần nhất)
   - Người dùng
     - Tài khoản `/quan-tri/tai-khoan`, chi tiết: `/quan-tri/tai-khoan/[id]`
     - Vai trò và quyền `/quan-tri/vai-tro`
@@ -133,7 +133,7 @@ Dữ liệu chỉ có một bản; mọi lối vào dùng chung component `Deale
 
 ### 3.1 Bộ lọc chung
 
-Kỳ (ngày · tuần · tháng · quý · **vụ** · năm · tuỳ chọn) · đơn vị · nhân viên · cấp đại lý · nhóm sản phẩm (chỉ cho Thực bán). Bộ lọc nằm trên URL để gửi link được. Phạm vi dữ liệu tự áp theo vai trò ở phía máy chủ.
+Thời gian: ô **Từ ngày, Đến ngày** dd/mm/yyyy (25/11/2026 thay các nút và ô chọn kỳ; Đến ngày trống là tới hôm nay; nhập ngược thì đổi chỗ; tối đa 366 ngày; mặc định từ ngày 1 tháng này; khoảng trọn tháng thì vẫn so % chỉ tiêu tháng) · đơn vị · nhân viên · cấp đại lý · nhóm sản phẩm (chỉ cho Thực bán). Bộ lọc nằm trên URL để gửi link được. Phạm vi dữ liệu tự áp theo vai trò ở phía máy chủ.
 
 Mọi khối số hiện **"cập nhật lúc hh:mm"**. Mọi khối bấm được để đi tới danh sách đã lọc tương ứng.
 
@@ -325,6 +325,6 @@ Quy tắc tính:
 - Mẫu: `/{bo-phan}/{tai-nguyen}/{dinh-danh}`; tiếng Việt không dấu, chữ thường, nối bằng `-`.
 - Trang tạo mới: `/tao-moi` (từ khoá dành riêng, mã không được trùng).
 - Định danh: Yêu cầu hỗ trợ (và Đơn hàng, Phiếu ở đợt sau) dùng **mã** (`[ma]`) vì mã không đổi và dễ đọc qua điện thoại. Đại lý, Khách hàng, Tài khoản dùng **`[id]`** vì mã đại lý có thể đổi nếu phải dùng phương án dự phòng.
-- Tham số truy vấn: `?q=` tìm kiếm · `?trang=` · `?sap-xep=` · `?tab=` · dashboard: `?ky=2026-11` hoặc `?ky=vu-dong-xuan-2026`, `?don-vi=`, `?nhom=`, `?nguon=dat-hang|thuc-ban`.
+- Tham số truy vấn: `?q=` tìm kiếm · `?trang=` · `?sap-xep=` · `?tab=` · bộ lọc thời gian dùng chung: `?tu-ngay=yyyy-mm-dd&den-ngay=yyyy-mm-dd` (Dashboard, Báo cáo, Tổng quan, Thống kê Hỗ trợ, Check-in, Nhật ký, Đại lý đề xuất; `?ky=` cũ vẫn đọc được), `?don-vi=`, `?nhom=`, `?nguon=dat-hang|thuc-ban`.
 - Mọi trạng thái lọc nằm trên URL để gửi link và tải lại đúng trạng thái.
 - API đánh số phiên bản qua đường dẫn (`/api/v1`); thay đổi phá vỡ tương thích → `/api/v2`.
