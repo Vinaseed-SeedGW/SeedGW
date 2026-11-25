@@ -1,6 +1,4 @@
 import 'server-only';
-import { speedFlaggedIds } from '@seedgw/contracts/check-in-speed';
-import { trackFilterOf, trackingSettingsFrom } from '@seedgw/contracts/tracking-settings';
 import {
   CLOCK_SKEW_FLAG_MINUTES,
   type CheckInFlag,
@@ -10,19 +8,11 @@ import {
   type TrackSessionInput,
 } from '@seedgw/contracts/check-ins';
 import { isSameStreet, PROPOSAL_MAX_ACCURACY_M } from '@seedgw/contracts/dealer-locations';
-import { vietnamDayStart, vietnamNextDayStart, vietnamToday } from '@seedgw/contracts/format';
-import {
-  cumulativeAt,
-  distanceMeters,
-  FILTER,
-  filterTrack,
-  segmentOf,
-} from '@seedgw/contracts/track-distance';
+import { vietnamToday } from '@seedgw/contracts/format';
+import { distanceMeters } from '@seedgw/contracts/track-distance';
 import { db } from '@seedgw/db/client';
 import type { MobileUser } from '@/server/auth/mobile';
 import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-storage';
-import { scheduleRoadDistance } from '@/server/integrations/road-distance-queue';
-import { reverseGeocode } from '@/server/integrations/vietmap';
 import { DomainError } from './domain-error';
 import { markCustomerVisited, resolveCheckInCustomer } from './mobile-customers';
 import { resolveCheckInDealer, type CheckInDealer } from './mobile-dealers';
@@ -30,9 +20,6 @@ import { readSystemSettings } from './settings';
 
 // Cờ nghi vấn chỉ để quản lý xem, không bao giờ chặn ghi nhận check-in (CLAUDE.md).
 const POOR_ACCURACY_FLAG_M = 100;
-const MAX_ADDRESS_ATTEMPTS = 5;
-// Hai check-in cách nhau xa hơn mức này mà vết GPS ngắn hơn đường chim bay: vết bị đứt, km là ước tính.
-const MISSING_TRACK_MIN_M = FILTER.gapMeters;
 
 export function checkInFlags(
   input: Pick<CreateCheckInInput, 'isMocked' | 'accuracyM' | 'deviceIntegrity'>,
@@ -297,141 +284,4 @@ export async function saveTrackSession(user: MobileUser, input: TrackSessionInpu
     create: { clientId: input.clientId, userId: user.id, ...data },
     update: data,
   });
-}
-
-/**
- * Tính lại km theo GPS của mọi check-in trong một ngày của một nhân viên (V1). Chạy lại được
- * nhiều lần nên điểm GPS hoặc check-in gửi trễ, lệch thứ tự vẫn ra đúng.
- * Km theo đường đi (V1b) do worker tính sau, ở đây chỉ hẹn lịch.
- */
-export async function recomputeDayDistances(userId: string, day: string): Promise<void> {
-  const from = vietnamDayStart(day);
-  const to = vietnamNextDayStart(day);
-  const [points, sessions, checkIns] = await Promise.all([
-    db.trackPoint.findMany({
-      where: { userId, recordedAt: { gte: from, lt: to } },
-      orderBy: { recordedAt: 'asc' },
-      select: { recordedAt: true, lat: true, lng: true, accuracyM: true },
-    }),
-    db.trackSession.findMany({
-      where: { userId, startedAt: { lt: to }, OR: [{ endedAt: null }, { endedAt: { gte: from } }] },
-      orderBy: { startedAt: 'asc' },
-      select: { startedAt: true },
-    }),
-    db.checkIn.findMany({
-      where: { userId, capturedAt: { gte: from, lt: to } },
-      orderBy: { capturedAt: 'asc' },
-      select: {
-        id: true,
-        capturedAt: true,
-        lat: true,
-        lng: true,
-        gpsDistanceKm: true,
-        isDistanceEstimated: true,
-        flags: true,
-      },
-    }),
-  ]);
-  if (checkIns.length === 0) return;
-  // M5: tính lại cờ tốc độ cho cả ngày, vì check-in mất mạng có thể tới muộn và chen vào giữa.
-  const settings = await readSystemSettings();
-  const tooFast = speedFlaggedIds(
-    checkIns.map((checkIn) => ({
-      id: checkIn.id,
-      capturedAt: checkIn.capturedAt.getTime(),
-      lat: checkIn.lat,
-      lng: checkIn.lng,
-    })),
-    settings.values.maxCheckInSpeedKmh,
-  );
-
-  const starts = sessions.map((session) => session.startedAt.getTime());
-  const track = filterTrack(
-    points.map((point) => ({
-      recordedAt: point.recordedAt.getTime(),
-      lat: point.lat,
-      lng: point.lng,
-      accuracy: point.accuracyM,
-      segment: segmentOf(starts, point.recordedAt.getTime()),
-    })),
-    trackFilterOf(trackingSettingsFrom(settings.values)),
-  );
-
-  const updates = [];
-  let previous: (typeof checkIns)[number] | null = null;
-  let previousCumulative = 0;
-  for (const checkIn of checkIns) {
-    const cumulative = cumulativeAt(track.kept, checkIn.capturedAt.getTime());
-    let meters = 0;
-    let estimated = false;
-    if (previous) {
-      meters = Math.max(0, cumulative - previousCumulative);
-      const straight = distanceMeters(previous, checkIn);
-      // Thiếu vết giữa hai lượt (tắt app, hết pin): lấy đường chim bay làm mức tối thiểu, đánh dấu ước tính.
-      if (straight > MISSING_TRACK_MIN_M && meters < straight * 0.9) {
-        meters = straight;
-        estimated = true;
-      }
-    }
-    const km = Math.round(meters) / 1000;
-    const hadSpeedFlag = checkIn.flags.includes('IMPOSSIBLE_SPEED');
-    const hasSpeedFlag = tooFast.has(checkIn.id);
-    if (
-      checkIn.gpsDistanceKm !== km ||
-      checkIn.isDistanceEstimated !== estimated ||
-      hadSpeedFlag !== hasSpeedFlag
-    ) {
-      const flags = checkIn.flags.filter((flag) => flag !== 'IMPOSSIBLE_SPEED');
-      if (hasSpeedFlag) flags.push('IMPOSSIBLE_SPEED');
-      updates.push(
-        db.checkIn.update({
-          where: { id: checkIn.id },
-          data: { gpsDistanceKm: km, isDistanceEstimated: estimated, flags },
-        }),
-      );
-    }
-    previous = checkIn;
-    previousCumulative = cumulative;
-  }
-  if (updates.length > 0) await db.$transaction(updates);
-  await scheduleRoadDistance({ userId, day });
-}
-
-/** Lấy địa chỉ cho check-in còn thiếu của nhân viên. Lỗi thì để lần sau thử lại, báo cáo vẫn có toạ độ. */
-export async function fillMissingAddresses(userId: string, limit = 5): Promise<void> {
-  const pending = await db.checkIn.findMany({
-    where: { userId, address: null, addressAttempts: { lt: MAX_ADDRESS_ATTEMPTS } },
-    orderBy: { capturedAt: 'desc' },
-    take: limit,
-    select: {
-      id: true,
-      lat: true,
-      lng: true,
-      flags: true,
-      dealer: { select: { address: true, lat: true, lng: true } },
-    },
-  });
-  for (const checkIn of pending) {
-    const outcome = await reverseGeocode(checkIn.lat, checkIn.lng);
-    if (!outcome.ok) {
-      await db.checkIn.update({
-        where: { id: checkIn.id },
-        data: { addressAttempts: { increment: 1 } },
-      });
-      continue;
-    }
-    // So lại tên phố bằng địa chỉ máy chủ lấy, không chỉ tin địa chỉ app in lên ảnh.
-    const flags = checkIn.flags.filter((flag) => flag !== 'STREET_MISMATCH');
-    if (
-      checkIn.dealer &&
-      checkIn.dealer.lat === null &&
-      isSameStreet(outcome.address, checkIn.dealer.address) === false
-    ) {
-      flags.push('STREET_MISMATCH');
-    }
-    await db.checkIn.update({
-      where: { id: checkIn.id },
-      data: { address: outcome.address, flags },
-    });
-  }
 }

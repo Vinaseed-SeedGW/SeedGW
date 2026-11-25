@@ -89,3 +89,15 @@ export type RoadDistanceJob = { userId: string; day: string };
 export function roadDistanceJobId(job: RoadDistanceJob): string {
   return `${job.userId}:${job.day}`;
 }
+
+// ---------- F8: việc sau khi nhận check-in, điểm GPS ----------
+
+export const CHECK_IN_FOLLOWUP_QUEUE = 'check-in-followup';
+/** Gộp các lần gửi sát nhau của cùng người, cùng ngày thành một lần tính. */
+export const CHECK_IN_FOLLOWUP_DEBOUNCE_MS = 5_000;
+
+export type CheckInFollowupJob = { userId: string; day: string };
+
+export function checkInFollowupJobId(job: CheckInFollowupJob): string {
+  return `followup-${job.userId}-${job.day}`;
+}

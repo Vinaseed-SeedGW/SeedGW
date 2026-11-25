@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { addressQuery } from '@seedgw/contracts/check-ins';
 import { mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
-import { reverseGeocode } from '@/server/integrations/vietmap';
+import { reverseGeocode } from '@/server/integrations/reverse-geocode';
 
 // Địa chỉ cho dải thông tin trên máy ảnh (V3). Khoá Vietmap chỉ nằm trên máy chủ.
 export const GET = mobileRoute(async (request: Request) => {

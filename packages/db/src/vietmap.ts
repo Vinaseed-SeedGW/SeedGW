@@ -1,5 +1,3 @@
-import 'server-only';
-
 // Đổi toạ độ ra địa chỉ qua Vietmap (CHECK_IN_PLAN §3.6). Khoá chỉ nằm trên máy chủ.
 const TIMEOUT_MS = 5_000;
 // Vietmap trả khoảng cách tới số nhà khớp được theo km. Xa hơn 100 m thì ghi "Gần" phía trước.

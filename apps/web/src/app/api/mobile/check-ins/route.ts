@@ -7,14 +7,10 @@ import {
 } from '@seedgw/contracts/check-ins';
 import { vietnamToday } from '@seedgw/contracts/format';
 import { assertMobileCan, mobileError, mobileRoute, requireMobileUser } from '@/server/auth/mobile';
+import { scheduleCheckInFollowup } from '@/server/integrations/check-in-followup-queue';
 import { clientIp, readJson } from '@/server/auth/mobile-request';
 import { writeAudit } from '@/server/services/audit';
-import {
-  clockSkewFromHeader,
-  fillMissingAddresses,
-  recomputeDayDistances,
-  saveCheckIn,
-} from '@/server/services/check-ins';
+import { clockSkewFromHeader, saveCheckIn } from '@/server/services/check-ins';
 import { listMyCheckIns } from '@/server/services/mobile-history';
 
 // Lịch sử check-in của chính nhân viên theo tháng (M6), giữ 18 tháng.
@@ -49,8 +45,10 @@ export const POST = mobileRoute(async (request: Request) => {
         ),
         ip,
       });
-      await recomputeDayDistances(user.id, vietnamToday(new Date(input.capturedAt)));
-      await fillMissingAddresses(user.id);
+      await scheduleCheckInFollowup({
+        userId: user.id,
+        day: vietnamToday(new Date(input.capturedAt)),
+      });
     });
   }
   return NextResponse.json(receipt, { status: created ? 201 : 200 });
