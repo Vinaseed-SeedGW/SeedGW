@@ -107,6 +107,7 @@ async function sendCheckIn(item: QueuedCheckIn): Promise<string | null> {
         note: item.note ?? '',
         addressOnPhoto: item.address,
         dealerId: item.placeKind === 'DEALER' ? item.dealerId : null,
+        customerId: item.placeKind === 'CUSTOMER' ? item.customerId : null,
         farReason: item.placeKind === 'DEALER' ? item.farReason : null,
         deviceIntegrity: await getDeviceIntegrity(),
         newDealer: item.placeKind === 'OTHER' ? parseNewDealer(item.newDealer) : null,

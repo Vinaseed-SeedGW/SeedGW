@@ -34,8 +34,10 @@ import {
 import { COLORS, FONT, SPACE } from '../theme';
 import { Button } from './button';
 import { serverEnabled } from '../api/session';
+import type { CustomerChoice } from '../api/customers';
 import { checkInRadiusM, type DealerChoice } from '../api/dealers';
 import { serverNow } from '../api/server-clock';
+import { CustomerPicker } from './customer-picker';
 import { DealerPicker } from './dealer-picker';
 import { WatermarkStrip, type StripLocation } from './watermark-strip';
 import {
@@ -314,6 +316,7 @@ function Review({
     name: presetDealer?.name ?? '',
     note: '',
     dealer: presetDealer,
+    customer: null,
     farReason: '',
   });
   const [newDealer, setNewDealer] = useState<NewDealerDraft>(() =>
@@ -402,6 +405,7 @@ function Review({
       name: place.name,
       note: place.note,
       dealerId: place.kind === 'DEALER' ? (place.dealer?.id ?? null) : null,
+      customerId: place.kind === 'CUSTOMER' ? (place.customer?.id ?? null) : null,
       farReason: isFar ? place.farReason : null,
     });
     void syncNow();
@@ -482,6 +486,7 @@ type PlaceDraft = {
   name: string;
   note: string;
   dealer: DealerChoice | null;
+  customer: CustomerChoice | null;
   farReason: string;
 };
 
@@ -508,7 +513,9 @@ function PlaceForm({
 }) {
   const current = PLACE_KINDS.find((item) => item.kind === value.kind) ?? PLACE_KINDS[0];
   const usePicker = value.kind === 'DEALER' && serverEnabled();
+  const useCustomerPicker = value.kind === 'CUSTOMER' && serverEnabled();
   const selectedDealer = value.dealer;
+  const selectedCustomer = value.customer;
   return (
     <View style={styles.form}>
       <Text style={styles.formLabel}>Nơi check-in</Text>
@@ -526,6 +533,9 @@ function PlaceForm({
                   kind: item.kind,
                   // Đổi loại điểm thì bỏ đại lý đã chọn để không gửi nhầm.
                   ...(item.kind !== 'DEALER' && value.dealer ? { dealer: null, name: '' } : {}),
+                  ...(item.kind !== 'CUSTOMER' && value.customer
+                    ? { customer: null, name: '' }
+                    : {}),
                 })
               }
               style={[styles.chip, selected && styles.chipSelected]}
@@ -545,6 +555,13 @@ function PlaceForm({
           onSelect={(dealer) => onChange({ ...value, dealer, name: dealer?.name ?? '' })}
         />
       ) : null}
+      {useCustomerPicker ? (
+        <CustomerPicker
+          point={point}
+          selected={selectedCustomer}
+          onSelect={(customer) => onChange({ ...value, customer, name: customer?.name ?? '' })}
+        />
+      ) : null}
       {far ? (
         <>
           <Banner
@@ -561,14 +578,17 @@ function PlaceForm({
           />
         </>
       ) : null}
-      {usePicker && selectedDealer ? null : (
+      {(usePicker && selectedDealer) || (useCustomerPicker && selectedCustomer) ? null : (
         <>
           {usePicker ? (
             <Text style={styles.formLabel}>Không có trong danh sách thì gõ tên đại lý</Text>
           ) : null}
+          {useCustomerPicker ? (
+            <Text style={styles.formLabel}>Không có trong danh sách thì gõ tên khách hàng</Text>
+          ) : null}
           <TextInput
             value={value.name}
-            onChangeText={(name) => onChange({ ...value, name, dealer: null })}
+            onChangeText={(name) => onChange({ ...value, name, dealer: null, customer: null })}
             accessibilityLabel={current?.nameLabel}
             style={styles.input}
             autoCapitalize="words"

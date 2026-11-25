@@ -14,6 +14,8 @@ const SCOPED_MODELS: Record<string, ScopeFields> = {
   TrackSession: { ownerField: 'userId', orgUnitField: 'user.orgUnitId' },
   // Nhan vien thay dai ly duoc giao, quan ly thay theo don vi phu trach cua dai ly.
   Dealer: { ownerField: 'assignedUserId', orgUnitField: 'orgUnitId' },
+  // S1: khach hang theo nguoi phu trach va don vi, nhu dai ly.
+  Customer: { ownerField: 'assignedUserId', orgUnitField: 'orgUnitId' },
   // Theo don vi phu trach dai ly luc de xuat, nhan vien chi thay de xuat cua minh.
   DealerLocationProposal: { ownerField: 'proposedById', orgUnitField: 'orgUnitId' },
   // M10: theo don vi cua nhan vien luc de xuat, nhan vien chi thay de xuat cua minh.

@@ -34,6 +34,7 @@ model OrgUnit {
   users                   User[]                   @relation("org_unit_members")
   checkIns                CheckIn[]
   dealers                 Dealer[]
+  customers               Customer[]
   dealerLocationProposals DealerLocationProposal[]
   dealerProposals         DealerProposal[]
   approvalRequests        ApprovalRequest[]
@@ -92,6 +93,8 @@ model User {
   trackPoints            TrackPoint[]
   trackSessions          TrackSession[]
   assignedDealers        Dealer[]                 @relation("dealer_assignee")
+  assignedCustomers      Customer[]               @relation("customer_assignee")
+  createdCustomers       Customer[]               @relation("customer_creator")
   locationProposals      DealerLocationProposal[] @relation("dealer_location_proposer")
   locationReviews        DealerLocationProposal[] @relation("dealer_location_reviewer")
   dealerProposals        DealerProposal[]         @relation("dealer_proposer")
@@ -299,6 +302,9 @@ model CheckIn {
   // Có khi check-in tại đại lý chọn từ danh mục (A7). placeName vẫn giữ tên lúc check-in.
   dealerId            String?                 @map("dealer_id") @db.Uuid
   dealer              Dealer?                 @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  // S1: khách hàng chọn từ danh sách khi check-in loại Khách hàng.
+  customerId          String?                 @map("customer_id") @db.Uuid
+  customer            Customer?               @relation(fields: [customerId], references: [id], onDelete: SetNull)
   capturedAt          DateTime                @map("captured_at")
   receivedAt          DateTime                @default(now()) @map("received_at")
   lat                 Float
@@ -333,6 +339,7 @@ model CheckIn {
   @@index([orgUnitId, capturedAt(sort: Desc)])
   @@index([capturedAt(sort: Desc)])
   @@index([dealerId, capturedAt(sort: Desc)])
+  @@index([customerId, capturedAt(sort: Desc)])
   @@map("check_ins")
 }
 
@@ -431,6 +438,7 @@ model Dealer {
   locationProposals  DealerLocationProposal[]
   // M10: đề xuất đã tạo ra đại lý này, hoặc đề xuất bị đánh dấu trùng với đại lý này.
   proposals          DealerProposal[]
+  customers          CustomerDealer[]
   createdAt          DateTime                 @default(now()) @map("created_at")
   updatedAt          DateTime                 @updatedAt @map("updated_at")
 
@@ -1121,4 +1129,60 @@ model PushMessage {
   @@index([status, createdAt])
   @@index([userId, createdAt(sort: Desc)])
   @@map("push_messages")
+}
+
+enum CustomerKind {
+  FARMER
+  COOPERATIVE
+
+  @@map("customer_kind")
+}
+
+// S1: khách hàng nông dân, hợp tác xã. Phạm vi dữ liệu theo người phụ trách và đơn vị như đại lý.
+model Customer {
+  id             String           @id @default(uuid()) @db.Uuid
+  code           String           @unique
+  kind           CustomerKind     @default(FARMER)
+  name           String
+  phone          String?
+  provinceName   String?          @map("province_name")
+  address        String           @default("")
+  crops          String[]         @default([])
+  // Diện tích canh tác theo ha, 2 chữ số sau dấu phẩy (chốt 25/11/2026).
+  areaHa         Float?           @map("area_ha")
+  note           String?
+  // Toạ độ lấy từ lần check-in đầu, để app xếp khách hàng gần nhất lên đầu.
+  lat            Float?
+  lng            Float?
+  lastVisitedAt  DateTime?        @map("last_visited_at")
+  orgUnitId      String?          @map("org_unit_id") @db.Uuid
+  orgUnit        OrgUnit?         @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  assignedUserId String?          @map("assigned_user_id") @db.Uuid
+  assignedUser   User?            @relation("customer_assignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdById    String?          @map("created_by_id") @db.Uuid
+  createdBy      User?            @relation("customer_creator", fields: [createdById], references: [id], onDelete: SetNull)
+  // Cot do PostgreSQL tu tinh, khong ghi tu ung dung.
+  searchText     String?          @default(dbgenerated()) @map("search_text")
+  dealers        CustomerDealer[]
+  checkIns       CheckIn[]
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin, map: "customers_search_text_trgm_idx")
+  @@index([orgUnitId])
+  @@index([assignedUserId])
+  @@index([provinceName])
+  @@map("customers")
+}
+
+// Đại lý khách hàng hay mua (S1).
+model CustomerDealer {
+  customerId String   @map("customer_id") @db.Uuid
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  dealerId   String   @map("dealer_id") @db.Uuid
+  dealer     Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, dealerId])
+  @@index([dealerId])
+  @@map("customer_dealers")
 }

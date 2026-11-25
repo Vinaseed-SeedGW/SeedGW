@@ -24,6 +24,7 @@ import { CHECK_IN_PHOTO_PREFIX, putObject } from '@/server/integrations/object-s
 import { scheduleRoadDistance } from '@/server/integrations/road-distance-queue';
 import { reverseGeocode } from '@/server/integrations/vietmap';
 import { DomainError } from './domain-error';
+import { markCustomerVisited, resolveCheckInCustomer } from './mobile-customers';
 import { resolveCheckInDealer, type CheckInDealer } from './mobile-dealers';
 import { readSystemSettings } from './settings';
 
@@ -113,8 +114,9 @@ export async function saveCheckIn(
     };
   }
 
-  const [dealer, settings] = await Promise.all([
+  const [dealer, customer, settings] = await Promise.all([
     resolveCheckInDealer(user, input),
+    resolveCheckInCustomer(user, input),
     readSystemSettings(),
   ]);
   const check = dealerCheck(dealer, input, input.addressOnPhoto, settings.values.checkInRadiusM);
@@ -144,6 +146,7 @@ export async function saveCheckIn(
         note: input.note,
         addressOnPhoto: input.addressOnPhoto,
         dealerId: dealer?.id ?? null,
+        customerId: customer?.id ?? null,
         dealerDistanceM: check.distanceM,
         farReason: input.farReason || null,
         flags: [...checkInFlags(input, clockSkewMs), ...check.flags],
@@ -187,6 +190,14 @@ export async function saveCheckIn(
         OR: [{ lastVisitedAt: null }, { lastVisitedAt: { lt: capturedAt } }],
       },
       data: { lastVisitedAt: capturedAt },
+    });
+  }
+
+  if (!('duplicate' in saved) && customer) {
+    await markCustomerVisited(customer, {
+      capturedAt: new Date(input.capturedAt),
+      lat: input.lat,
+      lng: input.lng,
     });
   }
 

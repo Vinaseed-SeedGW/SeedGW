@@ -54,6 +54,7 @@ type PhotoRow = {
   place_name: string | null;
   note: string | null;
   dealer_id: string | null;
+  customer_id: string | null;
   far_reason: string | null;
   new_dealer: string | null;
 };
@@ -80,6 +81,8 @@ export type PhotoRecord = {
   note: string | null;
   /** Đại lý chọn từ danh mục trên máy chủ (A7). Bản thử chưa đăng nhập thì null. */
   dealerId: string | null;
+  /** S1: khách hàng chọn từ danh sách khi check-in loại Khách hàng. */
+  customerId: string | null;
   /** Lý do khi chụp xa đại lý quá bán kính (M4). */
   farReason: string | null;
   /** Đề xuất đại lý mới đi kèm check-in (M10), JSON theo newDealerInput. */
@@ -166,6 +169,7 @@ function getDb(): SQLiteDatabase {
     'dealer_id',
     'far_reason',
     'new_dealer',
+    'customer_id',
   ]) {
     if (!photoColumns.has(column)) opened.execSync(`ALTER TABLE photos ADD COLUMN ${column} TEXT`);
   }
@@ -379,18 +383,20 @@ export function updatePhotoPlace(
     name: string;
     note: string;
     dealerId: string | null;
+    customerId?: string | null;
     farReason: string | null;
     newDealer?: string | null;
   },
 ): void {
   getDb().runSync(
-    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?, far_reason = ?, new_dealer = ?,
+    `UPDATE photos SET place_kind = ?, place_name = ?, note = ?, dealer_id = ?, customer_id = ?, far_reason = ?, new_dealer = ?,
        sync_status = CASE WHEN sync_status = 'draft' THEN 'pending' ELSE sync_status END
      WHERE id = ?`,
     place.kind,
     place.name.trim() || null,
     place.note.trim() || null,
     place.kind === 'DEALER' ? place.dealerId : null,
+    place.kind === 'CUSTOMER' ? (place.customerId ?? null) : null,
     place.kind === 'DEALER' ? place.farReason?.trim() || null : null,
     place.kind === 'OTHER' ? (place.newDealer ?? null) : null,
     id,
@@ -445,6 +451,7 @@ export function readPhotosBetween(from: number, to: number): PhotoRecord[] {
       placeName: row.place_name,
       note: row.note,
       dealerId: row.dealer_id,
+      customerId: row.customer_id ?? null,
       farReason: row.far_reason,
       newDealer: row.new_dealer,
     }));
@@ -582,6 +589,7 @@ export function readLocalHistory(from: number, to: number): LocalHistoryRow[] {
       placeName: row.place_name,
       note: row.note,
       dealerId: row.dealer_id,
+      customerId: row.customer_id ?? null,
       farReason: row.far_reason,
       newDealer: row.new_dealer,
       clientId: row.client_id,
@@ -608,6 +616,7 @@ export function listQueuedCheckIns(limit: number): QueuedCheckIn[] {
       placeName: row.place_name,
       note: row.note,
       dealerId: row.dealer_id,
+      customerId: row.customer_id ?? null,
       farReason: row.far_reason,
       newDealer: row.new_dealer,
       clientId: row.client_id,

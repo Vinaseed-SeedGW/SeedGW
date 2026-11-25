@@ -113,6 +113,8 @@ export const createCheckInInput = z
     addressOnPhoto: z.string().trim().max(500).nullable().default(null),
     // Đại lý chọn từ danh mục (A7). App bản thử chưa có danh mục thì không gửi.
     dealerId: z.uuid().nullable().default(null),
+    // S1: khách hàng chọn từ danh sách khi check-in loại Khách hàng. App cũ không gửi.
+    customerId: z.uuid().nullable().default(null),
     // Lý do khi app thấy vị trí chụp xa toạ độ đại lý quá bán kính (M4). Máy chủ vẫn tự tính lại khoảng cách.
     farReason: z.string().trim().max(500).nullable().default(null),
     deviceIntegrity: deviceIntegrity.default('UNKNOWN'),
@@ -124,7 +126,11 @@ export const createCheckInInput = z
     path: ['note'],
     message: 'Nhập ghi chú khi không check-in tại đại lý',
   })
-  .transform((value) => (value.placeKind === 'OTHER' ? value : { ...value, newDealer: null }));
+  .transform((value) => ({
+    ...value,
+    newDealer: value.placeKind === 'OTHER' ? value.newDealer : null,
+    customerId: value.placeKind === 'CUSTOMER' ? value.customerId : null,
+  }));
 export type CreateCheckInInput = z.infer<typeof createCheckInInput>;
 
 export const checkInReceipt = z.object({
