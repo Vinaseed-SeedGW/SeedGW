@@ -5,6 +5,7 @@
   "exports": {
     "./check-in-followup": "./src/check-in-followup.ts",
     "./client": "./src/client.ts",
+    "./consent-ledger": "./src/consent-ledger.ts",
     "./daily-visit-stats": "./src/daily-visit-stats.ts",
     "./data-retention": "./src/data-retention.ts",
     "./error-log": "./src/error-log.ts",

@@ -1,5 +1,6 @@
 import {
   Bug,
+  FileCheck,
   CalendarDays,
   ClipboardCheck,
   Combine,
@@ -68,6 +69,7 @@ export const DEPARTMENT_NAV: Record<DepartmentSlug, NavGroup[]> = {
         { label: 'Tài khoản', href: '/quan-tri/tai-khoan', icon: UserCog },
         { label: 'Vai trò và quyền', href: '/quan-tri/vai-tro', icon: ShieldCheck },
         { label: 'Cơ cấu tổ chức', href: '/quan-tri/co-cau-to-chuc', icon: Network },
+        { label: 'Đồng ý dữ liệu', href: '/quan-tri/dong-y', icon: FileCheck },
       ],
     },
     {

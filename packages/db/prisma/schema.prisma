@@ -101,6 +101,7 @@ model User {
   dealerProposalReviews    DealerProposal[]         @relation("dealer_proposal_reviewer")
   dealerProposalsToApprove DealerProposal[]         @relation("dealer_proposal_approver")
   consents                 UserConsent[]
+  consentRecords           ConsentRecord[]
   submittedApprovals       ApprovalRequest[]        @relation("approval_submitter")
   pendingApprovals         ApprovalRequest[]        @relation("approval_current_approver")
   managerApprovals         ApprovalRequest[]        @relation("approval_manager_approver")
@@ -543,6 +544,43 @@ enum ConsentChannel {
   APP
 
   @@map("consent_channel")
+}
+
+enum ConsentAction {
+  ACCEPT
+  WITHDRAW
+
+  @@map("consent_action")
+}
+
+// 25/11/2026: sổ đồng ý chỉ ghi thêm, làm bằng chứng theo Luật Bảo vệ dữ liệu cá nhân. Mỗi lần đồng ý hay
+// rút lại là một dòng, lưu toàn văn đã hiển thị và mã SHA-256 nối chuỗi với dòng trước. Trigger trong CSDL
+// chặn sửa và xoá. Bảng user_consents vẫn giữ trạng thái hiện tại.
+model ConsentRecord {
+  id             String         @id @default(uuid()) @db.Uuid
+  seq            BigInt         @unique @default(autoincrement())
+  userId         String         @map("user_id") @db.Uuid
+  user           User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  employeeCode   String         @map("employee_code")
+  fullName       String         @map("full_name")
+  kind           String
+  version        String
+  action         ConsentAction
+  channel        ConsentChannel
+  ip             String?
+  userAgent      String?        @map("user_agent")
+  deviceName     String?        @map("device_name")
+  devicePlatform String?        @map("device_platform")
+  contentText    String         @map("content_text")
+  contentHash    String         @map("content_hash")
+  prevHash       String         @map("prev_hash")
+  recordHash     String         @unique @map("record_hash")
+  recordedAt     DateTime       @map("recorded_at")
+  // Dòng chuyển từ user_consents cũ: giờ và kênh lấy từ dữ liệu cũ, nội dung theo phiên bản đã đồng ý.
+  migrated       Boolean        @default(false)
+
+  @@index([userId, recordedAt(sort: Desc)])
+  @@map("consent_records")
 }
 
 // Loi dong y cua nguoi dung theo tung phien ban cau chu (17/11/2026: dong y chia se vi tri).

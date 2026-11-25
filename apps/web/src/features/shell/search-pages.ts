@@ -11,7 +11,12 @@ const PROPOSALS_PAGE: SearchPage = {
 
 /** Các trang người dùng mở được, để ô tìm nhanh gợi ý cả trang lẫn dữ liệu (D3). */
 export function listSearchPages(permissions: ReadonlySet<string>): SearchPage[] {
-  const pages: SearchPage[] = [{ href: '/hub', label: 'Hub', section: 'Chung' }];
+  const pages: SearchPage[] = [
+    { href: '/hub', label: 'Hub', section: 'Chung' },
+    // Trang cá nhân, ai đăng nhập cũng mở được.
+    { href: '/dong-y-cua-toi', label: 'Đồng ý của tôi', section: 'Chung' },
+    { href: '/kiem-chung-dong-y', label: 'Kiểm chứng đồng ý', section: 'Chung' },
+  ];
   if (canAccessPath(permissions, '/tong-quan')) {
     pages.push({ href: '/tong-quan', label: 'Tổng quan điều hành', section: 'Chung' });
   }

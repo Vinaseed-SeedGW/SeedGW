@@ -1,6 +1,7 @@
 import { Queue, Worker, type Job } from 'bullmq';
 import { recomputeDailyVisitStats, touchedVisitDays } from '@seedgw/db/daily-visit-stats';
 import { ensureTrackPointPartitions, purgeExpiredTrackingData } from '@seedgw/db/data-retention';
+import { backfillConsentLedger } from '@seedgw/db/consent-ledger';
 import { purgeOldErrors, recordError } from '@seedgw/db/error-log';
 import { FAST_SYNC_QUEUE } from '@seedgw/contracts/fast';
 import {
@@ -296,7 +297,18 @@ function logJobs(worker: Worker, label: string) {
   });
 }
 
+/** 25/11/2026: chuyển lời đồng ý cũ sang sổ đồng ý, một lần; đã chuyển thì bỏ qua. Lỗi chỉ ghi log. */
+async function backfillConsents(): Promise<void> {
+  try {
+    const written = await backfillConsentLedger();
+    if (written > 0) console.log(`Sổ đồng ý: đã chuyển ${written} dòng từ dữ liệu cũ.`);
+  } catch (error) {
+    console.error('Không chuyển được lời đồng ý cũ sang sổ', error);
+  }
+}
+
 async function main() {
+  await backfillConsents();
   if (!REDIS_URL) {
     console.log('Worker chạy không có hàng đợi: thiếu REDIS_URL.');
     setInterval(() => undefined, 60_000);

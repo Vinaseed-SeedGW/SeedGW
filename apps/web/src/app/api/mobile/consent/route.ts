@@ -24,10 +24,16 @@ export const POST = mobileRoute(async (request: Request) => {
     return mobileError('CONFLICT', 'Lời đồng ý đã có bản mới, vui lòng cập nhật app');
   }
   const ip = clientIp(request);
+  const meta = {
+    channel: 'APP' as const,
+    ip,
+    userAgent: request.headers.get('user-agent'),
+    deviceId: user.deviceId,
+  };
   const changed =
     input.action === 'ACCEPT'
-      ? await acceptLocationConsent(user.id, 'APP', ip)
-      : await withdrawLocationConsent(user.id);
+      ? await acceptLocationConsent(user.id, meta)
+      : await withdrawLocationConsent(user.id, meta);
   if (changed) {
     after(() =>
       writeAudit({

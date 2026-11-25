@@ -99,6 +99,8 @@ export const ROUTE_RULES: readonly RouteRule[] = [
 
   { path: '/quan-tri/ho-tro', permission: 'support.request.manage', department: 'quan-tri' },
   { path: '/quan-tri/tai-khoan', permission: 'admin.user.read', department: 'quan-tri' },
+  // 25/11/2026: sổ đồng ý dữ liệu cá nhân của từng tài khoản.
+  { path: '/quan-tri/dong-y', permission: 'admin.user.read', department: 'quan-tri' },
   {
     path: '/quan-tri/tai-khoan/tao-moi',
     permission: 'admin.user.manage',

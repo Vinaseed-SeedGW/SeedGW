@@ -138,9 +138,14 @@ export default async function HubPage() {
         <section className="rounded-lg border border-border bg-surface p-5">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-lg font-bold">Thông báo gần đây</h2>
-            <Link href="/thong-bao" className="text-sm font-bold text-brand hover:underline">
-              Xem tất cả
-            </Link>
+            <span className="flex flex-wrap gap-x-4">
+              <Link href="/dong-y-cua-toi" className="text-sm font-bold text-brand hover:underline">
+                Đồng ý của tôi
+              </Link>
+              <Link href="/thong-bao" className="text-sm font-bold text-brand hover:underline">
+                Xem tất cả
+              </Link>
+            </span>
           </div>
           {notifications.length === 0 ? (
             <p className="mt-3 text-text-muted">Chưa có thông báo nào.</p>
