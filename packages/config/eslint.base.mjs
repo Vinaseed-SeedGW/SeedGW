@@ -12,6 +12,8 @@ export default tseslint.config(
       '**/dist/**',
       '**/next-env.d.ts',
       '.design/**',
+      // Worktree nhánh production nằm trong thư mục Test, có lint riêng.
+      'Production/**',
     ],
   },
   ...tseslint.configs.recommended,

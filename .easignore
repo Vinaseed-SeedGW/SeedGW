@@ -42,3 +42,6 @@ docs/VIEC_CAN_LAM.md
 
 # Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
 *firebase-adminsdk*.json
+
+# Worktree nhanh production nam trong thu muc Test, khong gui len may chu build
+/Production/

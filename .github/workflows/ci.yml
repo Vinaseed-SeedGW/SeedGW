@@ -1,10 +1,11 @@
-# Kiểm tra mọi PR và mọi lần đẩy lên main. Merge vào main thì tự triển khai lên máy chủ thử (F6).
+# Kiểm tra mọi PR và mọi lần đẩy lên main (Test) hoặc production. Merge vào main thì tự triển khai lên máy chủ thử
+# (F6); nhánh production triển khai tay lên máy chủ thật theo deploy/production/README.md.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, production]
 
 concurrency:
   group: ci-${{ github.ref }}

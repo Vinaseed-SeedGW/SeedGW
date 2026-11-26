@@ -19,3 +19,4 @@ deploy/osrm/data
 
 # Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
 *firebase-adminsdk*.json
+/Production

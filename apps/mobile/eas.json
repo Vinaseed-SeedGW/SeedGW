@@ -7,6 +7,9 @@
     "thu-nghiem": {
       "distribution": "internal",
       "environment": "preview",
+      "env": {
+        "APP_VARIANT": "test"
+      },
       "android": {
         "buildType": "apk"
       },
@@ -18,14 +21,44 @@
     "testflight": {
       "distribution": "store",
       "environment": "preview",
+      "env": {
+        "APP_VARIANT": "test"
+      },
       "ios": {
         "autoIncrement": true
       },
       "channel": "thu-nghiem"
+    },
+    "production": {
+      "distribution": "internal",
+      "environment": "production",
+      "env": {
+        "APP_VARIANT": "production"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "production"
+    },
+    "production-ios": {
+      "distribution": "store",
+      "environment": "production",
+      "env": {
+        "APP_VARIANT": "production"
+      },
+      "ios": {
+        "autoIncrement": true
+      },
+      "channel": "production"
     }
   },
   "submit": {
     "testflight": {
+      "ios": {
+        "appName": "SeedGW Thử"
+      }
+    },
+    "production-ios": {
       "ios": {
         "appName": "SeedGW"
       }

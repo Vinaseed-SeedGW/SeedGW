@@ -35,3 +35,6 @@ GoogleService-Info.plist
 
 # Khoa tai khoan dich vu Firebase (bi mat), chi tai len eas credentials roi xoa
 *firebase-adminsdk*.json
+
+# 26/11/2026: thu muc Production la git worktree nhanh production (ban nguoi dung), khong thuoc nhanh nay
+/Production/

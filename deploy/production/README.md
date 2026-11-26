@@ -54,7 +54,8 @@ sudo ufw enable
 
 # Mã nguồn (repo riêng tư, dùng khoá triển khai chỉ đọc hoặc tài khoản được cấp quyền)
 sudo mkdir -p /opt/seedgw /srv/seedgw-backup && sudo chown -R seedgw:seedgw /opt/seedgw /srv/seedgw-backup
-sudo -iu seedgw git clone https://github.com/Vinaseed-SeedGW/SeedGW.git /opt/seedgw/repo
+# Máy chủ thật luôn chạy nhánh production (docs/TEST_VA_PRODUCTION.md)
+sudo -iu seedgw git clone -b production https://github.com/Vinaseed-SeedGW/SeedGW.git /opt/seedgw/repo
 
 # Biến môi trường: khoá MỚI, không chép từ máy chủ thử
 sudo -iu seedgw cp /opt/seedgw/repo/deploy/production/production.env.example /opt/seedgw/production.env
@@ -120,7 +121,7 @@ Kiểm tra từ điện thoại đi 4G: `https://seedgw.vinaseed.com.vn/api/heal
 
 1. Đăng nhập web bằng ADMIN, **đổi mật khẩu ADMIN ngay**.
 2. Quản trị, Kết nối: nhập lại cấu hình FAST (khoá mã hoá mới nên cấu hình cũ không đọc được).
-3. App: đổi `EXPO_PUBLIC_API_URL` trên EAS thành `https://seedgw.vinaseed.com.vn` và gửi bản cập nhật; người dùng mở app 2 lần.
+3. App bản Production (SeedGW, kênh `production`): đặt `EXPO_PUBLIC_API_URL=https://seedgw.vinaseed.com.vn` ở môi trường EAS `production`, build hồ sơ `production` (Android) và `production-ios`, phát cho người dùng. Bản Test (SeedGW Thử) vẫn trỏ máy chủ thử.
 4. Đặt lịch sao lưu mỗi đêm 1:30 (`crontab -e` của user `seedgw`):
 
    ```
@@ -133,8 +134,11 @@ Bật km theo đường đi (không bắt buộc): tải bản đồ và chạy 
 
 ## 6. Cập nhật bản mới
 
+Chỉ cập nhật khi nhánh `production` đã nhận bản đã thử xong trên Test (docs/TEST_VA_PRODUCTION.md).
+
 ```bash
-git pull
+git checkout production
+git pull --ff-only
 dc up -d --build --remove-orphans
 deploy/staging/wait-healthy.sh
 docker image prune -f
