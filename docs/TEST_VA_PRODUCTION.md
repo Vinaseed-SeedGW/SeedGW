@@ -6,7 +6,7 @@ Chốt 26/11/2026. Một kho mã duy nhất, hai nhánh, hai thư mục trên m�
 |---|---|---|
 | Dùng để | Thử bản sửa lỗi, tính năng mới | Người dùng làm việc hằng ngày |
 | Nhánh git | `main` | `production` |
-| Thư mục trên máy | `SEEDGW` (thư mục hiện tại) | `SEEDGW\Production` (git worktree) |
+| Thư mục trên máy | `SEEDGW\Test` (kho mã chính) | `SEEDGW\Production` (git worktree) |
 | Máy chủ | Máy chủ thử (`deploy/staging`) | Máy ảo Ubuntu sau IIS 10.10.8.35 (`deploy/production`) |
 | Địa chỉ | Máy chủ thử | `https://seedgw.vinaseed.com.vn` |
 | App | **SeedGW Thử**, mã gói `vn.vinaseed.seedgw.test` | **SeedGW**, mã gói `vn.vinaseed.seedgw` |
@@ -15,11 +15,11 @@ Chốt 26/11/2026. Một kho mã duy nhất, hai nhánh, hai thư mục trên m�
 
 Hai bản app cài song song trên cùng một điện thoại, mỗi bản đăng nhập máy chủ của mình. Cấu hình ở `apps/mobile/app.config.js` theo biến `APP_VARIANT` (`test` hoặc `production`); không đặt thì là bản Test.
 
-Thư mục `Production` nằm trong thư mục Test nhưng git, Prettier, ESLint, Docker, EAS đều bỏ qua nó.
+Hai thư mục nằm cạnh nhau trong `SEEDGW`. Máy chủ thử, bản dev (`pnpm dev`) và phiên Claude Code chạy ở `SEEDGW\Test`.
 
 ## Quy trình một lần sửa
 
-1. Làm trên nhánh việc `<ma-task>-<mo-ta>` trong thư mục `SEEDGW`, `pnpm check` đạt.
+1. Làm trên nhánh việc `<ma-task>-<mo-ta>` trong thư mục `SEEDGW\Test`, `pnpm check` đạt.
 2. Merge vào `main`. Đưa lên máy chủ thử; app gửi bản cập nhật kênh `thu-nghiem`:
 
    ```powershell
@@ -45,12 +45,15 @@ Thư mục `Production` nằm trong thư mục Test nhưng git, Prettier, ESLint
 
 Sửa gấp trên Production: vẫn sửa ở `main` trước, thử nhanh trên Test, rồi đưa sang như bước 4. Không sửa thẳng trên nhánh `production` để hai nhánh không lệch nhau.
 
-## Tạo thư mục Production (đã làm 26/11/2026, ghi lại để làm trên máy khác)
+## Tạo hai thư mục (đã làm 26/11/2026, ghi lại để làm trên máy khác)
 
 ```powershell
-git fetch origin
-git worktree add Production production
-cd Production
+mkdir SEEDGW; cd SEEDGW
+git clone https://github.com/Vinaseed-SeedGW/SeedGW.git Test
+cd Test
+pnpm install
+git worktree add ..\Production production
+cd ..\Production
 pnpm install
 ```
 

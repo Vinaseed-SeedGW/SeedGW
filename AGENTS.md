@@ -147,7 +147,7 @@ Chi tiết ở `BRAND.md`. Các điểm không được vi phạm:
 - Commit: `<loai>(<ma-task>): <mo ta>`, `loai` thuộc `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Ví dụ `feat(F2): them AppShell`.
 - Mỗi commit chỉ chứa một thay đổi có ý nghĩa.
 - Chỉ merge vào `main` khi `pnpm check` đạt. Không dùng `--force`, không bỏ qua hook.
-- `main` là bản Test (máy chủ thử, app SeedGW Thử), `production` là bản người dùng (máy chủ thật, app SeedGW). Chỉ đưa `main` sang `production` bằng merge fast-forward sau khi đã thử xong, không sửa thẳng trên `production`. Thư mục `Production` là git worktree của nhánh `production`. Quy trình ở `docs/TEST_VA_PRODUCTION.md`.
+- `main` là bản Test (máy chủ thử, app SeedGW Thử), `production` là bản người dùng (máy chủ thật, app SeedGW). Chỉ đưa `main` sang `production` bằng merge fast-forward sau khi đã thử xong, không sửa thẳng trên `production`. Trên máy, `SEEDGW\Test` là kho mã chính (nhánh `main`), `SEEDGW\Production` là git worktree nhánh `production`. Quy trình ở `docs/TEST_VA_PRODUCTION.md`.
 
 ## 12. Lệnh chuẩn
 
