@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createCheckInInput } from './check-ins';
 import {
+  addressWithWard,
   approveDealerProposalInput,
   createDealerWebInput,
   newDealerInput,
@@ -167,5 +168,28 @@ describe('createDealerWebInput (thêm đại lý trên web)', () => {
     expect(createDealerWebInput.safeParse({ ...BASE, orgUnitId: 'abc' }).success).toBe(false);
     const unit = '7f1e7f0a-3c55-4f2a-9a43-5c1a8d2f3b10';
     expect(createDealerWebInput.parse({ ...BASE, orgUnitId: unit }).orgUnitId).toBe(unit);
+  });
+
+  it('bắt buộc chọn tỉnh; xã, phường không bắt buộc, ô trống thành null', () => {
+    const noProvince = createDealerWebInput.safeParse({ ...BASE, provinceName: null });
+    expect(noProvince.success).toBe(false);
+    expect(noProvince.error?.issues[0]).toMatchObject({
+      path: ['provinceName'],
+      message: 'Chọn tỉnh, thành phố',
+    });
+    expect(createDealerWebInput.parse({ ...BASE, wardName: '' }).wardName).toBeNull();
+    expect(createDealerWebInput.parse({ ...BASE, wardName: ' Phường Ba Đình ' }).wardName).toBe(
+      'Phường Ba Đình',
+    );
+  });
+});
+
+describe('addressWithWard', () => {
+  it('ghép xã, phường sau số nhà, thôn; không ghép lặp', () => {
+    expect(addressWithWard('Số 5 Kim Mã', 'Phường Ba Đình')).toBe('Số 5 Kim Mã, Phường Ba Đình');
+    expect(addressWithWard('Số 5 Kim Mã, phường Ba Đình', 'Phường Ba Đình')).toBe(
+      'Số 5 Kim Mã, phường Ba Đình',
+    );
+    expect(addressWithWard('Thôn 3', null)).toBe('Thôn 3');
   });
 });

@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useForm, useFormContext, type UseFormReturn } from 'react-hook-form';
 import type { z } from 'zod';
 import {
@@ -17,7 +17,7 @@ import {
   userFitsUnit,
   type DealerFormOptions,
 } from '@seedgw/contracts/dealers';
-import { PROVINCES } from '@seedgw/contracts/provinces';
+import { PROVINCES, type ProvinceName } from '@seedgw/contracts/provinces';
 import { Form } from '@seedgw/ui/form';
 import { createDealerWebAction } from '@/server/actions/dealer-proposals';
 import { DealerLocationPicker } from './dealer-location-picker';
@@ -42,6 +42,7 @@ const DEFAULT_VALUES: FormValues = {
   taxCode: '',
   level: String(DEFAULT_PROPOSED_LEVEL),
   provinceName: null,
+  wardName: '',
   lat: '',
   lng: '',
   orgUnitId: '',
@@ -91,19 +92,70 @@ function InfoFields() {
   );
 }
 
+type WardList = Record<ProvinceName, readonly string[]>;
+
+/** Danh sách xã, phường (82 KB) chỉ tải khi mở form, không nằm trong gói chung của trang. */
+function useWardList(): WardList | null {
+  const [wards, setWards] = useState<WardList | null>(null);
+  useEffect(() => {
+    let active = true;
+    void import('@seedgw/contracts/wards').then((module) => {
+      if (active) setWards(module.WARDS);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  return wards;
+}
+
+/**
+ * Địa chỉ theo đơn vị hành chính từ 01/07/2025: tỉnh, xã, phường (không còn huyện), rồi số nhà, thôn, đường.
+ * Đổi tỉnh thì bỏ xã không thuộc tỉnh mới. Toạ độ không bắt buộc vì người thêm có thể ở xa đại lý.
+ */
 function PlaceFields({ mapTiles }: { mapTiles: DealerFormOptions['mapTiles'] }) {
+  const form = useFormContext<FormValues>();
+  const listId = useId();
+  const wards = useWardList();
+  const provinceName = form.watch('provinceName');
+  const options = provinceName && wards ? wards[provinceName] : [];
+
+  useEffect(() => {
+    if (!wards) return;
+    const ward = form.getValues('wardName');
+    if (ward && !(provinceName && wards[provinceName]?.includes(ward))) {
+      form.setValue('wardName', '');
+    }
+  }, [form, provinceName, wards]);
+
   return (
     <>
-      <Form.Field name="address" label="Địa chỉ">
-        <Form.Input autoComplete="off" />
-      </Form.Field>
       <Form.Field name="provinceName" label="Tỉnh, thành phố">
-        <Form.Select options={PROVINCE_OPTIONS} emptyLabel="Chưa chọn" />
+        <Form.Select options={PROVINCE_OPTIONS} emptyLabel="Chọn tỉnh, thành phố" />
+      </Form.Field>
+      <Form.Field
+        name="wardName"
+        label="Xã, phường"
+        hint={
+          provinceName
+            ? 'Không bắt buộc. Gõ vài chữ để chọn trong danh sách xã, phường mới từ 01/07/2025'
+            : 'Chọn tỉnh trước'
+        }
+      >
+        <Form.Input list={listId} autoComplete="off" disabled={!provinceName} />
+      </Form.Field>
+      <datalist id={listId}>
+        {options.map((ward) => (
+          <option key={ward} value={ward} />
+        ))}
+      </datalist>
+      <Form.Field name="address" label="Địa chỉ đại lý" hint="Số nhà, thôn, xóm, đường">
+        <Form.Input autoComplete="off" />
       </Form.Field>
       <Form.Field
         name="lat"
         label="Vĩ độ"
-        hint="Không bắt buộc. Chọn trên bản đồ bên dưới, hoặc để lần check-in đầu tiên tại đại lý tự đề xuất"
+        hint="Không bắt buộc. Ở xa đại lý hoặc không biết vị trí thì bỏ trống, lần check-in đầu tiên tại đại lý sẽ tự đề xuất toạ độ"
       >
         <Form.Input inputMode="decimal" autoComplete="off" />
       </Form.Field>

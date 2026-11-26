@@ -32,9 +32,10 @@ export default async function DealerProposalsPage({ searchParams }: PageProps) {
     <>
       <h1 className="text-2xl font-bold text-brand">Đại lý mới</h1>
       <p className="mt-1 max-w-3xl text-text-muted">
-        Nhân viên đề xuất đại lý mới trên app ngay tại cửa hàng, kèm ảnh và vị trí lúc chụp. Quản lý
-        trực tiếp hoặc Lãnh đạo đơn vị duyệt ở Kinh doanh, Cần duyệt; Quản lý, Lãnh đạo tự đề xuất
-        thì tạo luôn. Trang này để theo dõi, Quản trị hệ thống duyệt thay khi cần.
+        Nhân viên đề xuất đại lý mới trên app ngay tại cửa hàng (kèm ảnh và vị trí lúc chụp) hoặc
+        thêm trên web. Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt ở Kinh doanh, Cần duyệt; Quản
+        lý, Lãnh đạo tự đề xuất thì tạo luôn. Trang này để theo dõi, Quản trị hệ thống duyệt thay
+        khi cần.
       </p>
       <nav aria-label="Trạng thái đề xuất" className="mt-4 flex gap-2 border-b border-border">
         {TABS.map((tab) => {

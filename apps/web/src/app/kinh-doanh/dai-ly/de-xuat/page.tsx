@@ -29,8 +29,8 @@ export default async function DealerProposalsInScopePage({ searchParams }: PageP
       </div>
       <p className="mt-1 max-w-3xl text-text-muted">
         {ownOnly
-          ? 'Đại lý bạn đề xuất khi check-in trên app và kết quả duyệt.'
-          : 'Đại lý nhân viên trong phạm vi của bạn đề xuất khi check-in trên app và kết quả duyệt.'}{' '}
+          ? 'Đại lý bạn đề xuất khi check-in trên app hoặc thêm trên web, và kết quả duyệt.'
+          : 'Đại lý nhân viên trong phạm vi của bạn đề xuất khi check-in trên app hoặc thêm trên web, và kết quả duyệt.'}{' '}
         Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt; Quản lý, Lãnh đạo tự đề xuất thì đại lý được
         tạo luôn.
       </p>
@@ -50,7 +50,7 @@ async function ProposalResults({ input }: { input: ScopedProposalsInput }) {
       emptyMessage={
         filtered
           ? 'Không có đề xuất nào phù hợp bộ lọc.'
-          : 'Chưa có đề xuất đại lý mới nào. Đề xuất bằng ô Đây là đại lý mới khi check-in trên app.'
+          : 'Chưa có đề xuất đại lý mới nào. Đề xuất bằng ô Đây là đại lý mới khi check-in trên app, hoặc nút Thêm đại lý ở danh sách đại lý.'
       }
     />
   );

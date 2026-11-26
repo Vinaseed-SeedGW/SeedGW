@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { auditChanges, type AuditAction, type AuditChanges } from '@seedgw/contracts/audit';
 import { DEALER_LEVEL_LABEL, type DealerLevel } from '@seedgw/contracts/dealers';
 import {
+  addressWithWard,
   DUPLICATE_RADIUS_M,
   DUPLICATE_REASON_LABEL,
   MY_PROPOSALS_DAYS,
@@ -30,6 +31,7 @@ import {
 import { vietnamDayStart, vietnamNextDayStart } from '@seedgw/contracts/format';
 import { escapeLikePattern } from '@seedgw/contracts/text';
 import { distanceMeters } from '@seedgw/contracts/track-distance';
+import { isWardOf } from '@seedgw/contracts/wards';
 import { db } from '@seedgw/db/client';
 import { getOrgUnitAncestorIds } from '@seedgw/db/org-units';
 import type { MobileUser } from '@/server/auth/mobile';
@@ -65,6 +67,7 @@ const PROPOSAL_SELECT = {
   lat: true,
   lng: true,
   provinceName: true,
+  wardName: true,
   createdAt: true,
   checkIn: {
     select: {
@@ -135,6 +138,7 @@ function toRow(
     lat: point?.lat ?? null,
     lng: point?.lng ?? null,
     provinceName: asProvince(record.provinceName),
+    wardName: record.wardName,
     accuracyM: checkIn?.accuracyM ?? null,
     photoUrl: photoKey ? presignGetUrl(photoKey) : null,
     status: record.status,
@@ -393,6 +397,7 @@ const PENDING_SELECT = {
   lat: true,
   lng: true,
   provinceName: true,
+  wardName: true,
   proposedBy: { select: { isActive: true } },
   checkIn: {
     select: { capturedAt: true, lat: true, lng: true, address: true, addressOnPhoto: true },
@@ -499,6 +504,8 @@ async function createDealerFromProposal(
         taxCode: values.taxCode,
         address: values.address,
         provinceName: values.provinceName,
+        // Người duyệt đổi tỉnh thì xã, phường đã chọn không còn đúng.
+        wardName: values.provinceName === proposal.provinceName ? proposal.wardName : null,
         lat: point?.lat ?? null,
         lng: point?.lng ?? null,
         locatedAt: point ? now : null,
@@ -828,6 +835,13 @@ export async function createDealerFromWeb(
     orgUnitId = input.orgUnitId;
   }
 
+  if (input.wardName && !isWardOf(input.provinceName, input.wardName)) {
+    throw new DomainError('VALIDATION', 'Xã, phường không thuộc tỉnh đã chọn', {
+      wardName: 'Chọn xã, phường trong danh sách của tỉnh đã chọn',
+    });
+  }
+  const address = addressWithWard(input.address, input.wardName);
+
   const created = await db.dealerProposal.create({
     data: {
       source: 'WEB',
@@ -836,11 +850,12 @@ export async function createDealerFromWeb(
       proposedById: creator.id,
       name: input.name,
       phone: input.phone,
-      address: input.address,
+      address,
       ownerName: input.ownerName,
       taxCode: input.taxCode,
       level: input.level,
       provinceName: input.provinceName,
+      wardName: input.wardName,
       lat: input.lat,
       lng: input.lng,
       currentApproverId: mode === 'APPROVAL' ? approverId : null,
@@ -856,7 +871,7 @@ export async function createDealerFromWeb(
       {
         'Tên đại lý': input.name,
         'Số điện thoại': input.phone,
-        'Địa chỉ': input.address,
+        'Địa chỉ': address,
         Tỉnh: input.provinceName,
         Cấp: DEALER_LEVEL_LABEL[input.level],
         'Toạ độ':
@@ -894,7 +909,7 @@ export async function createDealerFromWeb(
       ? {
           name: input.name,
           phone: input.phone,
-          address: input.address,
+          address,
           ownerName: input.ownerName,
           taxCode: input.taxCode,
           level: input.level,

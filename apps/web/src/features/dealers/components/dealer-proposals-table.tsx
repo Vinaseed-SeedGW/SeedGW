@@ -108,8 +108,8 @@ const BASE_COLUMNS: ColumnDef<DealerProposalRow>[] = [
   },
   {
     id: 'location',
-    header: 'Vị trí lúc chụp',
-    meta: { label: 'Vị trí lúc chụp', className: WRAP_COLUMN },
+    header: 'Vị trí',
+    meta: { label: 'Vị trí', className: WRAP_COLUMN },
     cell: ({ row }) =>
       row.original.source === 'WEB' ? (
         <WebLocation row={row.original} />

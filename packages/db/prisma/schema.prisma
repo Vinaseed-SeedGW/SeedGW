@@ -413,6 +413,8 @@ model Dealer {
   ownerPhone         String?                  @map("owner_phone")
   address            String
   provinceName       String?                  @map("province_name")
+  // Xa, phuong moi (tu 01/07/2025) thuoc provinceName, chon tren web. Dai ly cu chua co.
+  wardName           String?                  @map("ward_name")
   // Tinh, huyen, xa cu (truoc 01/07/2025) dung nguyen van tu he thong cu de tham khao.
   legacyAdminArea    String?                  @map("legacy_admin_area")
   lat                Float?
@@ -520,6 +522,7 @@ model DealerProposal {
   lat               Float?
   lng               Float?
   provinceName      String?              @map("province_name")
+  wardName          String?              @map("ward_name")
   // Đơn vị của nhân viên lúc đề xuất, để Quản trị đơn vị thấy đề xuất trong phạm vi của mình.
   orgUnitId         String?              @map("org_unit_id") @db.Uuid
   orgUnit           OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)

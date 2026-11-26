@@ -133,6 +133,8 @@ export const dealerProposalRow = z.object({
   lat: z.number().nullable(),
   lng: z.number().nullable(),
   provinceName: z.enum(PROVINCES).nullable(),
+  // Xã, phường mới chọn khi thêm trên web; đề xuất trên app chưa có.
+  wardName: z.string().nullable(),
   accuracyM: z.number().nullable(),
   photoUrl: z.string().nullable(),
   status: dealerProposalStatus,
@@ -218,11 +220,21 @@ export const createDealerWebInput = z
   .object({
     name: z.string().trim().min(1, 'Nhập tên đại lý').max(200),
     phone: requiredPhone,
-    address: z.string().trim().min(1, 'Nhập địa chỉ').max(300),
+    // Số nhà, thôn, đường; máy chủ ghép thêm xã, phường khi lưu.
+    address: z.string().trim().min(1, 'Nhập số nhà, thôn, đường').max(250),
     ownerName: optionalName,
     taxCode: optionalTaxCode,
     level: z.coerce.number().pipe(dealerLevel),
-    provinceName: z.enum(PROVINCES).nullable(),
+    // Ô chọn để trống gửi null; bắt buộc chọn để biết đơn vị phụ trách và danh sách xã.
+    provinceName: z.enum(PROVINCES).nullable().pipe(z.enum(PROVINCES, 'Chọn tỉnh, thành phố')),
+    // Xã, phường từ 01/07/2025, không bắt buộc; máy chủ kiểm có thuộc tỉnh đã chọn.
+    wardName: z
+      .string()
+      .trim()
+      .max(100)
+      .nullable()
+      .default(null)
+      .transform((value) => value || null),
     lat: coordinate(90, 'Vĩ độ từ -90 đến 90, ví dụ 21.0285'),
     lng: coordinate(180, 'Kinh độ từ -180 đến 180, ví dụ 105.8542'),
     orgUnitId: z
@@ -237,6 +249,12 @@ export const createDealerWebInput = z
     message: 'Nhập đủ cả vĩ độ và kinh độ',
   });
 export type CreateDealerWebInput = z.infer<typeof createDealerWebInput>;
+
+/** Địa chỉ lưu của đại lý: số nhà, thôn, đường rồi đến xã, phường (tỉnh lưu riêng). */
+export function addressWithWard(address: string, wardName: string | null): string {
+  if (!wardName || address.toLowerCase().endsWith(wardName.toLowerCase())) return address;
+  return `${address}, ${wardName}`;
+}
 
 /**
  * Cách form xử lý khi lưu, theo người đang đăng nhập:
