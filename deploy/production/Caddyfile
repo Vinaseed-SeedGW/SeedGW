@@ -1,0 +1,48 @@
+# Máy chủ thật: IIS trên 10.10.8.35 giữ HTTPS và tên miền, chuyển tiếp HTTP vào đây. Caddy không xin chứng
+# chỉ, chỉ chia đường: ảnh vào MinIO, còn lại vào web.
+{
+	auto_https off
+	servers {
+		# Chỉ tin địa chỉ người dùng do IIS gửi kèm. Lấy IP ngoài cùng bên phải không thuộc IIS, nên người dùng
+		# tự gửi X-Forwarded-For giả cũng không lách được giới hạn đăng nhập sai theo IP.
+		trusted_proxies static {$IIS_PROXY_IP}
+		trusted_proxies_strict
+		client_ip_headers X-Forwarded-For
+	}
+}
+
+:80 {
+	encode zstd gzip
+
+	request_body {
+		max_size 15MB
+	}
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Ảnh check-in, tệp Hỗ trợ: link có hạn do máy chủ ký. IIS phải giữ nguyên Host để chữ ký khớp.
+	@photos path /{$S3_BUCKET}/*
+	handle @photos {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy web:3000 {
+			# Web đọc IP người dùng ở X-Forwarded-For; ghi đè bằng IP Caddy đã xác định ở trên.
+			header_up X-Forwarded-For {client_ip}
+			header_up X-Real-IP {client_ip}
+			# Trang Hỗ trợ cập nhật tức thì bằng SSE, không gom phản hồi.
+			flush_interval -1
+		}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

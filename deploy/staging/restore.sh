@@ -7,8 +7,9 @@ DB_DUMP="${1:?Cần đường dẫn file .dump}"
 PHOTOS_TAR="${2:-}"
 SEEDGW_ENV_FILE="${SEEDGW_ENV_FILE:-/opt/seedgw/staging.env}"
 export SEEDGW_ENV_FILE
-PROJECT=seedgw-staging
-COMPOSE=(docker compose -f "$(dirname "$0")/docker-compose.yml" -p "$PROJECT")
+# Máy chủ thật (deploy/production) đặt SEEDGW_PROJECT=seedgw và SEEDGW_COMPOSE_FILE trỏ tới file compose của nó.
+PROJECT="${SEEDGW_PROJECT:-seedgw-staging}"
+COMPOSE=(docker compose -f "${SEEDGW_COMPOSE_FILE:-$(dirname "$0")/docker-compose.yml}" -p "$PROJECT")
 TAR_IMAGE=alpine:3.20
 
 # Kiểm tra đủ file và file không hỏng TRƯỚC khi đụng vào dữ liệu đang chạy.

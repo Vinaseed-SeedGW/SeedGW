@@ -8,8 +8,9 @@ BACKUP_DIR="${BACKUP_DIR:-/srv/seedgw-backup}"
 KEEP_DAYS="${KEEP_DAYS:-14}"
 SEEDGW_ENV_FILE="${SEEDGW_ENV_FILE:-/opt/seedgw/staging.env}"
 export SEEDGW_ENV_FILE
-PROJECT=seedgw-staging
-COMPOSE=(docker compose -f "$(dirname "$0")/docker-compose.yml" -p "$PROJECT")
+# Máy chủ thật (deploy/production) đặt SEEDGW_PROJECT=seedgw và SEEDGW_COMPOSE_FILE trỏ tới file compose của nó.
+PROJECT="${SEEDGW_PROJECT:-seedgw-staging}"
+COMPOSE=(docker compose -f "${SEEDGW_COMPOSE_FILE:-$(dirname "$0")/docker-compose.yml}" -p "$PROJECT")
 # Image MinIO không có tar, nên đọc thẳng volume bằng một container nhỏ.
 TAR_IMAGE=alpine:3.20
 STAMP="$(date +%Y%m%d-%H%M)"

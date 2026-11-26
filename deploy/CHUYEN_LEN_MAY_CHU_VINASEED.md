@@ -4,6 +4,8 @@ Ngày: 16/11/2026. Trạng thái: **bản nháp, chưa gửi IT**. Gửi IT sau 
 
 Tài liệu đi kèm: [README.md](README.md) (cách dựng máy chủ, yêu cầu cho IT), [staging/staging.env.example](staging/staging.env.example) (mẫu biến môi trường), TASKS.md task F7.
 
+**Cập nhật 26/11/2026:** máy chủ thật là máy ảo Ubuntu 24.04 trên VMware (8 vCPU, 16 GB RAM, ổ 400 GB), IIS trên Windows Server 10.10.8.35 giữ tên miền `seedgw.vinaseed.com.vn` và HTTPS rồi chuyển tiếp vào máy ảo; dữ liệu chuyển từ máy chủ thử rồi làm sạch. Các bước làm theo [production/README.md](production/README.md); các mục dưới đây vẫn đúng, trừ phần Caddy tự xin chứng chỉ (nay IIS giữ chứng chỉ) và phần làm mới dữ liệu (nay chuyển từ máy chủ thử).
+
 Tóm tắt: phần lõi (web, database, kho ảnh, app) giữ nguyên. Phần phải bỏ hoặc sửa chủ yếu là những thứ dựng tạm để chạy trên máy cá nhân.
 
 ---

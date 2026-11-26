@@ -1,0 +1,149 @@
+# Máy chủ thật (production) SeedGW, chốt 26/11/2026: máy ảo Ubuntu 24.04 trên VMware (8 vCPU, 16 GB RAM,
+# ổ 400 GB). IIS trên Windows Server 10.10.8.35 giữ tên miền seedgw.vinaseed.com.vn và chứng chỉ HTTPS,
+# chuyển tiếp HTTP qua mạng nội bộ vào cổng 80 của máy ảo này. Caddy chỉ nhận HTTP từ IIS.
+# Chạy từ thư mục gốc repo (/opt/seedgw/repo):
+#   export SEEDGW_ENV_FILE=/opt/seedgw/production.env
+#   docker compose -f deploy/production/docker-compose.yml -p seedgw up -d --build
+# Bật thêm máy chủ tìm đường khi đã chuẩn bị bản đồ (deploy/osrm/prepare.sh): thêm --profile osrm.
+# Database, Redis, MinIO chỉ nằm trong mạng nội bộ của Docker.
+
+x-app-env: &app-env
+  env_file: ${SEEDGW_ENV_FILE:-./production.env}
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: '20m'
+      max-file: '5'
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    # 300 đến 400 người dùng, máy 16 GB: bộ nhớ đệm database khoảng 2 GB.
+    command:
+      [
+        'postgres',
+        '-c',
+        'shared_buffers=2GB',
+        '-c',
+        'effective_cache_size=6GB',
+        '-c',
+        'work_mem=16MB',
+        '-c',
+        'maintenance_work_mem=512MB',
+        '-c',
+        'max_connections=200',
+      ]
+    shm_size: 2gb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    <<: *logging
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    # Image mặc định chạy user không có quyền ghi vào volume mới tạo.
+    user: root
+    restart: unless-stopped
+    command: server /data
+    <<: [*app-env, *logging]
+    volumes:
+      - minio-data:/data
+
+  # Chạy migration rồi thoát. Web chỉ khởi động sau khi migration xong.
+  migrate:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      target: tools
+      args:
+        APP_VERSION: ${APP_VERSION:-production}
+    image: seedgw-tools:production
+    <<: *app-env
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      target: web
+      args:
+        APP_VERSION: ${APP_VERSION:-production}
+    image: seedgw-web:production
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  worker:
+    image: seedgw-tools:production
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    command: ['pnpm', '--filter', '@seedgw/worker', 'exec', 'tsx', 'src/index.ts']
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+
+  # Máy chủ tìm đường (R4), chỉ chạy khi bật --profile osrm và đặt OSRM_URL=http://osrm:5000 trong file môi
+  # trường. Chưa bật thì km tính theo GPS.
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    restart: unless-stopped
+    profiles: ['osrm']
+    <<: *logging
+    command:
+      [
+        'osrm-routed',
+        '--algorithm',
+        'mld',
+        '--max-matching-size',
+        '1000',
+        '/data/vietnam-latest.osrm',
+      ]
+    volumes:
+      - ../osrm/data:/data:ro
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    <<: [*app-env, *logging]
+    ports:
+      # Chỉ IIS (10.10.8.35) gọi vào; tường lửa của máy ảo chặn các máy khác (xem README).
+      - '80:80'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  caddy-data:
+  caddy-config:
