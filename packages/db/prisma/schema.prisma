@@ -502,11 +502,24 @@ enum DealerProposalStatus {
   @@map("dealer_proposal_status")
 }
 
+/// Nơi tạo đề xuất: kèm check-in trên app, hoặc form Thêm đại lý trên web.
+enum DealerProposalSource {
+  APP
+  WEB
+
+  @@map("dealer_proposal_source")
+}
+
 model DealerProposal {
   id                String               @id @default(uuid()) @db.Uuid
   // Lượt check-in mang ảnh, toạ độ, giờ và địa chỉ lúc chụp. Một check-in chỉ có một đề xuất.
-  checkInId         String               @unique @map("check_in_id") @db.Uuid
-  checkIn           CheckIn              @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  // 26/11/2026: thêm đại lý trên web thì không có check-in, toạ độ chọn trên bản đồ nếu có.
+  checkInId         String?              @unique @map("check_in_id") @db.Uuid
+  checkIn           CheckIn?             @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  source            DealerProposalSource @default(APP)
+  lat               Float?
+  lng               Float?
+  provinceName      String?              @map("province_name")
   // Đơn vị của nhân viên lúc đề xuất, để Quản trị đơn vị thấy đề xuất trong phạm vi của mình.
   orgUnitId         String?              @map("org_unit_id") @db.Uuid
   orgUnit           OrgUnit?             @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)

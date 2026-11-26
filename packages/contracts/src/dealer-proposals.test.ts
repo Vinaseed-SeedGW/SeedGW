@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createCheckInInput } from './check-ins';
 import {
   approveDealerProposalInput,
+  createDealerWebInput,
   newDealerInput,
   normalizeTaxCode,
   rejectDealerProposalInput,
@@ -109,5 +110,62 @@ describe('duyệt và từ chối', () => {
     expect(rejectDealerProposalInput.safeParse({ id, note: 'trùng' }).success).toBe(true);
     expect(rejectDealerProposalInput.safeParse({ id, note: 'sai' }).success).toBe(false);
     expect(rejectDealerProposalInput.safeParse({ id, note: 'x'.repeat(501) }).success).toBe(false);
+  });
+});
+
+describe('createDealerWebInput (thêm đại lý trên web)', () => {
+  const BASE = {
+    name: ' Đại lý Minh Phát ',
+    phone: '0912 345 678',
+    address: 'Thôn 3, xã Tân Lập',
+    ownerName: '',
+    taxCode: '',
+    level: '3',
+    provinceName: 'Thành phố Hà Nội',
+    lat: '',
+    lng: '',
+    orgUnitId: '',
+    assignedUserId: null,
+  };
+
+  it('không bắt buộc toạ độ, đơn vị; ô trống thành null, cấp đọc từ ô chọn', () => {
+    const parsed = createDealerWebInput.parse(BASE);
+    expect(parsed).toMatchObject({
+      name: 'Đại lý Minh Phát',
+      phone: '0912345678',
+      ownerName: null,
+      taxCode: null,
+      level: 3,
+      lat: null,
+      lng: null,
+      orgUnitId: null,
+      assignedUserId: null,
+    });
+  });
+
+  it('nhận toạ độ dấu phẩy, bắt nhập đủ cả hai', () => {
+    expect(createDealerWebInput.parse({ ...BASE, lat: '21,0285', lng: '105,8542' })).toMatchObject({
+      lat: 21.0285,
+      lng: 105.8542,
+    });
+    const half = createDealerWebInput.safeParse({ ...BASE, lat: '21.0285' });
+    expect(half.success).toBe(false);
+    expect(half.error?.issues[0]?.path).toEqual(['lat']);
+  });
+
+  it('bắt buộc tên, số điện thoại đúng dạng, địa chỉ; mã số thuế đúng dạng', () => {
+    expect(createDealerWebInput.safeParse({ ...BASE, name: ' ' }).success).toBe(false);
+    expect(createDealerWebInput.safeParse({ ...BASE, phone: '12345' }).success).toBe(false);
+    expect(createDealerWebInput.safeParse({ ...BASE, address: '' }).success).toBe(false);
+    expect(createDealerWebInput.safeParse({ ...BASE, taxCode: '123' }).success).toBe(false);
+    expect(createDealerWebInput.parse({ ...BASE, taxCode: '0101234567' }).taxCode).toBe(
+      '0101234567',
+    );
+  });
+
+  it('đơn vị phải là mã hợp lệ khi Quản trị chọn', () => {
+    expect(createDealerWebInput.safeParse({ ...BASE, orgUnitId: 'abc' }).success).toBe(false);
+    const unit = '7f1e7f0a-3c55-4f2a-9a43-5c1a8d2f3b10';
+    expect(createDealerWebInput.parse({ ...BASE, orgUnitId: unit }).orgUnitId).toBe(unit);
   });
 });

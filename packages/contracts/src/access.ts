@@ -80,7 +80,7 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   { path: '/kinh-doanh/dai-ly', permission: 'sales.dealer.read', department: 'kinh-doanh' },
   {
     path: '/kinh-doanh/dai-ly/tao-moi',
-    permission: 'sales.dealer.create',
+    permission: 'sales.dealer.propose',
     department: 'kinh-doanh',
   },
   { path: '/kinh-doanh/khach-hang', permission: 'sales.customer.read', department: 'kinh-doanh' },
@@ -117,6 +117,11 @@ export const ROUTE_RULES: readonly RouteRule[] = [
   {
     path: '/quan-tri/dai-ly/duyet-toa-do',
     permission: 'admin.dealer-location.approve',
+    department: 'quan-tri',
+  },
+  {
+    path: '/quan-tri/dai-ly/tao-moi',
+    permission: 'admin.dealer-proposal.approve',
     department: 'quan-tri',
   },
   {

@@ -63,7 +63,7 @@ const phoneField = z
   .nullable();
 
 /** Toạ độ gõ tay trên form, nhận cả dấu phẩy thập phân. Ô trống là chưa có toạ độ. */
-const coordinate = (limit: number, message: string) =>
+export const coordinate = (limit: number, message: string) =>
   z
     .union([z.number(), z.string(), z.null()])
     .transform((value) =>

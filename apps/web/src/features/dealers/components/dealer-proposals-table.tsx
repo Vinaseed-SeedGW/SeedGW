@@ -27,8 +27,32 @@ const SECONDARY_BUTTON =
 
 type Review = { row: DealerProposalRow; kind: 'approve' | 'reject' | 'duplicate' };
 
-function mapsUrl(row: DealerProposalRow): string {
-  return `https://www.google.com/maps/search/?api=1&query=${row.lat},${row.lng}`;
+function mapsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+}
+
+/** Đề xuất thêm trên web: không có ảnh, vị trí lúc chụp; toạ độ chọn trên bản đồ nếu có. */
+function WebLocation({ row }: { row: DealerProposalRow }) {
+  return (
+    <>
+      <span>Thêm trên web</span>
+      {row.lat !== null && row.lng !== null ? (
+        <a
+          href={mapsUrl(row.lat, row.lng)}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 flex items-center gap-1 text-sm text-brand"
+        >
+          <MapPin size={14} aria-hidden />
+          Xem toạ độ đã chọn
+        </a>
+      ) : (
+        <span className="block text-sm text-text-muted">
+          Chưa có toạ độ, lấy ở lần check-in đầu tiên tại đại lý
+        </span>
+      )}
+    </>
+  );
 }
 
 function ResultCell({ row, dealerBasePath }: { row: DealerProposalRow; dealerBasePath: string }) {
@@ -86,38 +110,41 @@ const BASE_COLUMNS: ColumnDef<DealerProposalRow>[] = [
     id: 'location',
     header: 'Vị trí lúc chụp',
     meta: { label: 'Vị trí lúc chụp', className: WRAP_COLUMN },
-    cell: ({ row }) => (
-      <>
-        {row.original.checkInAddress ?? (
-          <span className="text-text-muted">Chưa lấy được địa chỉ</span>
-        )}
-        <a
-          href={mapsUrl(row.original)}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 flex items-center gap-1 text-sm text-brand"
-        >
-          <MapPin size={14} aria-hidden />
-          Xem trên bản đồ
-          {row.original.accuracyM !== null
-            ? `, sai số ${formatNumber(Math.round(row.original.accuracyM))} m`
-            : ''}
-        </a>
-        {row.original.photoUrl ? (
+    cell: ({ row }) =>
+      row.original.source === 'WEB' ? (
+        <WebLocation row={row.original} />
+      ) : (
+        <>
+          {row.original.checkInAddress ?? (
+            <span className="text-text-muted">Chưa lấy được địa chỉ</span>
+          )}
           <a
-            href={row.original.photoUrl}
+            href={mapsUrl(row.original.lat ?? 0, row.original.lng ?? 0)}
             target="_blank"
             rel="noreferrer"
-            className="mt-1 flex items-center gap-1 text-sm font-bold text-brand"
+            className="mt-1 flex items-center gap-1 text-sm text-brand"
           >
-            <ImageIcon size={14} aria-hidden />
-            Xem ảnh
+            <MapPin size={14} aria-hidden />
+            Xem trên bản đồ
+            {row.original.accuracyM !== null
+              ? `, sai số ${formatNumber(Math.round(row.original.accuracyM))} m`
+              : ''}
           </a>
-        ) : (
-          <span className="block text-sm text-text-muted">Ảnh chưa có hoặc đã hết hạn lưu</span>
-        )}
-      </>
-    ),
+          {row.original.photoUrl ? (
+            <a
+              href={row.original.photoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 flex items-center gap-1 text-sm font-bold text-brand"
+            >
+              <ImageIcon size={14} aria-hidden />
+              Xem ảnh
+            </a>
+          ) : (
+            <span className="block text-sm text-text-muted">Ảnh chưa có hoặc đã hết hạn lưu</span>
+          )}
+        </>
+      ),
   },
   {
     accessorKey: 'proposedByName',

@@ -44,7 +44,8 @@ function useFormShell(): FormContextValue {
 type RootProps<TValues extends FieldValues, TData> = {
   form: UseFormReturn<TValues>;
   action: (values: TValues) => Promise<FormActionResult<TData>>;
-  successMessage: string;
+  /** Câu báo khi lưu xong; truyền hàm khi câu báo tuỳ kết quả máy chủ trả về. */
+  successMessage: string | ((data: TData) => string);
   onSuccess?: (data: TData) => void;
   children: ReactNode;
 };
@@ -67,7 +68,11 @@ function Root<TValues extends FieldValues, TData>({
       const result = await action(values);
       if (result.ok) {
         form.reset(values);
-        toast.show({ tone: 'success', message: successMessage });
+        toast.show({
+          tone: 'success',
+          message:
+            typeof successMessage === 'function' ? successMessage(result.data) : successMessage,
+        });
         result.warnings?.forEach(({ message }) => toast.show({ tone: 'warning', message }));
         onSuccess?.(result.data);
         return;

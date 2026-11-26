@@ -1,11 +1,14 @@
 import 'server-only';
 import type {
+  DealerCreateMode,
   DealerProposalOptions,
   ListDealerProposalsInput,
   ListDealerProposalsResult,
   ScopedProposalsInput,
 } from '@seedgw/contracts/dealer-proposals';
+import type { DealerFormOptions } from '@seedgw/contracts/dealers';
 import { db } from '@seedgw/db/client';
+import { mapTileConfig } from '@/server/integrations/map-tiles';
 import { assertCan, can } from '@/server/auth/can';
 import { requireUser } from '@/server/auth/current-user';
 import { getAssignableOrgUnitIds, getScopedDb } from '@/server/auth/scoped-db';
@@ -17,6 +20,7 @@ import {
   countProposalsForApprover,
   listProposalsForApprover,
   listScopedProposals,
+  resolveDealerCreateMode,
 } from '@/server/services/dealer-proposals';
 
 // Đại lý mới (M10). 25/11/2026: Quản lý, Lãnh đạo đơn vị duyệt ở Cần duyệt; Quản trị đơn vị xem ở Quản trị
@@ -65,6 +69,61 @@ export async function getDealerProposalOptions(): Promise<DealerProposalOptions>
       unitPath: unitPathOf(units, row.orgUnitId),
     })),
     provinceUnits,
+  };
+}
+
+export type DealerCreateFormData = {
+  mode: DealerCreateMode;
+  /** Người sẽ duyệt khi nhân viên thêm, để form báo trước. */
+  approverName: string | null;
+  orgUnits: { value: string; label: string }[];
+  users: DealerProposalOptions['users'];
+  provinceUnits: DealerProposalOptions['provinceUnits'];
+  mapTiles: DealerFormOptions['mapTiles'];
+};
+
+/** Form Thêm đại lý trên web (26/11/2026): cách xử lý khi lưu, và đơn vị, nhân viên cho Quản trị chọn. */
+export async function getDealerCreateFormData(): Promise<DealerCreateFormData> {
+  const user = await requireUser();
+  if (!can(user, 'admin.dealer-proposal.approve')) assertCan(user, 'sales.dealer.propose');
+  const { mode, approverId } = await resolveDealerCreateMode(user);
+  const approver =
+    mode === 'APPROVAL' && approverId
+      ? // pham-vi-toan-bo: chỉ đọc tên người duyệt trong chuỗi, người duyệt có thể ở ngoài phạm vi nhân viên.
+        await db.user.findUnique({ where: { id: approverId }, select: { fullName: true } })
+      : null;
+  if (mode !== 'ASSIGN') {
+    return {
+      mode,
+      approverName: approver?.fullName ?? null,
+      orgUnits: [],
+      users: [],
+      provinceUnits: {},
+      mapTiles: mapTileConfig(),
+    };
+  }
+  const [scoped, assignable] = await Promise.all([getScopedDb(), getAssignableOrgUnitIds()]);
+  const [units, users, provinceUnits] = await Promise.all([
+    db.orgUnit.findMany({ select: { id: true, name: true, parentId: true } }),
+    scoped.user.findMany({
+      where: { isActive: true },
+      orderBy: { employeeCode: 'asc' },
+      select: { id: true, employeeCode: true, fullName: true, orgUnitId: true },
+    }),
+    readProvinceUnits(),
+  ]);
+  const labels = buildOrgUnitLabels(units);
+  return {
+    mode,
+    approverName: null,
+    orgUnits: assignable ? labels.filter((unit) => assignable.has(unit.value)) : labels,
+    users: users.map((row) => ({
+      value: row.id,
+      label: `${row.employeeCode} - ${row.fullName}`,
+      unitPath: unitPathOf(units, row.orgUnitId),
+    })),
+    provinceUnits,
+    mapTiles: mapTileConfig(),
   };
 }
 

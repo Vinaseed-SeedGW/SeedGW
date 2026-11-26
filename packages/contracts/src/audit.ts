@@ -45,6 +45,7 @@ export const AUDIT_ACTION_LABEL = {
   'dealer.move': 'Đổi đơn vị phụ trách đại lý',
   'dealer.location.approve': 'Duyệt toạ độ đại lý',
   'dealer.location.reject': 'Từ chối toạ độ đại lý',
+  'dealer.proposal.create': 'Đề xuất đại lý mới trên web',
   'dealer.proposal.approve': 'Duyệt đại lý mới',
   'dealer.proposal.reject': 'Từ chối đề xuất đại lý mới',
   'dealer.proposal.duplicate': 'Đánh dấu đề xuất trùng đại lý có sẵn',

@@ -7,8 +7,10 @@ import type { AuditAction } from '@seedgw/contracts/audit';
 import type { ActionResult } from '@seedgw/contracts/common';
 import {
   approveDealerProposalInput,
+  createDealerWebInput,
   markDuplicateDealerProposalInput,
   rejectDealerProposalInput,
+  type CreateDealerWebResult,
 } from '@seedgw/contracts/dealer-proposals';
 import { toActionError, validationError } from '@/server/auth/action-error';
 import { assertCan, can } from '@/server/auth/can';
@@ -16,6 +18,7 @@ import { requireUser } from '@/server/auth/current-user';
 import { getClientIp, writeAudit } from '@/server/services/audit';
 import {
   approveProposal,
+  createDealerFromWeb,
   markProposalDuplicate,
   rejectProposal,
   type ProposalOutcome,
@@ -101,6 +104,44 @@ export async function markDuplicateDealerProposalAction(
       getClientIp(),
     ]);
     return finish(user, 'dealer.proposal.duplicate', outcome, ip);
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+/**
+ * Thêm đại lý trên web (26/11/2026), mọi vai trò có quyền đề xuất đại lý mới. Service quyết định tạo luôn hay
+ * chờ duyệt theo người thêm.
+ */
+export async function createDealerWebAction(
+  raw: unknown,
+): Promise<ActionResult<CreateDealerWebResult>> {
+  try {
+    const user = await requireUser();
+    if (!can(user, 'admin.dealer-proposal.approve')) assertCan(user, 'sales.dealer.propose');
+    const parsed = createDealerWebInput.safeParse(raw);
+    if (!parsed.success) return validationError(parsed.error);
+    const [{ result, audits }, ip] = await Promise.all([
+      createDealerFromWeb(user, parsed.data),
+      getClientIp(),
+    ]);
+    after(async () => {
+      for (const { action, outcome } of audits) {
+        await writeAudit({
+          actor: user,
+          action,
+          entityType: outcome.dealerId ? 'Dealer' : 'DealerProposal',
+          entityId: outcome.dealerId ?? outcome.proposalId,
+          entityLabel: outcome.dealerName,
+          changes: outcome.changes,
+          ip,
+        });
+      }
+    });
+    revalidatePath('/quan-tri/dai-ly', 'layout');
+    revalidatePath('/kinh-doanh/dai-ly', 'layout');
+    revalidatePath('/kinh-doanh/can-duyet', 'layout');
+    return { ok: true, data: result };
   } catch (error) {
     return toActionError(error);
   }

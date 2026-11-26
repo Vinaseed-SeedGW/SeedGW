@@ -46,7 +46,7 @@ export function ApproveProposalSheet({
   const allowedUnits = options.orgUnits.map((unit) => unit.value);
   const unitAllowed = allowedUnits.includes(row.orgUnitId ?? '');
   const fallbackUnit = unitAllowed && row.orgUnitId ? row.orgUnitId : '';
-  const province = guessProvinceFromAddress(row.address);
+  const province = row.provinceName ?? guessProvinceFromAddress(row.address);
   const defaultUnit = province
     ? suggestOrgUnit(options.provinceUnits[province], allowedUnits, fallbackUnit)
     : fallbackUnit;

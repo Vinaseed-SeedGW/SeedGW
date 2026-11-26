@@ -1,13 +1,24 @@
 import { z } from 'zod';
 import { pageResult } from './common';
 import { parseDisplayDate } from './format';
-import { dealerLevel, normalizeVnPhone, type DealerLevel, type DealerUserOption } from './dealers';
+import {
+  coordinate,
+  dealerLevel,
+  normalizeVnPhone,
+  type DealerLevel,
+  type DealerUserOption,
+} from './dealers';
 import { PROVINCES, type ProvinceName } from './provinces';
 
 // Đề xuất đại lý mới trên app (M10, 20/11/2026). Đề xuất đi kèm một lượt check-in tại cửa hàng nên có sẵn
 // ảnh, toạ độ, giờ máy chủ và địa chỉ lúc chụp. Duyệt thì tạo đại lý, chưa có mã FAST (S10).
 // 25/11/2026: Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt một bước; người có quyền duyệt tự đề xuất thì
 // tạo luôn; Quản trị đơn vị chỉ xem, Quản trị hệ thống duyệt thay.
+// 26/11/2026: mọi vai trò thêm đại lý trên web. Nhân viên thêm thì chờ duyệt như trên app; Quản lý, Lãnh đạo
+// đơn vị, Quản trị đơn vị, Quản trị hệ thống thêm thì tạo luôn. Ảnh và toạ độ không bắt buộc.
+
+export const dealerProposalSource = z.enum(['APP', 'WEB']);
+export type DealerProposalSource = z.infer<typeof dealerProposalSource>;
 
 /** Mặc định khi nhân viên không chọn cấp, người duyệt chốt lại. */
 export const DEFAULT_PROPOSED_LEVEL: DealerLevel = 3;
@@ -114,10 +125,14 @@ export const dealerProposalRow = z.object({
   proposedById: z.uuid(),
   proposedByName: z.string(),
   proposedByCode: z.string(),
+  source: dealerProposalSource,
+  // Giờ chụp của lượt check-in; đề xuất từ web là giờ gửi.
   capturedAt: z.iso.datetime(),
   checkInAddress: z.string().nullable(),
-  lat: z.number(),
-  lng: z.number(),
+  // Toạ độ lúc chụp, hoặc toạ độ chọn trên bản đồ khi thêm trên web; null là chưa có.
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
+  provinceName: z.enum(PROVINCES).nullable(),
   accuracyM: z.number().nullable(),
   photoUrl: z.string().nullable(),
   status: dealerProposalStatus,
@@ -191,6 +206,51 @@ export type DealerProposalOptions = {
   users: DealerUserOption[];
   // K7b: đơn vị phụ trách từng tỉnh, để gợi ý đơn vị cho đại lý mới.
   provinceUnits: Partial<Record<ProvinceName, string[]>>;
+};
+
+// ---------- Web: Thêm đại lý ----------
+
+/**
+ * Form Thêm đại lý trên web. Đơn vị và nhân viên phụ trách chỉ dùng khi Quản trị đơn vị, Quản trị hệ thống
+ * thêm; người khác thêm thì đại lý thuộc đơn vị của người thêm như đề xuất trên app.
+ */
+export const createDealerWebInput = z
+  .object({
+    name: z.string().trim().min(1, 'Nhập tên đại lý').max(200),
+    phone: requiredPhone,
+    address: z.string().trim().min(1, 'Nhập địa chỉ').max(300),
+    ownerName: optionalName,
+    taxCode: optionalTaxCode,
+    level: z.coerce.number().pipe(dealerLevel),
+    provinceName: z.enum(PROVINCES).nullable(),
+    lat: coordinate(90, 'Vĩ độ từ -90 đến 90, ví dụ 21.0285'),
+    lng: coordinate(180, 'Kinh độ từ -180 đến 180, ví dụ 105.8542'),
+    orgUnitId: z
+      .union([z.uuid('Chọn đơn vị phụ trách'), z.literal('')])
+      .nullable()
+      .default(null)
+      .transform((value) => value || null),
+    assignedUserId: z.uuid().nullable().default(null),
+  })
+  .refine((value) => (value.lat === null) === (value.lng === null), {
+    path: ['lat'],
+    message: 'Nhập đủ cả vĩ độ và kinh độ',
+  });
+export type CreateDealerWebInput = z.infer<typeof createDealerWebInput>;
+
+/**
+ * Cách form xử lý khi lưu, theo người đang đăng nhập:
+ * ASSIGN: Quản trị đơn vị, Quản trị hệ thống tạo luôn và chọn đơn vị, nhân viên phụ trách;
+ * DIRECT: Quản lý, Lãnh đạo đơn vị tạo luôn trong đơn vị của mình;
+ * APPROVAL: nhân viên gửi đề xuất chờ Quản lý trực tiếp hoặc Lãnh đạo đơn vị duyệt.
+ */
+export type DealerCreateMode = 'ASSIGN' | 'DIRECT' | 'APPROVAL';
+
+export type CreateDealerWebResult = {
+  outcome: 'CREATED' | 'ATTACHED' | 'PENDING';
+  proposalId: string;
+  dealerId: string | null;
+  message: string;
 };
 
 // ---------- App: đề xuất của tôi ----------

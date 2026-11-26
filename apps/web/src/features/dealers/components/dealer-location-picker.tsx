@@ -28,7 +28,7 @@ function toNumber(value: unknown): number | null {
  * tỉnh của đại lý; chưa có tỉnh thì ở Hà Nội (duyệt 18/11/2026).
  */
 function startView(
-  dealer: DealerDetail,
+  dealer: StartPoint,
   province: string | null,
 ): { center: LatLng; zoom: number; source: string } {
   if (dealer.lat !== null && dealer.lng !== null) {
@@ -46,14 +46,20 @@ function startView(
   return { center: HANOI, zoom: 11, source: 'Hà Nội vì đại lý chưa có tỉnh' };
 }
 
-type Props = { dealer: DealerDetail; tiles: DealerFormOptions['mapTiles'] };
+/** Điểm mở bản đồ: đại lý đang sửa, hoặc đại lý mới (chưa có gì) ở form Thêm đại lý. */
+type StartPoint = Pick<DealerDetail, 'lat' | 'lng' | 'lastCheckInPoint' | 'provinceName'>;
+
+type Props = { dealer: StartPoint; tiles: DealerFormOptions['mapTiles'] };
 
 /** Chọn toạ độ trên bản đồ, ghi vào hai ô Vĩ độ, Kinh độ của form sửa đại lý (A7b). */
 export function DealerLocationPicker({ dealer, tiles }: Props) {
-  const { setValue, control } = useFormContext<{ lat: unknown; lng: unknown }>();
+  const { setValue, getValues, control } = useFormContext<{
+    lat: unknown;
+    lng: unknown;
+    provinceName?: string | null;
+  }>();
   const [lat, lng] = useWatch({ control, name: ['lat', 'lng'] });
-  const [open, setOpen] = useState(false);
-  const [view] = useState(() => startView(dealer, dealer.provinceName));
+  const [view, setView] = useState<ReturnType<typeof startView> | null>(null);
   const latValue = toNumber(lat);
   const lngValue = toNumber(lng);
   const value = latValue !== null && lngValue !== null ? { lat: latValue, lng: lngValue } : null;
@@ -65,7 +71,7 @@ export function DealerLocationPicker({ dealer, tiles }: Props) {
 
   return (
     <div className="mt-3.5">
-      {open ? (
+      {view ? (
         <>
           <p className="mb-1 text-sm text-text-muted">
             Bản đồ mở ở {view.source}. Phóng to, bấm đúng vị trí cửa hàng hoặc kéo ghim, rồi bấm Lưu
@@ -82,7 +88,9 @@ export function DealerLocationPicker({ dealer, tiles }: Props) {
       ) : (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() =>
+            setView(startView(dealer, getValues('provinceName') ?? dealer.provinceName))
+          }
           className="inline-flex h-9.5 items-center rounded-md border border-border bg-surface px-3 font-bold hover:bg-brand-soft"
         >
           Chọn toạ độ trên bản đồ
